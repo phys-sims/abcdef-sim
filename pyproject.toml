@@ -1,0 +1,66 @@
+[project]
+name = "abcdef-sim"
+version = "0.1.0"
+description = "A physics simulation pipeline for abcdef-sim"
+authors = [
+  { name = "Ryaan Lari", email = "" }
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+dependencies = [
+  "numpy",
+  "scipy"
+  "pydantic>=2.7"
+]
+[project.optional-dependencies]
+dev = [
+  # test & tooling you actually run locally
+  "pytest",
+  "black",
+  "ruff",
+  "mypy",
+  "codespell",
+]
+
+# --- Black ---
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+
+# --- Ruff (lint) ---
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "I"]  
+ignore = []  # add codes you intentionally ignore
+
+# --- mypy ---
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+strict_optional = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+files = "src"
+
+# --- pydantic's mypy plugin ---
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+
+# --- codespell ---
+[tool.codespell]
+# add any frequent false positives here
+ignore-words-list = "teh,nd"
+skip = "poetry.lock,*.lock,*.svg,*.png,*.jpg"
+# You can also narrow paths if needed:
+# path = "src,tests,docs,examples"

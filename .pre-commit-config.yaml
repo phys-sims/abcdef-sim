@@ -1,0 +1,61 @@
+default_stages: [commit]
+files: ^(src|phys_pipeline|tests|docs|examples|\.github/|)/
+exclude: >
+  (^artifacts/|^htmlcov/|^build/|^dist/|
+   ^\.venv/|^venv/|^\.mypy_cache/|^\.ruff_cache/|^\.pytest_cache/|^__pycache__/)
+
+repos:
+  # --- Fast, general hygiene ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+      - id: check-merge-conflict
+      - id: check-yaml
+        files: \.(yml|yaml)$
+      - id: check-toml
+      - id: check-json
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+
+  # --- Linting (Ruff) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]   # fail if it changed files (so you re-add & commit)
+        types: [python]
+      - id: ruff-format                              # Black-compatible formatter
+        types: [python]
+  
+
+  # --- Formatting (Black) ---
+  - repo: https://github.com/psf/black
+    rev: 25.9.0
+    hooks:
+      - id: black
+
+  # --- Modernize syntax to your Python (py311+) ---
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.20.0
+    hooks:
+      - id: pyupgrade
+        args: ["--py311-plus"]
+
+  # --- Type checking (mypy) ---
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.18.2
+    hooks:
+      - id: mypy
+        stages: [manual]
+        additional_dependencies: ["pydantic>=2.7", "matplotlib"]  # add stubs here if needed 
+
+  # --- Spell checking (codespell) ---
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+   

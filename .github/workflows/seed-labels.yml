@@ -1,0 +1,71 @@
+
+name: Seed labels
+on:
+  push:
+    paths: [".github/workflows/seed-labels.yml"]
+  workflow_dispatch:
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const desired = [
+              // types
+              { name:"type:task",  color:"1f883d" },
+              { name:"type:spike", color:"5319e7" },
+              { name:"type:chore", color:"6f42c1" },
+              {name:"type:feature", color:"1f883d"},
+              {name:"type:test",    color:"1f883d"},
+              {name:"type:bench",   color:"1f883d"},
+              {name:"type:bug",     color:"d73a4a"},
+              // areas
+              {name:"area:phys-pipeline",  color:"0e8a16"},
+              {name:"area:abcdef-sim",     color:"0e8a16"},
+              {name:"area:research-utils", color:"0e8a16"},
+              {name:"area:cpa-sim",        color:"0e8a16"},
+              {name:"area:infra/docs",     color:"0e8a16"},
+              // priority
+              {name:"prio:P0", color:"b60205"},
+              {name:"prio:P1", color:"dbab09"},
+              {name:"prio:P2", color:"c5def5"},
+              // status helpers (match Project options)
+              {name:"status:backlog",     color:"5319e7"},
+              {name:"status:ready",       color:"5319e7"},
+              {name:"status:in-progress", color:"5319e7"},
+              {name:"status:review",      color:"5319e7"},
+              {name:"status:done",        color:"5319e7"},
+              // misc
+              { name:"api",        color:"0e8a16" },
+              { name:"integration",color:"0e8a16" },
+              {name:"physics", color:"006b75"},
+              {name:"infra",   color:"6f42c1"}
+            ];
+
+            const { data: existing } = await github.rest.issues.listLabelsForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, per_page: 200
+            });
+            const byName = new Map(existing.map(l => [l.name, l]));
+
+            for (const l of desired) {
+              if (byName.has(l.name)) {
+                const cur = byName.get(l.name);
+                if (cur.color.toLowerCase() !== l.color.toLowerCase()) {
+                  core.info(`Updating color for ${l.name}`);
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner, repo: context.repo.repo,
+                    name: l.name, color: l.color
+                  });
+                }
+              } else {
+                core.info(`Creating label ${l.name}`);
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner, repo: context.repo.repo, ...l
+                });
+              }
+            }
+            core.info("Labels seeded/updated.");
