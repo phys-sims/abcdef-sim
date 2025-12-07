@@ -9,7 +9,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 dependencies = [
   "numpy",
-  "scipy"
+  "scipy",
   "pydantic>=2.7"
 ]
 [project.optional-dependencies]
