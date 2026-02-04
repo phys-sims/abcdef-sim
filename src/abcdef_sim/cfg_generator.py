@@ -11,11 +11,18 @@ from abcdef_sim.data_models.configs import OpticStageCfg
 from abcdef_sim.data_models.optics import Optic
 from abcdef_sim.utils.grids import LinspaceGrid, infer_linspace_grid
 
+from phys_pipeline.policy import PolicyBag
+
 NDArrayF = npt.NDArray[np.float64]
 
 
 @dataclass
 class OpticStageCfgGenerator:
+    """
+    Creates OpticStageCfg for a given optic and omega grid.
+
+    CacheBackend is optional: you can pass NullCacheBackend.
+    """
     cache: CacheBackend
     expensive_types: tuple[type, ...] = field(default_factory=tuple)
     expensive_predicate: Optional[Callable[[Optic], bool]] = None
@@ -31,18 +38,23 @@ class OpticStageCfgGenerator:
         omega: npt.ArrayLike,
         *,
         tags: Optional[dict[str, Any]] = None,
-        grid: Optional[LinspaceGrid] = None,
+        policy: Optional[PolicyBag] = None,
         infer_grid: bool = True,
         freeze_arrays: bool = False,
-        use_cache_for_nonexpensive: bool = False,
     ) -> OpticStageCfg:
 
         w = np.asarray(omega, dtype=np.float64).reshape(-1)
 
-        if grid is None and infer_grid:
+        grid: Optional[LinspaceGrid] = None
+        if infer_grid:
             grid = infer_linspace_grid(w)
 
-        should_cache = self.is_expensive(optic) or use_cache_for_nonexpensive
+        # Policy knobs (run-wide)
+        use_cache = True if policy is None else bool(policy.get("cfg.use_cache", True))
+        use_l1 = True if policy is None else bool(policy.get("cfg.cache_l1", True))
+        use_l2 = True if policy is None else bool(policy.get("cfg.cache_l2", True))
+
+        should_cache = use_cache and self.is_expensive(optic)
 
         if should_cache:
             mats, ns = self.cache.get_or_compute(
@@ -51,12 +63,13 @@ class OpticStageCfgGenerator:
                 grid,
                 matrix_fn=lambda o, ww: o.matrix(ww),
                 n_fn=lambda o, ww: o.n(ww),
+                use_l1=use_l1,
+                use_l2=use_l2,
             )
         else:
             mats = np.asarray(optic.matrix(w), dtype=np.float64)
             ns = np.asarray(optic.n(w), dtype=np.float64).reshape(-1)
 
-        # shape checks (fail fast)
         if mats.shape != (w.size, 3, 3):
             raise ValueError(f"{optic} matrix returned {mats.shape}, expected {(w.size,3,3)}")
         if ns.shape != (w.size,):
