@@ -2,7 +2,7 @@ from typing import Callable, Optional
 
 from pydantic import Field, model_validator, ConfigDict
 
-from phys_pipeline.types import StageConfig
+from phys_pipeline.v1.types import StageConfig
 from abcdef_sim.data_models.optics import Optic
 
 import numpy as np
@@ -40,4 +40,3 @@ class OpticStageCfg(StageConfig):
             raise ValueError(f"refractive_index must be (N,); got {n.shape} for N={w.size}")
 
         return self
-

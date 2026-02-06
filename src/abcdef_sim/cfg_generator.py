@@ -11,7 +11,7 @@ from abcdef_sim.data_models.configs import OpticStageCfg
 from abcdef_sim.data_models.optics import Optic
 from abcdef_sim.utils.grids import LinspaceGrid, infer_linspace_grid
 
-from phys_pipeline.policy import PolicyBag
+from phys_pipeline.v1.policy import PolicyBag
 
 NDArrayF = npt.NDArray[np.float64]
 
