@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 
-from phys_pipeline.types import State, hash_ndarray, hash_small
+from phys_pipeline.v1.types import State, hash_ndarray, hash_small
 
 NDArrayF = npt.NDArray[np.float64]
 

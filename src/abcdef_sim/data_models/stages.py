@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from phys_pipeline.policy import PolicyBag
-from phys_pipeline.types import PipelineStage, StageResult, State  
+from phys_pipeline.v1.policy import PolicyBag
+from phys_pipeline.v1.types import PipelineStage, StageResult, State  
 
 
 from abcdef_sim.data_models.configs import OpticStageCfg

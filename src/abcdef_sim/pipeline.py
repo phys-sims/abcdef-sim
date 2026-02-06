@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from phys_pipeline.policy import PolicyBag
-from phys_pipeline.types import PipelineStage, StageResult, State 
+from phys_pipeline.v1.policy import PolicyBag
+from phys_pipeline.v1.types import PipelineStage, StageResult, State 
 
 from abcdef_sim.data_models.specs import SystemPreset, LaserSpec
 from abcdef_sim.data_models.factory import OpticFactory
@@ -50,7 +50,7 @@ class SystemAssembler:
         policy: PolicyBag | None = None,
         pipeline_name: str | None = None,
     ):
-        from phys_pipeline.pipeline import SequentialPipeline  # current executor 
+        from phys_pipeline.v1.pipeline import SequentialPipeline  # current executor 
         cfgs = self.build_optic_cfgs(preset, laser, policy=policy)
         stages = [AbcdefOpticStage(cfg=c) for c in cfgs]
         return SequentialPipeline(stages=stages, name=pipeline_name or preset.name)
