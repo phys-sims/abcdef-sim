@@ -3,7 +3,7 @@ name = "abcdef-sim"
 version = "0.1.0"
 description = "A physics simulation pipeline for abcdef-sim"
 authors = [
-  { name = "Ryaan Lari", email = "" }
+  { name = "Ryaan Lari", email = "lari2@illinois.edu" }
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
