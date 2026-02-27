@@ -1,6 +1,7 @@
+from collections.abc import Callable
+
 import numpy as np
 import numpy.typing as npt
-from typing import Callable, Optional
 
 ArrayLike = npt.ArrayLike
 NDArrayF = npt.NDArray[np.float64]
@@ -12,8 +13,8 @@ def get_abcdef_matrices(
     c: float,
     d: float,
     omega: ArrayLike,
-    e_of_omega: Optional[Callable[[NDArrayF], NDArrayF]] = None,
-    f_of_omega: Optional[Callable[[NDArrayF], NDArrayF]] = None,
+    e_of_omega: Callable[[NDArrayF], NDArrayF] | None = None,
+    f_of_omega: Callable[[NDArrayF], NDArrayF] | None = None,
 ) -> NDArrayF:
     """
     Build an array of 3x3 ABCDEF matrices for a frequency grid.
@@ -29,7 +30,7 @@ def get_abcdef_matrices(
     """
     w = np.asarray(omega, dtype=np.float64)
 
-    scalar = (w.ndim == 0)
+    scalar = w.ndim == 0
     if scalar:
         w = w[None]
 

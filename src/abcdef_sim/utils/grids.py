@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+
 import numpy as np
 import numpy.typing as npt
 
@@ -13,6 +13,7 @@ class LinspaceGrid:
     """
     Represents omega = linspace(w0-span, w0+span, N)
     """
+
     w0: float
     span: float
     N: int
@@ -34,8 +35,9 @@ class LinspaceGrid:
             return 0.0
         return float((self.w_max - self.w_min) / (self.N - 1))
 
+
 # VERIFY
-def infer_linspace_grid(w: NDArrayF, atol: float = 1e-12) -> Optional[LinspaceGrid]:
+def infer_linspace_grid(w: NDArrayF, atol: float = 1e-12) -> LinspaceGrid | None:
     """
     Attempt to infer LinspaceGrid from an omega array.
     Returns None if not evenly spaced.

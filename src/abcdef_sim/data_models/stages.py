@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from phys_pipeline.v1.policy import PolicyBag
-from phys_pipeline.v1.types import PipelineStage, StageResult, State  
-
+from phys_pipeline.v1.types import PipelineStage, StageResult, State
 
 from abcdef_sim.data_models.configs import OpticStageCfg
+
 
 @dataclass
 class AbcdefOpticStage(PipelineStage[State, OpticStageCfg]):
@@ -14,6 +14,7 @@ class AbcdefOpticStage(PipelineStage[State, OpticStageCfg]):
     One optic as a pipeline stage.
     (Implement actual physics in process.)
     """
+
     cfg: OpticStageCfg
     name: str = ""
     version: str = "v1"

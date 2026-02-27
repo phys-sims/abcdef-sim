@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Protocol, Callable, Optional, Any
+from collections.abc import Callable
+from typing import Protocol
+
 import numpy as np
 import numpy.typing as npt
 
@@ -25,23 +27,23 @@ class CacheBackend(Protocol):
         self,
         optic: Optic,
         omega: NDArrayF,
-        grid: Optional[LinspaceGrid],
+        grid: LinspaceGrid | None,
         *,
         matrix_fn: Callable[[Optic, NDArrayF], NDArrayF],
         n_fn: Callable[[Optic, NDArrayF], NDArrayF],
-    ) -> tuple[NDArrayF, NDArrayF]:
-        ...
+    ) -> tuple[NDArrayF, NDArrayF]: ...
 
 
 class NullCacheBackend:
     """
     No caching. Always computes.
     """
+
     def get_or_compute(
         self,
         optic: Optic,
         omega: NDArrayF,
-        grid: Optional[LinspaceGrid],
+        grid: LinspaceGrid | None,
         *,
         matrix_fn: Callable[[Optic, NDArrayF], NDArrayF],
         n_fn: Callable[[Optic, NDArrayF], NDArrayF],

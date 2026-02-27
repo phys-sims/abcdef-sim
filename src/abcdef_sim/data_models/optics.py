@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Hashable
 from dataclasses import dataclass, field
-from typing import Callable, Hashable
-from abcdef_sim.utils.optics_builder import get_abcdef_matrices
 
 import numpy as np
 import numpy.typing as npt
+
+from abcdef_sim.utils.optics_builder import get_abcdef_matrices
 
 ArrayLike = npt.ArrayLike
 NDArrayF = npt.NDArray[np.float64]
@@ -36,7 +37,7 @@ class Optic(ABC):
     """
 
     name: str = "optic"
-    instance_name: str = "inst0"   # IMPORTANT: set this uniquely per instance in your system
+    instance_name: str = "inst0"  # IMPORTANT: set this uniquely per instance in your system
     _length: float = 0.0
     _n_fn: RefractiveIndexFn | None = field(default=None, repr=False)
 
@@ -76,8 +77,6 @@ class Optic(ABC):
         """
         return self._length
 
-    
-    
     # --- caching hooks ---
 
     def cache_params(self) -> tuple:
@@ -86,7 +85,7 @@ class Optic(ABC):
         Example for grating: groove_density, incidence_angle, etc.
         """
         return ()
-    
+
     def cache_key(self) -> Hashable:
         """
         Cache bucket identity. MUST change if the optic's behavior changes.
@@ -98,24 +97,16 @@ class Optic(ABC):
             self.length,
             self.cache_params(),
         )
-    
+
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name={self.name!r}, inst={self.instance_name!r}, L={self._length})"
-    
-
-
+        return (
+            f"{self.__class__.__name__}(name={self.name!r}, "
+            f"inst={self.instance_name!r}, L={self._length})"
+        )
 
 
 @dataclass(slots=True)
 class FreeSpace(Optic):
-     
-     def matrix(self, omega: ArrayLike) -> NDArrayF:
-         omega_arr = np.asarray(omega, dtype=float)
-         return get_abcdef_matrices(a=1.0, 
-                                    b=self.length,
-                                    c=0.0,
-                                    d=1.0,
-                                    omega=omega_arr)
-
-
-
+    def matrix(self, omega: ArrayLike) -> NDArrayF:
+        omega_arr = np.asarray(omega, dtype=float)
+        return get_abcdef_matrices(a=1.0, b=self.length, c=0.0, d=1.0, omega=omega_arr)
