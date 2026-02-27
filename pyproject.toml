@@ -53,6 +53,7 @@ no_implicit_optional = true
 strict_optional = true
 plugins = ["pydantic.mypy"]
 mypy_path = "src"
+explicit_package_bases = true
 files = "src"
 
 # --- pydantic's mypy plugin ---
