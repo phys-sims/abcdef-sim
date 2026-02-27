@@ -8,3 +8,4 @@
 | [ADR-0004](docs/adr/0004-lite-dual-caching.md) | 0004-lite-dual-caching.md |  |  |  |  |
 | [ADR-0005](docs/adr/0005-lite-policybag-propagation.md) | 0005-lite-policybag-propagation.md |  |  |  |  |
 | [ADR-0006](docs/adr/0006-lite-typing-generics.md) | 0006-lite-typing-generics.md |  |  |  |  |
+| [ADR-0007](docs/adr/0007-lite-eco-0001-conventions-adoption.md) | 0007-lite-eco-0001-conventions-adoption.md |  |  |  |  |
