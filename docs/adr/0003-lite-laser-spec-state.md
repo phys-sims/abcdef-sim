@@ -1,25 +1,67 @@
-**Title:** Split LaserSpec (immutable) from LaserState (mutable)
-**ADR ID:** 0003-lite
-**Status:** Accepted
-**Date:** 2026-02-07
+**Title:** `Split immutable LaserSpec from mutable LaserState`
 
-**Context:** The simulation needs both a stable, hashable description of the input laser and a mutable, high-volume state that evolves through fiber/GLNSE/amp stages. Pydantic models are excellent for validation and stable hashing but poor for holding large mutable numpy arrays.
+- **ADR ID:** `0003`
+- **Status:** `Accepted`
+- **Date:** `2026-02-07`
+- **Deciders:** `abcdef-sim maintainers`
+- **Area:** `abcdef-sim`
+- **Related:** `docs/architecture.md, docs/how-to-use.md`
+- **Tags:** `data-model, caching, api`
 
-**Options:**
-- **A) Single Laser model for both config and runtime state.**
-  - Pros: fewer types, simple signature.
-  - Cons: mutable arrays complicate hashing and caching; config changes are conflated with runtime state.
-- **B) Separate `LaserSpec` (immutable config) and `LaserState` (mutable runtime).**
-  - Pros: stable hashing for config; clear lifecycle; optimized container for numpy arrays.
-  - Cons: requires mapping from spec to initial state.
+### Context
+- **Problem statement.** We need both validated, hashable input configuration and mutable large-array runtime state.
+- **In/Out of scope.** In scope: modeling boundary for laser config vs evolving state. Out of scope: propagation algorithm internals.
+- **Constraints.** Preserve deterministic hashes while supporting efficient numpy mutation.
 
-**Decision:** Use **Option B**. Define `LaserSpec` as a frozen Pydantic model containing pulse/beam parameters and omega grid parameters (`w0`, `span`, `N`, etc.). Define `LaserState` as a `State` subclass (dataclass is fine) containing mutable arrays and a custom `hashable_repr` for caching.
+### Options Considered
 
-**Consequences:**
-- **Positive:** stable hashing for presets + specs; runtime state can evolve freely.
-- **Invariant:** `LaserSpec` must fully determine the omega grid used for stage configuration.
-- **Future work:** Provide explicit `LaserState.from_spec(LaserSpec)` constructor utilities for consistent initialization.
+**Option A — Single model for config and runtime state**
+- **Description:** one type carries both validated config and mutable arrays.
+- **Impact areas:** caching correctness, memory model.
+- **Pros:** fewer types.
+- **Cons:** hash instability and lifecycle ambiguity.
+- **Risks / Unknowns:** accidental cache invalidation bugs.
+- **Perf/Resource cost:** inefficient copying or unsafe mutation.
+- **Operational complexity:** high.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** pydantic model overhead for runtime arrays.
 
-**References:** docs/architecture.md; docs/how-to-use.md
+**Option B — Separate `LaserSpec` and `LaserState`**
+- **Description:** immutable validated spec + mutable runtime state container.
+- **Impact areas:** API clarity, caching, runtime performance.
+- **Pros:** stable hashes; explicit lifecycle; array-friendly runtime.
+- **Cons:** conversion step required.
+- **Risks / Unknowns:** constructor consistency.
+- **Perf/Resource cost:** slight init complexity, better runtime behavior.
+- **Operational complexity:** moderate and clear.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** initialization utility maintenance.
+
+### Decision
+- **Chosen option:** **Option B**.
+- **Trade-offs:** accept extra type to preserve cache safety and runtime ergonomics.
+- **Scope of adoption:** input and state handling across pipeline setup/execution.
+
+### Consequences
+- **Positive:** predictable caching and cleaner state evolution semantics.
+- **Negative / Mitigations:** mapping complexity; mitigate via explicit constructors/helpers.
+- **Migration plan:** maintain `from_spec`-style initialization patterns.
+- **Test strategy:** hash-stability tests for specs, mutability tests for state.
+- **Monitoring & Telemetry:** track cache hit rates tied to `LaserSpec` keys.
+- **Documentation:** document lifecycle from spec to initial state.
+
+### Alternatives Considered (but not chosen)
+- Immutable runtime snapshots only (too expensive for iterative physics updates).
+
+### Open Questions
+- Standardized helper APIs for initializing state across experiments.
+
+### References
+- `docs/architecture.md`
+- `docs/how-to-use.md`
+
+### Changelog
+- `2026-02-07` — Proposed by abcdef-sim maintainers.
+- `2026-02-07` — Accepted by abcdef-sim maintainers.
 
 ---

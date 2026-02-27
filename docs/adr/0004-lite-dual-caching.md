@@ -1,30 +1,66 @@
-**Title:** Separate cfg-generation cache from stage-result cache
-**ADR ID:** 0004-lite
-**Status:** Accepted
-**Date:** 2026-02-07
+**Title:** `Separate cfg-generation cache from stage-result cache`
 
-**Context:** Expensive optics (e.g., gratings) require per-omega computations to generate `OpticStageCfg`. Separately, the pipeline may eventually cache stage results for exact repeated calls. Conflating these caching layers risks incorrect invalidation and muddles optimization behavior.
+- **ADR ID:** `0004`
+- **Status:** `Accepted`
+- **Date:** `2026-02-07`
+- **Deciders:** `abcdef-sim maintainers`
+- **Area:** `abcdef-sim`
+- **Related:** `docs/architecture.md`
+- **Tags:** `performance, caching, ops`
 
-**Options:**
-- **A) Single unified cache for cfgs and stage results.**
-  - Pros: simpler plumbing.
-  - Cons: incompatible key semantics; hard to reason about correctness; higher risk of stale results.
-- **B) Two distinct caches: (1) internal cfg-generation cache, (2) pipeline stage-result cache.**
-  - Pros: clear keying; avoids mixing policy/laser state dependencies.
-  - Cons: more components to manage.
+### Context
+- **Problem statement.** Cfg generation and stage execution caching have different key semantics and invalidation rules.
+- **In/Out of scope.** In scope: cache layering strategy. Out of scope: exact backend implementation details.
+- **Constraints.** Avoid stale outputs, keep key provenance explicit, support fast repeated cfg builds.
 
-**Decision:** Use **Option B** with two caches:
-- **A) Internal cfg-generation cache (for expensive optics):**
-  - **L2 (per-omega):** `(optic_instance_key, omega)` → `(ABCDEF(omega), n(omega))`.
-  - **L1 (per-grid):** `(optic_instance_key, grid_key)` → full arrays.
-- **B) Pipeline stage-result cache (future):**
-  - Key: `(state_hash, cfg_hash, policy_hash, stage_version)` → `StageResult`.
+### Options Considered
 
-**Consequences:**
-- **Positive:** L1 returns whole grids in O(1); L2 supports partial overlap for nearby grids; stage-result caching stays policy- and state-safe.
-- **Failure mode to avoid:** pointer aliasing or eviction coupling between L1/L2; keep them separate to simplify invalidation.
-- **Future work:** Implement stage-result cache once pipeline stages stabilize and policy hashing is defined.
+**Option A — Unified cache for cfg and stage results**
+- **Description:** one shared cache space for both concerns.
+- **Impact areas:** correctness, invalidation logic.
+- **Pros:** less plumbing.
+- **Cons:** mixed semantics, hard invalidation boundaries.
+- **Risks / Unknowns:** stale result reuse.
+- **Perf/Resource cost:** potentially high miss/stale-management overhead.
+- **Operational complexity:** high.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** stronger coupling of subsystems.
 
-**References:** docs/architecture.md
+**Option B — Distinct caches for cfg-generation and stage-result outputs**
+- **Description:** keep cfg cache independent from runtime output caching.
+- **Impact areas:** correctness and operability.
+- **Pros:** clear keys and lifecycle; safer invalidation.
+- **Cons:** two components to maintain.
+- **Risks / Unknowns:** duplicated instrumentation.
+- **Perf/Resource cost:** better steady-state due to cleaner targeting.
+- **Operational complexity:** moderate.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** interface contracts for both caches.
+
+### Decision
+- **Chosen option:** **Option B**.
+- **Trade-offs:** accept additional components to preserve correctness.
+- **Scope of adoption:** current cfg caching and planned stage-result caching.
+
+### Consequences
+- **Positive:** safer cache correctness and easier reasoning.
+- **Negative / Mitigations:** extra management overhead; mitigate with clear interfaces.
+- **Migration plan:** keep cfg cache live; add stage-result cache behind separate keys when ready.
+- **Test strategy:** cache-key unit tests and invalidation behavior checks.
+- **Monitoring & Telemetry:** separate hit/miss/eviction metrics per cache tier.
+- **Documentation:** architecture docs describe two-layer cache model.
+
+### Alternatives Considered (but not chosen)
+- Per-stage bespoke caches without shared abstractions.
+
+### Open Questions
+- Final canonical key schema for stage-result cache policy/versioning.
+
+### References
+- `docs/architecture.md`
+
+### Changelog
+- `2026-02-07` — Proposed by abcdef-sim maintainers.
+- `2026-02-07` — Accepted by abcdef-sim maintainers.
 
 ---

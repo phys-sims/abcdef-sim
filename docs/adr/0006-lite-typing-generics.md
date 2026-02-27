@@ -1,27 +1,66 @@
-**Title:** Typing/generics for phys-pipeline wrappers
-**ADR ID:** 0006-lite
-**Status:** Accepted
-**Date:** 2026-02-07
+**Title:** `Adopt variance-aware generics for phys-pipeline wrappers`
 
-**Context:** `abcdef-sim` uses `phys-pipeline` and needs the pipeline to preserve state types through wrappers (e.g., abcdef-sim stages, pipeline-as-stage). Incorrect variance or overly concrete container types cause type errors and make wrappers brittle.
+- **ADR ID:** `0006`
+- **Status:** `Accepted`
+- **Date:** `2026-02-07`
+- **Deciders:** `abcdef-sim maintainers`
+- **Area:** `abcdef-sim`
+- **Related:** `docs/architecture.md`
+- **Tags:** `api, typing, maintainability`
 
-**Options:**
-- **A) Keep non-generic `StageResult` and invariant containers.**
-  - Pros: simpler type signatures.
-  - Cons: loses state typing, hampers wrappers, forces casts.
-- **B) Use variance + generics in the pipeline type system.**
-  - Pros: keeps state typing end-to-end; enables safe wrappers and composition.
-  - Cons: requires more careful typing.
+### Context
+- **Problem statement.** Wrapper stages and pipeline-as-stage patterns need preserved state typing and compatible variance behavior.
+- **In/Out of scope.** In scope: type-system design around stages/results/pipelines. Out of scope: runtime enforcement beyond existing checks.
+- **Constraints.** Keep wrappers type-safe without excessive casts or brittle invariance errors.
 
-**Decision:** Use **Option B** with the following typing choices:
-- `PipelineStage[S, C]` uses variance: **state is contravariant**, **cfg is covariant**.
-- `StageResult[S]` is generic in the state type to preserve the state across stages.
-- `SequentialPipeline` is `Generic[S]` and accepts `Sequence[PipelineStage[S, Any]]` (not `list`) to avoid invariance pitfalls.
+### Options Considered
 
-**Consequences:**
-- **Positive:** wrapper stages can accept broader state types and still return specific ones; pipeline-as-stage patterns are type-safe.
-- **Future work:** align `phys-pipeline` runtime type checks with these generics.
+**Option A — Non-generic `StageResult` with invariant containers**
+- **Description:** minimize generics and rely on coarse typing.
+- **Impact areas:** dev ergonomics, static safety.
+- **Pros:** simpler signatures.
+- **Cons:** loss of end-to-end state typing.
+- **Risks / Unknowns:** unsafe casts and hidden incompatibilities.
+- **Perf/Resource cost:** none at runtime.
+- **Operational complexity:** high debugging complexity.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** type-checker suppression pressure.
 
-**References:** docs/architecture.md
+**Option B — Generic/variance-aware stage and pipeline typing**
+- **Description:** use contravariant state input, covariant cfg output, and `StageResult[S]`.
+- **Impact areas:** stage interfaces, wrapper composition.
+- **Pros:** stronger static guarantees; safer composition.
+- **Cons:** more advanced typing syntax.
+- **Risks / Unknowns:** occasional mypy edge cases.
+- **Perf/Resource cost:** none at runtime.
+- **Operational complexity:** moderate.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** alignment with `phys-pipeline` typing contracts.
+
+### Decision
+- **Chosen option:** **Option B**.
+- **Trade-offs:** added typing complexity for safer composition and fewer runtime surprises.
+- **Scope of adoption:** wrappers and sequential pipeline definitions in `abcdef-sim`.
+
+### Consequences
+- **Positive:** end-to-end typed state propagation.
+- **Negative / Mitigations:** steeper typing curve; mitigate with examples and documented patterns.
+- **Migration plan:** keep generic signatures in wrappers and avoid invariant list pitfalls.
+- **Test strategy:** strict mypy checks on wrapper composition scenarios.
+- **Monitoring & Telemetry:** none beyond CI typing gates.
+- **Documentation:** architecture notes on variance assumptions.
+
+### Alternatives Considered (but not chosen)
+- Runtime-only type guards with relaxed static typing.
+
+### Open Questions
+- Additional helper aliases to simplify public type signatures.
+
+### References
+- `docs/architecture.md`
+
+### Changelog
+- `2026-02-07` — Proposed by abcdef-sim maintainers.
+- `2026-02-07` — Accepted by abcdef-sim maintainers.
 
 ---
