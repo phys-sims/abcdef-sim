@@ -51,12 +51,12 @@ def test_thick_lens_matches_raytracing_thick_lens_deterministic_case() -> None:
     R2 = 6.0
     thickness = 3.0
 
-    local = thick_lens(n=n, R1=R1, R2=R2, thickness=thickness)
+    local = thick_lens(n_lens=n, R1=R1, R2=R2, thickness=thickness)
     oracle = from_raytracing_matrix(rt.ThickLens(n=n, R1=R1, R2=R2, thickness=thickness))
     expected = np.array(
         [
             [0.75, 2.0],
-            [-0.0625, 1.1666666667],
+            [-0.0625, 1.1666666666666667],
         ],
         dtype=float,
     )
@@ -71,7 +71,7 @@ def test_thick_lens_matches_raytracing_biconvex_sign_convention_case() -> None:
     R2 = -50.0
     thickness = 10.0
 
-    local = thick_lens(n=n, R1=R1, R2=R2, thickness=thickness)
+    local = thick_lens(n_lens=n, R1=R1, R2=R2, thickness=thickness)
     oracle = from_raytracing_matrix(rt.ThickLens(n=n, R1=R1, R2=R2, thickness=thickness))
 
     np.testing.assert_allclose(local, oracle, rtol=1e-12, atol=1e-12)
@@ -83,7 +83,7 @@ def test_thick_lens_ray_propagation_matches_raytracing() -> None:
     R2 = -50.0
     thickness = 10.0
 
-    matrix = thick_lens(n=n, R1=R1, R2=R2, thickness=thickness)
+    matrix = thick_lens(n_lens=n, R1=R1, R2=R2, thickness=thickness)
     oracle_lens = rt.ThickLens(n=n, R1=R1, R2=R2, thickness=thickness)
 
     rays = [
