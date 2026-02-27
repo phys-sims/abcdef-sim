@@ -27,3 +27,18 @@
 - Physics propagation in `AbcdefOpticStage.process(...)` (currently returns input state unchanged).
 - Additional optic implementations (e.g., `Grating` builder is stubbed/not registered).
 - Stage-result caching at pipeline execution level.
+
+## Pure physics layer and validation
+
+New additive pure-physics modules live under:
+- `src/abcdef_sim/physics/abcd` for paraxial ABCD transfer math (matrices, rays, Gaussian q propagation).
+- `src/abcdef_sim/physics/abcdef` for structured dispersion-aware ABCDEF placeholders.
+
+To run reference validation tests against the external `raytracing` package:
+
+```bash
+pip install -e '.[validation]'
+pytest tests/physics/test_abcd_against_raytracing.py
+```
+
+If `raytracing` is not installed, the validation test module is skipped.

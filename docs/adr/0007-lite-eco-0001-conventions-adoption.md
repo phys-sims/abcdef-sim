@@ -1,42 +1,67 @@
-**Title:** Adopt ECO-0001 conventions in abcdef-sim
-**ADR ID:** 0007-lite
-**Status:** Accepted
-**Date:** 2026-02-27
+**Title:** `Adopt ECO-0001 conventions and units contract in abcdef-sim`
 
-**Context:** `abcdef-sim` is adding physically meaningful stretcher/compressor and propagation behavior that must be interoperable with ecosystem contracts. We need one explicit convention baseline so dispersion signs, grating geometry, units, beam parameters, and FFT transforms are consistent across stages and result surfaces.
+- **ADR ID:** `0007`
+- **Status:** `Accepted`
+- **Date:** `2026-02-27`
+- **Deciders:** `abcdef-sim maintainers`
+- **Area:** `abcdef-sim`
+- **Related:** `ECO-0001, cpa-sim ADR-0001 style reference`
+- **Tags:** `physics, conventions, units, testing`
 
-**Decision:** Adopt **ECO-0001** as the contract for all `abcdef-sim` internal calculations and declared outputs.
+### Context
+- **Problem statement.** Physically meaningful stretcher/compressor and propagation behavior requires consistent units/signs across stages and repo boundaries.
+- **In/Out of scope.** In scope: units, sign conventions, FFT scaling, and boundary contract semantics. Out of scope: choosing one specific optical layout sign convention for every external backend detail.
+- **Constraints.** Interoperability with ecosystem contracts, reproducibility, explicit unit annotations.
 
-1. **Dispersion understanding and sign behavior**
-   - Positive chirp means `dω_inst/dt > 0`.
-   - GDD/TOD follow phase-derivative sign conventions (`d²φ/dω²`, `d³φ/dω³`).
-   - Dispersion-bearing components (fiber, stretcher/compressor models) must document their sign assumptions and include sign-sensitive tests.
+### Options Considered
 
-2. **Grating conventions**
-   - Use a single documented grating equation/sign convention for incidence angle, diffraction order, and compressor geometry.
-   - Any backend-specific coordinate choice must be normalized to the same observable sign behavior at the `abcdef-sim` API boundary.
+**Option A — Keep local repo-specific conventions**
+- **Description:** define internal conventions ad hoc without formal external contract adoption.
+- **Impact areas:** API compatibility, cross-repo validation.
+- **Pros:** local flexibility.
+- **Cons:** interoperability risk and ambiguous signs.
+- **Risks / Unknowns:** drift and inconsistent interpretation.
+- **Perf/Resource cost:** none immediate.
+- **Operational complexity:** high long-term due to ambiguity.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** weaker ecosystem alignment.
 
-3. **Internal base units**
-   - Internal simulation units are `fs`, `um`, `rad`.
-   - Angular frequency is expressed in `rad/fs` and speed of light is `c = 0.299792458 um/fs`.
-   - Contracted outputs that expose dimensional values should use explicit unit suffixes.
+**Option B — Adopt ECO-0001 contract explicitly**
+- **Description:** treat ECO-0001 as authoritative baseline and document boundary conversions.
+- **Impact areas:** docs, tests, future stage implementations.
+- **Pros:** shared language for units/signs; easier validation.
+- **Cons:** stricter implementation discipline required.
+- **Risks / Unknowns:** migration effort in future physics stages.
+- **Perf/Resource cost:** minimal.
+- **Operational complexity:** moderate and explicit.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** coordination with ecosystem ADR updates.
 
-4. **Beam parameters**
-   - Beam/envelope amplitudes use `sqrt(W)` normalization so instantaneous power is `|E|^2` in `W`.
-   - Energy computations integrate over timestep scaling (`sum(|E|^2 * dt_fs * 1e-15)`).
-   - Beam-radius and fluence/intensity-derived metrics must declare assumptions (e.g., Gaussian-equivalent vs numeric second moment).
+### Decision
+- **Chosen option:** **Option B**.
+- **Trade-offs:** reduced local ambiguity in exchange for explicit convention compliance work.
+- **Scope of adoption:** all internal physics calculations and documented API boundaries in `abcdef-sim`.
 
-5. **FFT conventions**
-   - Use NumPy FFT sign convention with explicit timestep scaling.
-   - Forward transform: `Ew = dt_s * FFT(Et)`.
-   - Inverse transform: `Et = (1/dt_s) * IFFT(Ew)`.
-   - Round-trip and Parseval-style checks are required where spectral-domain operators are introduced.
+### Consequences
+- **Positive:** consistent semantics for dispersion, grating signs, beam normalization, and FFT handling.
+- **Negative / Mitigations:** additional documentation/testing burden; mitigate by convention-focused tests and docstring requirements.
+- **Migration plan:** enforce conventions in new physics modules; preserve behavior in legacy placeholders until explicitly updated.
+- **Test strategy:** sign-sensitive dispersion tests, grating-orientation checks, FFT round-trip/Parseval validations.
+- **Monitoring & Telemetry:** add regression checks in CI for convention-sensitive tests.
+- **Documentation:** keep ADR and README references to adopted contract.
 
-**Consequences:**
-- **Positive:** compatible physics semantics across ecosystem simulators and easier cross-repo validation.
-- **Tradeoff:** stricter unit/sign declarations increase implementation overhead for new stages.
-- **Follow-up:** add test fixtures for dispersion sign, grating orientation, and FFT scaling invariants.
+### Alternatives Considered (but not chosen)
+- Adopt only unit names while deferring sign/FFT conventions.
 
-**References:**
-- `cpa-architecture/docs/adr/ECO-0001-conventions-units.md`
-- `deps/cpa-sim/docs/adr/ADR-0001-conventions-units.md`
+### Open Questions
+- Final boundary conversion policy for user-facing I/O surfaces as more stage APIs are exposed.
+
+### References
+- ECO-0001 conventions: <https://github.com/phys-sims/cpa-architecture/blob/main/docs/adr/ECO-0001-conventions-units.md>
+- Style reference: <https://github.com/phys-sims/cpa-sim/blob/main/docs/adr/ADR-0001-conventions-units.md>
+
+### Changelog
+- `2026-02-27` — Proposed by abcdef-sim maintainers.
+- `2026-02-27` — Accepted by abcdef-sim maintainers.
+
+---

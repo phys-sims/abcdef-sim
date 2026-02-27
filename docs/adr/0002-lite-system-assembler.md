@@ -1,27 +1,67 @@
-**Title:** Separate SystemPreset from SystemAssembler build steps
-**ADR ID:** 0002-lite
-**Status:** Accepted
-**Date:** 2026-02-07
+**Title:** `Separate immutable SystemPreset from SystemAssembler runtime build`
 
-**Context:** Presets must remain immutable and hashable. Assembly depends on policies (caching toggles, numeric approximation modes) and on the laser grid, which can vary per run. Merging assembly logic into `SystemPreset` would couple it to mutable runtime concerns and contaminate hashing.
+- **ADR ID:** `0002`
+- **Status:** `Accepted`
+- **Date:** `2026-02-07`
+- **Deciders:** `abcdef-sim maintainers`
+- **Area:** `abcdef-sim`
+- **Related:** `docs/architecture.md, docs/how-to-use.md`
+- **Tags:** `api, architecture, data-model`
 
-**Options:**
-- **A) `SystemPreset` owns assembly (builds stages itself).**
-  - Pros: fewer objects, straightforward API.
-  - Cons: mixes immutable config with runtime policy/cache, breaks hashing guarantees.
-- **B) `SystemAssembler` takes `(SystemPreset, LaserSpec, PolicyBag)` and produces cfgs/stages.**
-  - Pros: preset stays pure-data; policy/caching can vary per run; assembly is testable in isolation.
-  - Cons: introduces a build step and a separate object.
+### Context
+- **Problem statement.** Presets must remain immutable/hashable, while stage assembly depends on run policy and laser grid.
+- **In/Out of scope.** In scope: build responsibility boundary. Out of scope: specific stage physics.
+- **Constraints.** Preserve hash purity; allow run-time policy variation without mutating presets.
 
-**Decision:** Use **Option B**. Implement `SystemAssembler` (or builder) that consumes `(SystemPreset, LaserSpec, PolicyBag)` and emits:
-1) Ordered `OpticStageCfg` list aligned to the laser omega grid.
-2) Ordered stage list (e.g., `AbcdefOpticStage(cfg=...)`) to feed into `SequentialPipeline`.
+### Options Considered
 
-**Consequences:**
-- **Positive:** hashing/serialization stays clean; policies and caches can be swapped without mutating presets.
-- **Invariant:** `cfg.omega[i]` aligns with `ABCDEF[i]` and `n[i]` for every optic stage.
-- **Future work:** Add builder hooks for stage instrumentation (metrics, tracing) without changing presets.
+**Option A — Preset owns assembly**
+- **Description:** `SystemPreset` builds stage cfgs/stages directly.
+- **Impact areas:** data model purity, API coupling.
+- **Pros:** fewer objects.
+- **Cons:** mixes immutable config with mutable runtime concerns.
+- **Risks / Unknowns:** broken hash provenance.
+- **Perf/Resource cost:** negligible immediate difference.
+- **Operational complexity:** high conceptual coupling.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** policy/cache internals leak into model layer.
 
-**References:** docs/architecture.md; docs/how-to-use.md
+**Option B — Dedicated `SystemAssembler` build step**
+- **Description:** `SystemAssembler` takes `(SystemPreset, LaserSpec, PolicyBag)` and produces cfgs/stages.
+- **Impact areas:** architecture boundary, testability.
+- **Pros:** pure presets; policy-swappable runs; isolated testing.
+- **Cons:** explicit builder object needed.
+- **Risks / Unknowns:** none major.
+- **Perf/Resource cost:** minor orchestration overhead.
+- **Operational complexity:** clearer contracts.
+- **Security/Privacy/Compliance:** none.
+- **Dependencies / Externalities:** stage cfg generation interfaces.
+
+### Decision
+- **Chosen option:** **Option B**.
+- **Trade-offs:** accept extra layer for better separation and reproducibility.
+- **Scope of adoption:** all pipeline construction paths in `abcdef-sim`.
+
+### Consequences
+- **Positive:** clean immutable/runtime split and explicit policy flow.
+- **Negative / Mitigations:** more plumbing; mitigate with helper constructors.
+- **Migration plan:** continue routing build through assembler APIs.
+- **Test strategy:** unit tests for cfg ordering and omega alignment invariants.
+- **Monitoring & Telemetry:** build timing and cache efficacy metrics.
+- **Documentation:** maintain architecture/how-to usage for assembly flow.
+
+### Alternatives Considered (but not chosen)
+- Utility free functions without a dedicated assembler abstraction.
+
+### Open Questions
+- Stage instrumentation extension points for tracing/metrics hooks.
+
+### References
+- `docs/architecture.md`
+- `docs/how-to-use.md`
+
+### Changelog
+- `2026-02-07` — Proposed by abcdef-sim maintainers.
+- `2026-02-07` — Accepted by abcdef-sim maintainers.
 
 ---

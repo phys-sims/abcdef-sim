@@ -14,6 +14,10 @@ dependencies = [
   "phys-pipeline>=1.0"
 ]
 [project.optional-dependencies]
+validation = [
+  "raytracing",
+]
+
 dev = [
   # test & tooling you actually run locally
   "pytest",
