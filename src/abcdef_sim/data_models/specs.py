@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+import numpy as np
+import numpy.typing as npt
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 OpticKind = Literal["FreeSpace", "Grating"]  # extend as optics added
+NDArrayF = npt.NDArray[np.float64]
 
 
 class OpticSpec(BaseModel):
@@ -60,7 +63,5 @@ class LaserSpec(BaseModel):
     pulse: dict[str, float] = Field(default_factory=dict)
     beam: dict[str, float] = Field(default_factory=dict)
 
-    def omega(self):
-        import numpy as np
-
+    def omega(self) -> NDArrayF:
         return np.linspace(self.w0 - self.span, self.w0 + self.span, self.N, dtype=float)

@@ -31,6 +31,8 @@ class CacheBackend(Protocol):
         *,
         matrix_fn: Callable[[Optic, NDArrayF], NDArrayF],
         n_fn: Callable[[Optic, NDArrayF], NDArrayF],
+        use_l1: bool = True,
+        use_l2: bool = True,
     ) -> tuple[NDArrayF, NDArrayF]: ...
 
 
@@ -47,6 +49,8 @@ class NullCacheBackend:
         *,
         matrix_fn: Callable[[Optic, NDArrayF], NDArrayF],
         n_fn: Callable[[Optic, NDArrayF], NDArrayF],
+        use_l1: bool = True,
+        use_l2: bool = True,
     ) -> tuple[NDArrayF, NDArrayF]:
         w = np.asarray(omega, dtype=np.float64).reshape(-1)
         mats = np.asarray(matrix_fn(optic, w), dtype=np.float64)

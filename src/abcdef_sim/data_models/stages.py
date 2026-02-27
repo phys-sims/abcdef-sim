@@ -3,7 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from phys_pipeline.v1.policy import PolicyBag
-from phys_pipeline.v1.types import PipelineStage, StageResult, State
+from phys_pipeline.v1.types import (
+    PipelineStage,
+    StageResult,
+    State,
+)
 
 from abcdef_sim.data_models.configs import OpticStageCfg
 
@@ -19,7 +23,7 @@ class AbcdefOpticStage(PipelineStage[State, OpticStageCfg]):
     name: str = ""
     version: str = "v1"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.name:
             self.name = f"{self.cfg.optic_name}:{self.cfg.instance_name}"
 

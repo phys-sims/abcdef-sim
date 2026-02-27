@@ -56,6 +56,15 @@ mypy_path = "src"
 explicit_package_bases = true
 files = "src"
 
+
+[[tool.mypy.overrides]]
+module = [
+  "phys_pipeline",
+  "phys_pipeline.*",
+  "raytracing",
+]
+ignore_missing_imports = true
+
 # --- pydantic's mypy plugin ---
 [tool.pydantic-mypy]
 init_forbid_extra = true

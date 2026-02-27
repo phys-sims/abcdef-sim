@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from phys_pipeline.v1.policy import PolicyBag
 
@@ -49,8 +50,10 @@ class SystemAssembler:
         *,
         policy: PolicyBag | None = None,
         pipeline_name: str | None = None,
-    ):
-        from phys_pipeline.v1.pipeline import SequentialPipeline  # current executor
+    ) -> Any:
+        from phys_pipeline.v1.pipeline import (
+            SequentialPipeline,  # current executor
+        )
 
         cfgs = self.build_optic_cfgs(preset, laser, policy=policy)
         stages = [AbcdefOpticStage(cfg=c) for c in cfgs]

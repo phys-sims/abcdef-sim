@@ -92,8 +92,14 @@ class TwoLevelMemoryCache:
 
         if not use_l2:
             # compute everything vectorized
-            mats = np.asarray(matrix_fn(optic, w), dtype=np.float64)
-            ns = np.asarray(n_fn(optic, w), dtype=np.float64).reshape(-1)
+            mats_all = np.asarray(matrix_fn(optic, w), dtype=np.float64)
+            ns_all = np.asarray(n_fn(optic, w), dtype=np.float64).reshape(-1)
+            if mats_all.shape != (N, 3, 3):
+                raise ValueError(f"matrix_fn returned {mats_all.shape}, expected {(N, 3, 3)}")
+            if ns_all.shape != (N,):
+                raise ValueError(f"n_fn returned {ns_all.shape}, expected {(N,)}")
+            mats[...] = mats_all
+            ns[...] = ns_all
             if use_l1 and grid is not None:
                 gk = self.grid_keyer.key(grid)
                 self.l1[(ok, gk)] = GridEntry(mats=mats, ns=ns)
