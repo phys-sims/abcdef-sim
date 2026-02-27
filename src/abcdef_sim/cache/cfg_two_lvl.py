@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Hashable
 from dataclasses import dataclass, field
-from typing import Callable, Hashable, Optional, Any
 
 import numpy as np
 import numpy.typing as npt
@@ -21,6 +21,7 @@ class OmegaKeyer:
     """
     Quantize omega to integer bins for stable keys across "slightly different grids".
     """
+
     omega_step: float
 
     def key(self, w: float) -> int:
@@ -32,6 +33,7 @@ class GridKeyer:
     """
     L1 key: quantized (w0, span, N).
     """
+
     grid_step: float
 
     def key(self, grid: LinspaceGrid) -> tuple[int, int, int]:
@@ -47,7 +49,7 @@ class CachedEntry:
 @dataclass(frozen=True)
 class GridEntry:
     mats: NDArrayF  # (N,3,3)
-    ns: NDArrayF    # (N,)
+    ns: NDArrayF  # (N,)
 
 
 @dataclass
@@ -56,6 +58,7 @@ class TwoLevelMemoryCache:
     L1: (optic.cache_key, grid_key) -> full arrays
     L2: optic.cache_key -> omega_key -> (3x3, n)
     """
+
     omega_keyer: OmegaKeyer
     grid_keyer: GridKeyer
 
@@ -66,14 +69,13 @@ class TwoLevelMemoryCache:
         self,
         optic: Optic,
         omega: NDArrayF,
-        grid: Optional[LinspaceGrid],
+        grid: LinspaceGrid | None,
         *,
         matrix_fn: Callable[[Optic, NDArrayF], NDArrayF],
         n_fn: Callable[[Optic, NDArrayF], NDArrayF],
         use_l1: bool,
         use_l2: bool,
     ) -> tuple[NDArrayF, NDArrayF]:
-
         w = np.asarray(omega, dtype=np.float64).reshape(-1)
         N = w.size
         ok = optic.cache_key()
@@ -90,8 +92,14 @@ class TwoLevelMemoryCache:
 
         if not use_l2:
             # compute everything vectorized
-            mats = np.asarray(matrix_fn(optic, w), dtype=np.float64)
-            ns = np.asarray(n_fn(optic, w), dtype=np.float64).reshape(-1)
+            mats_all = np.asarray(matrix_fn(optic, w), dtype=np.float64)
+            ns_all = np.asarray(n_fn(optic, w), dtype=np.float64).reshape(-1)
+            if mats_all.shape != (N, 3, 3):
+                raise ValueError(f"matrix_fn returned {mats_all.shape}, expected {(N, 3, 3)}")
+            if ns_all.shape != (N,):
+                raise ValueError(f"n_fn returned {ns_all.shape}, expected {(N,)}")
+            mats[...] = mats_all
+            ns[...] = ns_all
             if use_l1 and grid is not None:
                 gk = self.grid_keyer.key(grid)
                 self.l1[(ok, gk)] = GridEntry(mats=mats, ns=ns)
@@ -114,12 +122,14 @@ class TwoLevelMemoryCache:
 
         # ----- compute misses vectorized -----
         if miss_idx:
-            w_miss = np.asarray(miss_w, dtype=np.float64)            # (M,)
+            w_miss = np.asarray(miss_w, dtype=np.float64)  # (M,)
             mats_miss = np.asarray(matrix_fn(optic, w_miss), dtype=np.float64)  # (M,3,3)
             ns_miss = np.asarray(n_fn(optic, w_miss), dtype=np.float64).reshape(-1)  # (M,)
 
             if mats_miss.shape != (w_miss.size, 3, 3):
-                raise ValueError(f"matrix_fn returned {mats_miss.shape}, expected {(w_miss.size,3,3)}")
+                raise ValueError(
+                    f"matrix_fn returned {mats_miss.shape}, expected {(w_miss.size, 3, 3)}"
+                )
             if ns_miss.shape != (w_miss.size,):
                 raise ValueError(f"n_fn returned {ns_miss.shape}, expected {(w_miss.size,)}")
 

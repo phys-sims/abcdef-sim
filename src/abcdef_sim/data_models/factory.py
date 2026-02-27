@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict
 
-from abcdef_sim.data_models.specs import OpticSpec, OpticKind
-from abcdef_sim.data_models.optics import Optic, FreeSpace
+from abcdef_sim.data_models.optics import FreeSpace, Optic
+from abcdef_sim.data_models.specs import OpticKind, OpticSpec
 
 BuilderFn = Callable[[OpticSpec], Optic]
 
@@ -15,10 +15,11 @@ class OpticFactory:
     Converts OpticSpec -> Optic instance.
     Centralizing this avoids scattered ad-hoc instantiation logic.
     """
-    registry: Dict[OpticKind, BuilderFn]
+
+    registry: dict[OpticKind, BuilderFn]
 
     @staticmethod
-    def default() -> "OpticFactory":
+    def default() -> OpticFactory:
         def build_free_space(spec: OpticSpec) -> Optic:
             L = spec.params.get("L", 0.0)
             return FreeSpace(name="FreeSpace", instance_name=spec.instance_name, _length=L)
@@ -26,7 +27,7 @@ class OpticFactory:
         # def build_grating(spec: OpticSpec) -> Optic:
         #     return Grating(name="Grating", instance_name=spec.instance_name, **spec.params)
 
-        reg: Dict[OpticKind, BuilderFn] = {
+        reg: dict[OpticKind, BuilderFn] = {
             "FreeSpace": build_free_space,
             # "Grating": build_grating,
         }

@@ -1,17 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Optional, Callable
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
+from phys_pipeline.v1.policy import PolicyBag
 
 from abcdef_sim.cache.backend import CacheBackend
 from abcdef_sim.data_models.configs import OpticStageCfg
 from abcdef_sim.data_models.optics import Optic
 from abcdef_sim.utils.grids import LinspaceGrid, infer_linspace_grid
-
-from phys_pipeline.v1.policy import PolicyBag
 
 NDArrayF = npt.NDArray[np.float64]
 
@@ -23,9 +23,10 @@ class OpticStageCfgGenerator:
 
     CacheBackend is optional: you can pass NullCacheBackend.
     """
+
     cache: CacheBackend
     expensive_types: tuple[type, ...] = field(default_factory=tuple)
-    expensive_predicate: Optional[Callable[[Optic], bool]] = None
+    expensive_predicate: Callable[[Optic], bool] | None = None
 
     def is_expensive(self, optic: Optic) -> bool:
         if self.expensive_predicate is not None:
@@ -37,15 +38,14 @@ class OpticStageCfgGenerator:
         optic: Optic,
         omega: npt.ArrayLike,
         *,
-        tags: Optional[dict[str, Any]] = None,
-        policy: Optional[PolicyBag] = None,
+        tags: dict[str, Any] | None = None,
+        policy: PolicyBag | None = None,
         infer_grid: bool = True,
         freeze_arrays: bool = False,
     ) -> OpticStageCfg:
-
         w = np.asarray(omega, dtype=np.float64).reshape(-1)
 
-        grid: Optional[LinspaceGrid] = None
+        grid: LinspaceGrid | None = None
         if infer_grid:
             grid = infer_linspace_grid(w)
 
@@ -71,7 +71,7 @@ class OpticStageCfgGenerator:
             ns = np.asarray(optic.n(w), dtype=np.float64).reshape(-1)
 
         if mats.shape != (w.size, 3, 3):
-            raise ValueError(f"{optic} matrix returned {mats.shape}, expected {(w.size,3,3)}")
+            raise ValueError(f"{optic} matrix returned {mats.shape}, expected {(w.size, 3, 3)}")
         if ns.shape != (w.size,):
             raise ValueError(f"{optic} n returned {ns.shape}, expected {(w.size,)}")
 

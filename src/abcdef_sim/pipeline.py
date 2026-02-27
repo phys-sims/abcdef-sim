@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 from phys_pipeline.v1.policy import PolicyBag
-from phys_pipeline.v1.types import PipelineStage, StageResult, State 
 
-from abcdef_sim.data_models.specs import SystemPreset, LaserSpec
-from abcdef_sim.data_models.factory import OpticFactory
 from abcdef_sim.cfg_generator import OpticStageCfgGenerator
 from abcdef_sim.data_models.configs import OpticStageCfg
+from abcdef_sim.data_models.factory import OpticFactory
+from abcdef_sim.data_models.specs import LaserSpec, SystemPreset
 from abcdef_sim.data_models.stages import AbcdefOpticStage
+
 
 @dataclass
 class SystemAssembler:
@@ -18,6 +18,7 @@ class SystemAssembler:
     Pure assembly layer.
     Turns (SystemPreset, LaserSpec) into a list of stages (each has cfg).
     """
+
     factory: OpticFactory
     cfg_gen: OpticStageCfgGenerator
 
@@ -49,8 +50,11 @@ class SystemAssembler:
         *,
         policy: PolicyBag | None = None,
         pipeline_name: str | None = None,
-    ):
-        from phys_pipeline.v1.pipeline import SequentialPipeline  # current executor 
+    ) -> Any:
+        from phys_pipeline.v1.pipeline import (
+            SequentialPipeline,  # current executor
+        )
+
         cfgs = self.build_optic_cfgs(preset, laser, policy=policy)
         stages = [AbcdefOpticStage(cfg=c) for c in cfgs]
         return SequentialPipeline(stages=stages, name=pipeline_name or preset.name)

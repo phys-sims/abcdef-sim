@@ -47,4 +47,4 @@ def rayleigh_range_from_waist(w0: float, wavelength: float, n: float = 1.0) -> f
 
     if wavelength == 0:
         raise ValueError("wavelength must be non-zero")
-    return float(np.pi * n * (w0 ** 2) / wavelength)
+    return float(np.pi * n * (w0**2) / wavelength)

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from typing import Any, Literal
-from pydantic import BaseModel, Field, ConfigDict, model_validator
 
+import numpy as np
+import numpy.typing as npt
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 OpticKind = Literal["FreeSpace", "Grating"]  # extend as optics added
+NDArrayF = npt.NDArray[np.float64]
 
 
 class OpticSpec(BaseModel):
@@ -16,6 +19,7 @@ class OpticSpec(BaseModel):
     - params: numeric parameters needed to construct the optic
     - tags: metadata (e.g., "expensive", "requires_gpu", etc.)
     """
+
     model_config = ConfigDict(frozen=True)
 
     kind: OpticKind
@@ -28,6 +32,7 @@ class SystemPreset(BaseModel):
     """
     Pure-data optics chain.
     """
+
     model_config = ConfigDict(frozen=True)
 
     name: str
@@ -35,7 +40,7 @@ class SystemPreset(BaseModel):
     tags: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def _unique_instance_names(self) -> "SystemPreset":
+    def _unique_instance_names(self) -> SystemPreset:
         names = [o.instance_name for o in self.optics]
         if len(names) != len(set(names)):
             raise ValueError("SystemPreset.optics must have unique instance_name values.")
@@ -46,8 +51,9 @@ class LaserSpec(BaseModel):
     """
     Pure-data laser definition.
 
-    Keep immutable and hashable - part of intial state.
+    Keep immutable and hashable - part of initial state.
     """
+
     model_config = ConfigDict(frozen=True)
 
     w0: float
@@ -57,6 +63,5 @@ class LaserSpec(BaseModel):
     pulse: dict[str, float] = Field(default_factory=dict)
     beam: dict[str, float] = Field(default_factory=dict)
 
-    def omega(self):
-        import numpy as np
+    def omega(self) -> NDArrayF:
         return np.linspace(self.w0 - self.span, self.w0 + self.span, self.N, dtype=float)
