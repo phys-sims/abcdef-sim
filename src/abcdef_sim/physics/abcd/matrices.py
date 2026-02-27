@@ -87,6 +87,93 @@ def interface(n1: float, n2: float, R: float | None = None) -> NDArrayF:
     return np.array([[1.0, 0.0], [c_term, n1f / n2f]], dtype=float)
 
 
+def thick_lens_elements(
+    n_lens: float,
+    R1: float | None,
+    R2: float | None,
+    thickness: float,
+    n_in: float = 1.0,
+    n_out: float = 1.0,
+) -> tuple[NDArrayF, NDArrayF, NDArrayF]:
+    """Return primitive ABCD matrices for a thick lens.
+
+    The ray state convention is ``[y, theta]^T``, where ``theta`` is geometric
+    angle. Radius signs use the Cartesian convention: center of curvature to the
+    right of a surface gives ``R > 0``.
+
+    The three returned matrices are:
+      1) ``interface(n_in, n_lens, R1)``
+      2) ``free_space(thickness)``
+      3) ``interface(n_lens, n_out, R2)``
+
+    Notes:
+      - ``R1`` and/or ``R2`` may be ``None`` for planar faces.
+      - For left-to-right propagation, a biconvex lens usually has ``R1 > 0``
+        and ``R2 < 0``.
+
+    Example:
+      - For ``n_lens=1.5``, ``R1=4.0``, ``R2=6.0``, ``thickness=3.0`` in air,
+        ``compose(*thick_lens_elements(...))`` is approximately
+        ``[[0.75, 2.0], [-0.0625, 1.1666666667]]``.
+    """
+
+    n_lens_f = float(n_lens)
+    n_in_f = float(n_in)
+    n_out_f = float(n_out)
+    thickness_f = float(thickness)
+
+    if n_lens_f <= 0.0:
+        raise ValueError("n_lens must be > 0")
+    if n_in_f <= 0.0:
+        raise ValueError("n_in must be > 0")
+    if n_out_f <= 0.0:
+        raise ValueError("n_out must be > 0")
+    if thickness_f < 0.0:
+        raise ValueError("thickness must be >= 0")
+
+    if R1 is not None and abs(float(R1)) < EPS:
+        raise ValueError("R1 must be non-zero when provided")
+    if R2 is not None and abs(float(R2)) < EPS:
+        raise ValueError("R2 must be non-zero when provided")
+
+    M1 = interface(n_in_f, n_lens_f, R1)
+    Mp = free_space(thickness_f)
+    M2 = interface(n_lens_f, n_out_f, R2)
+    return M1, Mp, M2
+
+
+def thick_lens(
+    n_lens: float,
+    R1: float | None,
+    R2: float | None,
+    thickness: float,
+    n_in: float = 1.0,
+    n_out: float = 1.0,
+) -> NDArrayF:
+    """Return the composite ABCD matrix of a thick lens.
+
+    State convention is ``[y, theta]^T`` with geometric ``theta``. Radius signs
+    follow Cartesian convention: center of curvature to the right gives
+    ``R > 0``. For left-to-right propagation, a biconvex lens usually has
+    ``R1 > 0`` and ``R2 < 0``.
+
+    This is equivalent to composing, in traversal order,
+    ``interface(n_in, n_lens, R1)``, ``free_space(thickness)``, and
+    ``interface(n_lens, n_out, R2)``.
+    """
+
+    return compose(
+        *thick_lens_elements(
+            n_lens=n_lens,
+            R1=R1,
+            R2=R2,
+            thickness=thickness,
+            n_in=n_in,
+            n_out=n_out,
+        )
+    )
+
+
 def compose(*matrices: NDArrayF) -> NDArrayF:
     """Compose ABCD matrices in optical traversal order.
 
