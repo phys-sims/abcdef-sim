@@ -112,6 +112,8 @@ def test_compose_order_matches_raytracing_matrix_multiplication() -> None:
 
     rt_total = rt.Matrix(A=1.0, B=0.0, C=0.0, D=1.0)
     for matrix in (m1, m2, m3):
-        rt_total = rt.Matrix(A=matrix[0, 0], B=matrix[0, 1], C=matrix[1, 0], D=matrix[1, 1]) * rt_total
+        rt_total = (
+            rt.Matrix(A=matrix[0, 0], B=matrix[0, 1], C=matrix[1, 0], D=matrix[1, 1]) * rt_total
+        )
 
     np.testing.assert_allclose(local, from_raytracing_matrix(rt_total), rtol=1e-12, atol=1e-12)
