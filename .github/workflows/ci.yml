@@ -47,8 +47,11 @@ jobs:
       - name: Typecheck (mypy)
         run: mypy # [tool.mypy] sets scope to src
           
-      - name: Tests
-        run: pytest -q
+      - name: Tests (fast gate)
+        run: pytest -m "not slow" -q
+
+      - name: Tests (physics lane)
+        run: pytest -m "physics" -q
 
   gate:
     name: gate
