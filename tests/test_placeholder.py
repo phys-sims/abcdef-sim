@@ -15,7 +15,9 @@ def test_compose_respects_traversal_order_for_ray_propagation() -> None:
     propagated = propagate_ray(ray, system)
 
     # y' = y + L*theta = 2.0; theta' = theta - y'/f = 0.002
-    np.testing.assert_allclose([propagated.y, propagated.theta], [2.0, 0.002], atol=1e-12, rtol=1e-12)
+    np.testing.assert_allclose(
+        [propagated.y, propagated.theta], [2.0, 0.002], atol=1e-12, rtol=1e-12
+    )
 
 
 def test_q_parameter_free_space_adds_distance() -> None:
