@@ -7,7 +7,8 @@ from typing import Any
 
 import numpy as np
 import numpy.typing as npt
-from phys_pipeline.v1.types import State, hash_ndarray
+
+from abcdef_sim._phys_pipeline import State, hash_ndarray
 
 NDArrayF = npt.NDArray[np.float64]
 

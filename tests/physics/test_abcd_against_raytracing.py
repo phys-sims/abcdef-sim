@@ -3,9 +3,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from abcdef_sim.adapters.raytracing_ref import from_raytracing_matrix
 from abcdef_sim.physics.abcd.matrices import compose, free_space, interface, thick_lens, thin_lens
 from abcdef_sim.physics.abcd.ray import Ray, propagate_ray
+from abcdef_sim.physics.abcd.raytracing_ref import from_raytracing_matrix
 
 rt = pytest.importorskip("raytracing")
 
