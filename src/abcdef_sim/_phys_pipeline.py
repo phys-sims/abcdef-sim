@@ -53,13 +53,21 @@ def _try_load(root: str) -> ModuleType | None:
         return None
 
     namespace = ModuleType("phys_pipeline_compat")
-    namespace.PolicyBag = policy.PolicyBag
-    namespace.SequentialPipeline = pipeline.SequentialPipeline
-    namespace.PipelineStage = types.PipelineStage
-    namespace.StageConfig = types.StageConfig
-    namespace.StageResult = types.StageResult
-    namespace.State = types.State
-    namespace.hash_ndarray = types.hash_ndarray
+    try:
+        setattr(namespace, "PolicyBag", getattr(policy, "PolicyBag"))
+        setattr(
+            namespace,
+            "SequentialPipeline",
+            getattr(pipeline, "SequentialPipeline"),
+        )
+        setattr(namespace, "PipelineStage", getattr(types, "PipelineStage"))
+        setattr(namespace, "StageConfig", getattr(types, "StageConfig"))
+        setattr(namespace, "StageResult", getattr(types, "StageResult"))
+        setattr(namespace, "State", getattr(types, "State"))
+        setattr(namespace, "hash_ndarray", getattr(types, "hash_ndarray"))
+    except AttributeError:
+        return None
+
     return namespace
 
 
