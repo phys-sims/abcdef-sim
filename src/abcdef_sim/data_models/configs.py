@@ -1,7 +1,8 @@
 import numpy as np
 import numpy.typing as npt
-from phys_pipeline.v1.types import StageConfig
 from pydantic import ConfigDict, model_validator
+
+from abcdef_sim._phys_pipeline import StageConfig
 
 NDArrayF = npt.NDArray[np.float64]
 

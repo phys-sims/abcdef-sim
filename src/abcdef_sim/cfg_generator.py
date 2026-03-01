@@ -6,8 +6,8 @@ from typing import Any
 
 import numpy as np
 import numpy.typing as npt
-from phys_pipeline.v1.policy import PolicyBag
 
+from abcdef_sim._phys_pipeline import PolicyBag
 from abcdef_sim.cache.backend import CacheBackend
 from abcdef_sim.data_models.configs import OpticStageCfg
 from abcdef_sim.data_models.optics import Optic

@@ -109,11 +109,6 @@ def test_compose_order_matches_raytracing_matrix_multiplication() -> None:
     m3 = interface(1.0, 1.5, 100.0)
 
     local = compose(m1, m2, m3)
-
-    rt_total = rt.Matrix(A=1.0, B=0.0, C=0.0, D=1.0)
-    for matrix in (m1, m2, m3):
-        rt_total = (
-            rt.Matrix(A=matrix[0, 0], B=matrix[0, 1], C=matrix[1, 0], D=matrix[1, 1]) * rt_total
-        )
+    rt_total = rt.DielectricInterface(n1=1.0, n2=1.5, R=100.0) * rt.Lens(f=125.0) * rt.Space(d=50.0)
 
     np.testing.assert_allclose(local, from_raytracing_matrix(rt_total), rtol=1e-12, atol=1e-12)
