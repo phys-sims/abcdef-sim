@@ -1,7 +1,7 @@
-"""Optical component abstractions and registration utilities."""
+"""Optical runtime components and registration utilities."""
 
-from abcdef_sim.optics.base import OpticModel
-from abcdef_sim.optics.freespace import FreeSpaceModel
+from abcdef_sim.optics.base import Optic
+from abcdef_sim.optics.freespace import FreeSpace
 from abcdef_sim.optics.registry import OpticsRegistry
 
-__all__ = ["OpticModel", "FreeSpaceModel", "OpticsRegistry"]
+__all__ = ["Optic", "FreeSpace", "OpticsRegistry"]

@@ -10,7 +10,7 @@ import numpy.typing as npt
 from abcdef_sim._phys_pipeline import PolicyBag
 from abcdef_sim.cache.backend import CacheBackend
 from abcdef_sim.data_models.configs import OpticStageCfg
-from abcdef_sim.data_models.optics import Optic
+from abcdef_sim.optics.base import Optic
 from abcdef_sim.utils.grids import LinspaceGrid, infer_linspace_grid
 
 NDArrayF = npt.NDArray[np.float64]
