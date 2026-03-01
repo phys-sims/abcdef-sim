@@ -50,7 +50,6 @@ class SystemAssembler:
         policy: PolicyBag | None = None,
         pipeline_name: str | None = None,
     ) -> Any:
-
         cfgs = self.build_optic_cfgs(preset, laser, policy=policy)
         stages = [AbcdefOpticStage(cfg=c) for c in cfgs]
         return SequentialPipeline(stages=stages, name=pipeline_name or preset.name)
