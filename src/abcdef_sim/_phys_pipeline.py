@@ -52,14 +52,18 @@ def _try_load(root: str) -> ModuleType | None:
     except ModuleNotFoundError:
         return None
 
-    namespace = ModuleType("phys_pipeline_compat")
-    namespace.PolicyBag = policy.PolicyBag
-    namespace.SequentialPipeline = pipeline.SequentialPipeline
-    namespace.PipelineStage = types.PipelineStage
-    namespace.StageConfig = types.StageConfig
-    namespace.StageResult = types.StageResult
-    namespace.State = types.State
-    namespace.hash_ndarray = types.hash_ndarray
+    try:
+        namespace = ModuleType("phys_pipeline_compat")
+        namespace.PolicyBag = policy.PolicyBag
+        namespace.SequentialPipeline = pipeline.SequentialPipeline
+        namespace.PipelineStage = types.PipelineStage
+        namespace.StageConfig = types.StageConfig
+        namespace.StageResult = types.StageResult
+        namespace.State = types.State
+        namespace.hash_ndarray = types.hash_ndarray
+    except AttributeError:
+        return None
+
     return namespace
 
 
