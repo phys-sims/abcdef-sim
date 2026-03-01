@@ -9,6 +9,8 @@ from abcdef_sim.physics.abcd.raytracing_ref import from_raytracing_matrix
 
 rt = pytest.importorskip("raytracing")
 
+pytestmark = [pytest.mark.physics, pytest.mark.integration]
+
 
 def test_free_space_matches_raytracing_space() -> None:
     d = 100.0
@@ -77,6 +79,7 @@ def test_thick_lens_matches_raytracing_biconvex_sign_convention_case() -> None:
     np.testing.assert_allclose(local, oracle, rtol=1e-12, atol=1e-12)
 
 
+@pytest.mark.slow
 def test_thick_lens_ray_propagation_matches_raytracing() -> None:
     n = 1.5
     R1 = 50.0
@@ -109,6 +112,7 @@ def test_compose_order_matches_raytracing_matrix_multiplication() -> None:
     m3 = interface(1.0, 1.5, 100.0)
 
     local = compose(m1, m2, m3)
+
     rt_total = rt.DielectricInterface(n1=1.0, n2=1.5, R=100.0) * rt.Lens(f=125.0) * rt.Space(d=50.0)
 
     np.testing.assert_allclose(local, from_raytracing_matrix(rt_total), rtol=1e-12, atol=1e-12)

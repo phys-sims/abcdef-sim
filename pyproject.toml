@@ -79,3 +79,13 @@ ignore-words-list = "teh,nd"
 skip = "poetry.lock,*.lock,*.svg,*.png,*.jpg"
 # You can also narrow paths if needed:
 # path = "src,tests,docs,examples"
+
+
+# --- pytest ---
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+markers = [
+  "slow: runtime-heavy tests.",
+  "physics: physics-validation tests (analytical/oracle/regression).",
+  "integration: cross-module or optional-dependency tests.",
+]

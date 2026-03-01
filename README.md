@@ -42,3 +42,28 @@ pytest tests/physics/test_abcd_against_raytracing.py
 ```
 
 If `raytracing` is not installed, the validation test module is skipped.
+
+
+## Running tests by marker
+
+Use pytest markers to select the right validation depth for your change:
+
+```bash
+# all tests
+pytest -q
+
+# fast gate (exclude runtime-heavy tests)
+pytest -m "not slow" -q
+
+# physics validation lane (oracle/analytical/regression)
+pytest -m "physics" -q
+
+# quick physics checks only
+pytest -m "physics and not slow" -q
+```
+
+When to use each:
+- `pytest -q`: full local confidence before merging.
+- `pytest -m "not slow" -q`: fast feedback while iterating on most changes.
+- `pytest -m "physics" -q`: validate optical transfer behavior against physics checks and references.
+- `pytest -m "physics and not slow" -q`: rapid physics sanity checks during refactors.
