@@ -3,9 +3,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from abcdef_sim.data_models.specs import OpticKind, OpticSpec
 from abcdef_sim.optics.base import Optic
 from abcdef_sim.optics.freespace import FreeSpace
-from abcdef_sim.data_models.specs import OpticKind, OpticSpec
 
 BuilderFn = Callable[[OpticSpec], Optic]
 
