@@ -51,7 +51,12 @@ jobs:
         run: pytest -m "not slow" -q
 
       - name: Tests (physics lane)
-        run: pytest -m "physics" -q
+        run: |
+          if python -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('raytracing') else 1)"; then
+            pytest -m "physics" -q
+          else
+            echo "Skipping physics lane: optional dependency 'raytracing' is not installed."
+          fi
 
   gate:
     name: gate
