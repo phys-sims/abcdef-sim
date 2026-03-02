@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 
 from abcdef_sim.optics.base import ArrayLike, NDArrayF, Optic, RefractiveIndexFn
 from abcdef_sim.utils.optics_builder import get_abcdef_matrices
+
+
+def _coerce_length(value: float | int | str | bytes | bytearray) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise TypeError(f"Length must be numeric, got {type(value).__name__}") from exc
 
 
 @dataclass(slots=True, init=False)
@@ -38,18 +46,19 @@ class FreeSpace(Optic):
             if len(args) >= 2:
                 instance_name = str(args[1])
             if len(args) >= 3:
-                _length = float(args[2])
+                _length = _coerce_length(cast(float | int | str | bytes | bytearray, args[2]))
             if len(args) == 4:
-                _n_fn = args[3]  # type: ignore[assignment]
+                _n_fn = cast(RefractiveIndexFn | None, args[3])
 
         if length is not None and _length is not None:
             raise TypeError("Provide only one of 'length' or '_length', not both")
 
-        resolved_length = (
-            0.0
-            if length is None and _length is None
-            else (float(length) if length is not None else float(_length))
-        )
+        if length is not None:
+            resolved_length = float(length)
+        elif _length is not None:
+            resolved_length = float(_length)
+        else:
+            resolved_length = 0.0
 
         self.name = name
         self.instance_name = instance_name
