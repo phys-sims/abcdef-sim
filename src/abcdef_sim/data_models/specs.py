@@ -41,7 +41,7 @@ class OpticSpec(BaseModel):
     @classmethod
     def _normalize_kind(cls, value: Any) -> CanonicalOpticKind:
         if not isinstance(value, str):
-            raise TypeError("OpticSpec.kind must be a string.")
+            raise ValueError("OpticSpec.kind must be a string.")
         try:
             return _KIND_ALIASES[value]
         except KeyError as e:
