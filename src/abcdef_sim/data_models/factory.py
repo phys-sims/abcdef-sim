@@ -3,8 +3,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from abcdef_sim.data_models.optics import FreeSpace, Optic
 from abcdef_sim.data_models.specs import OpticKind, OpticSpec
+from abcdef_sim.optics.base import Optic
+from abcdef_sim.optics.freespace import FreeSpace
 
 BuilderFn = Callable[[OpticSpec], Optic]
 
@@ -22,7 +23,7 @@ class OpticFactory:
     def default() -> OpticFactory:
         def build_free_space(spec: OpticSpec) -> Optic:
             L = spec.params.get("L", 0.0)
-            return FreeSpace(name="FreeSpace", instance_name=spec.instance_name, _length=L)
+            return FreeSpace(name="FreeSpace", instance_name=spec.instance_name, length=L)
 
         # def build_grating(spec: OpticSpec) -> Optic:
         #     return Grating(name="Grating", instance_name=spec.instance_name, **spec.params)
