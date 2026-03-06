@@ -55,22 +55,26 @@ Use these locations first for impact analysis and for placing new physics tests 
 
 ## 4) Validation Matrix (Pytest markers from README)
 
-Testing is a delivery requirement, not optional cleanup. Select lanes by risk, then run broader lanes before merge for physics-impacting work.
+Testing is a delivery requirement, not optional cleanup. Before opening a PR, run pre-commit on all files and then select pytest/mypy lanes by risk; run broader lanes before merge for physics-impacting work.
 
+- **Pre-PR hygiene (required for every PR)**:
+  - `pre-commit run --all-files`
 - **Fast gate** (required baseline for all non-trivial changes):
   - `pytest -m "not slow" -q`
 - **Physics lane** (required for any optics/math/propagation change):
   - `pytest -m "physics" -q`
+- **Type check lane** (required for typed interface changes and recommended otherwise):
+  - `mypy`
 - **Full suite** (required for cross-cutting, pipeline, caching, or release-critical changes):
   - `pytest -q`
 - **Optional quick physics iteration lane**:
   - `pytest -m "physics and not slow" -q`
 
 Minimum expectation by change type:
-- Docs-only: run at least `pytest -m "not slow" -q` when feasible.
-- Non-physics code changes: `pytest -m "not slow" -q`.
-- Physics module/test changes: `pytest -m "not slow" -q` + `pytest -m "physics" -q`.
-- Cross-cutting/pipeline assembly/caching changes: `pytest -q`.
+- Docs-only: run at least `pre-commit run --all-files` and `pytest -m "not slow" -q` when feasible.
+- Non-physics code changes: `pre-commit run --all-files` + `pytest -m "not slow" -q` + `mypy`.
+- Physics module/test changes: `pre-commit run --all-files` + `pytest -m "not slow" -q` + `pytest -m "physics" -q` + `mypy`.
+- Cross-cutting/pipeline assembly/caching changes: `pre-commit run --all-files` + `mypy` + `pytest -q`.
 
 ## 5) PR Expectations
 
@@ -85,7 +89,8 @@ Minimum expectation by change type:
 - [ ] Scope and constraints reviewed against `docs/architecture.md` and relevant ADRs.
 - [ ] Physics assumptions/equations and units are explicit in code/tests/docs.
 - [ ] Cache-key invariants and policy propagation rules remain intact.
-- [ ] Appropriate validation lanes were run (fast gate, physics lane, and/or full suite).
+- [ ] `pre-commit run --all-files` was run before PR creation.
+- [ ] Appropriate validation lanes were run (fast gate, physics lane, mypy, and/or full suite).
 - [ ] Tests were added/updated for each behavioral physics change.
 - [ ] Residual placeholders (if any) are explicitly documented with limitations.
 

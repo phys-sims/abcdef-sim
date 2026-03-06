@@ -21,16 +21,11 @@ validation = [
 dev = [
   # test & tooling you actually run locally
   "pytest",
-  "black",
   "ruff",
   "mypy",
+  "pre-commit",
   "codespell",
 ]
-
-# --- Black ---
-[tool.black]
-line-length = 100
-target-version = ["py311"]
 
 
 # --- Ruff (lint) ---
