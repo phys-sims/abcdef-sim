@@ -34,7 +34,7 @@ target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "UP", "I"]  
+select = ["E", "F", "I"]
 ignore = []  # add codes you intentionally ignore
 
 # --- mypy ---
