@@ -55,8 +55,9 @@ python examples/compare_thick_lens_to_raytracing.py
 
 This writes:
 
-- `artifacts/physics/thick_lens_similarity.png`
-- `artifacts/physics/wavelength_tracking_benchmarks.md`
+- `artifacts/physics/abcdef_runtime_similarity.png`
+- `artifacts/physics/abcd_helper_similarity.png`
+- `artifacts/physics/abcdef_runtime_wavelength_tracking_benchmarks.md`
 
 The legacy plot-only wrapper still works:
 
@@ -64,10 +65,15 @@ The legacy plot-only wrapper still works:
 python scripts/generate_abcd_validation_plot.py
 ```
 
+That wrapper generates only the lower-level ABCD helper validation figure, not the full ABCDEF runtime
+figure.
+
 For the checked-in figure, benchmark sample table, and scope notes about what is and is not
 validated against `raytracing`, see `docs/raytracing-validation.md`.
 
-![raytracing validation snapshot](docs/images/thick_lens_similarity.png)
+Primary runtime snapshot (`ABCDEF runtime` vs `raytracing`):
+
+![ABCDEF runtime validation snapshot](docs/images/abcdef_runtime_similarity.png)
 
 
 ## Running tests by marker

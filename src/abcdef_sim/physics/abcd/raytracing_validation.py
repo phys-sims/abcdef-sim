@@ -15,10 +15,12 @@ from abcdef_sim.physics.abcd.lenses import (
     SellmeierMaterial,
     ThickLensSpec,
     sample_doublet_beam_radius_profile,
+    thick_lens_matrix_for_spec,
 )
 from abcdef_sim.physics.abcd.raytracing_ref import (
     from_raytracing_matrix,
     propagate_gaussian_beam_raytracing,
+    raytracing_compose,
     raytracing_space,
     raytracing_thick_lens,
     sample_gaussian_beam_radii_raytracing,
@@ -33,11 +35,19 @@ _DEFAULT_WAVELENGTH_START_UM = 0.810
 _DEFAULT_WAVELENGTH_STOP_UM = 1.550
 
 __all__ = [
+    "abcd_helper_doublet_beam_profile_comparisons",
+    "abcd_helper_single_lens_effective_focal_length_comparison",
+    "abcdef_runtime_doublet_effective_focal_length_comparison",
+    "abcdef_runtime_doublet_ray_output_comparisons",
+    "abcdef_runtime_single_lens_effective_focal_length_comparison",
+    "abcdef_runtime_single_lens_ray_output_comparisons",
     "doublet_beam_profile_comparisons",
     "doublet_runtime_optics",
+    "format_abcdef_runtime_benchmark_table",
     "format_default_benchmark_table",
     "raytracing_doublet_elements_mm",
     "reference_doublet",
+    "run_abcdef_runtime_wavelength_tracking_benchmarks",
     "run_wavelength_tracking_benchmarks",
     "single_lens_batched_ray_output_comparisons",
     "single_lens_effective_focal_length_comparison",
@@ -70,53 +80,56 @@ def single_lens_wavelength_grid_um(num_samples: int) -> NDArrayF:
     )
 
 
-def single_lens_runtime_optic() -> ThickLens:
-    """Return the canonical wavelength-dependent thick-lens runtime optic."""
+def abcd_helper_single_lens_spec() -> ThickLensSpec:
+    """Canonical single-lens helper spec for lower-level ABCD validation."""
 
-    return ThickLens(
-        name="ThickLens",
-        instance_name="validation-single-lens",
-        _length=6.0,
+    return ThickLensSpec(
+        refractive_index=_n_lak22_um(),
         R1=85.0,
         R2=-55.0,
+        thickness=6.0,
         n_in=1.0,
         n_out=1.0,
-        refractive_index_model=_n_lak22_um(),
     )
 
 
-def single_lens_effective_focal_length_comparison(
+def abcd_helper_single_lens_effective_focal_length_comparison(
     wavelength_um: npt.ArrayLike,
 ) -> ObservableComparison:
-    """Compare wavelength-dependent effective focal length against raytracing."""
+    """Compare an ABCD helper lens against raytracing over a wavelength sweep."""
 
     wavelength_arr = np.asarray(wavelength_um, dtype=float).reshape(-1)
-    omega = wavelength_um_to_omega_rad_per_fs(wavelength_arr)
-    lens = single_lens_runtime_optic()
-    local_matrices = lens.matrix(omega)
-    local = -1.0 / local_matrices[:, 1, 0]
-
-    refractive_indices = lens.n(omega)
+    spec = abcd_helper_single_lens_spec()
+    local = np.array(
+        [
+            _effective_focal_length_from_matrix(
+                thick_lens_matrix_for_spec(spec, wavelength=float(wavelength))
+            )
+            for wavelength in wavelength_arr
+        ],
+        dtype=float,
+    )
     reference = np.array(
         [
-            -1.0
-            / from_raytracing_matrix(
-                raytracing_thick_lens(
-                    n=float(n_value),
-                    R1=lens.R1,
-                    R2=lens.R2,
-                    thickness=lens.length,
-                    n_in=lens.n_in,
-                    n_out=lens.n_out,
+            _effective_focal_length_from_matrix(
+                from_raytracing_matrix(
+                    raytracing_thick_lens(
+                        n=_resolve_material_index(spec.refractive_index, float(wavelength)),
+                        R1=spec.R1,
+                        R2=spec.R2,
+                        thickness=spec.thickness,
+                        n_in=spec.n_in,
+                        n_out=spec.n_out,
+                    )
                 )
-            )[1, 0]
-            for n_value in refractive_indices
+            )
+            for wavelength in wavelength_arr
         ],
         dtype=float,
     )
 
     return ObservableComparison(
-        name="Single thick lens effective focal length",
+        name="ABCD helper single thick lens effective focal length",
         observable_label="effective focal length (mm)",
         coordinates=wavelength_arr,
         coordinate_label="wavelength (um)",
@@ -125,56 +138,8 @@ def single_lens_effective_focal_length_comparison(
     )
 
 
-def single_lens_batched_ray_output_comparisons(
-    wavelength_um: npt.ArrayLike,
-    *,
-    ray_height: float = 0.7,
-    theta_in: float = 0.015,
-) -> tuple[ObservableComparison, ObservableComparison]:
-    """Compare batched ABCDEF ray outputs against per-wavelength raytracing."""
-
-    wavelength_arr = np.asarray(wavelength_um, dtype=float).reshape(-1)
-    omega = wavelength_um_to_omega_rad_per_fs(wavelength_arr)
-    lens = single_lens_runtime_optic()
-    state_out = propagate_step(
-        _input_ray_state(batch_size=omega.size, x=ray_height, theta=theta_in),
-        lens.matrix(omega),
-    )
-    refractive_indices = lens.n(omega)
-    reference_rays = [
-        raytracing_thick_lens(
-            n=float(n_value),
-            R1=lens.R1,
-            R2=lens.R2,
-            thickness=lens.length,
-            n_in=lens.n_in,
-            n_out=lens.n_out,
-        )
-        * _import_raytracing().Ray(y=ray_height, theta=theta_in)
-        for n_value in refractive_indices
-    ]
-
-    x_out = ObservableComparison(
-        name="Single thick lens output height",
-        observable_label="x_out (mm)",
-        coordinates=wavelength_arr,
-        coordinate_label="wavelength (um)",
-        local=state_out.rays[:, 0, 0],
-        reference=np.array([float(ray.y) for ray in reference_rays], dtype=float),
-    )
-    theta_out = ObservableComparison(
-        name="Single thick lens output angle",
-        observable_label="theta_out (rad)",
-        coordinates=wavelength_arr,
-        coordinate_label="wavelength (um)",
-        local=state_out.rays[:, 1, 0],
-        reference=np.array([float(ray.theta) for ray in reference_rays], dtype=float),
-    )
-    return x_out, theta_out
-
-
 def reference_doublet() -> DoubletAssembly:
-    """Reference achromatic doublet used by Gaussian-beam validation."""
+    """Reference achromatic doublet used by lower-level ABCD helper validation."""
 
     return DoubletAssembly(
         first=ThickLensSpec(
@@ -197,8 +162,59 @@ def reference_doublet() -> DoubletAssembly:
     )
 
 
+def abcd_helper_doublet_beam_profile_comparisons(
+    *,
+    wavelengths_mm: Sequence[float] = (0.000810, 0.001550),
+    z_samples: npt.ArrayLike | None = None,
+) -> list[ObservableComparison]:
+    """Compare helper-level Gaussian beam profiles at representative wavelengths."""
+
+    spec = reference_doublet()
+    z_arr = (
+        np.linspace(0.0, 250.0, 161, dtype=float)
+        if z_samples is None
+        else np.asarray(z_samples, dtype=float).reshape(-1)
+    )
+    comparisons: list[ObservableComparison] = []
+    for wavelength in wavelengths_mm:
+        q_in = q_from_waist(waist_radius=1.024, wavelength=wavelength, distance_from_waist=0.0)
+        local = sample_doublet_beam_radius_profile(q_in, spec, wavelength, z_arr)
+        oracle_beam = propagate_gaussian_beam_raytracing(
+            q_in,
+            wavelength,
+            raytracing_doublet_elements_mm(spec, wavelength),
+        )
+        reference = sample_gaussian_beam_radii_raytracing(oracle_beam, z_arr)
+        comparisons.append(
+            ObservableComparison(
+                name=f"ABCD helper doublet beam profile ({wavelength * 1e6:.0f} nm)",
+                observable_label="beam radius (mm)",
+                coordinates=z_arr,
+                coordinate_label="propagation distance (mm)",
+                local=local,
+                reference=reference,
+            )
+        )
+    return comparisons
+
+
+def single_lens_runtime_optic() -> ThickLens:
+    """Return the canonical wavelength-dependent ABCDEF runtime thick-lens optic."""
+
+    return ThickLens(
+        name="ThickLens",
+        instance_name="validation-single-lens",
+        _length=6.0,
+        R1=85.0,
+        R2=-55.0,
+        n_in=1.0,
+        n_out=1.0,
+        refractive_index_model=_n_lak22_um(),
+    )
+
+
 def doublet_runtime_optics() -> tuple[ThickLens, ThickLens]:
-    """Return two runtime thick-lens optics matching the reference doublet geometry."""
+    """Return runtime optics for the ABCDEF validation doublet chain."""
 
     first = ThickLens(
         name="ThickLens",
@@ -223,49 +239,142 @@ def doublet_runtime_optics() -> tuple[ThickLens, ThickLens]:
     return first, second
 
 
-def doublet_beam_profile_comparisons(
-    *,
-    wavelengths_mm: Sequence[float] = (0.000810, 0.001550),
-    z_samples: npt.ArrayLike | None = None,
-) -> list[ObservableComparison]:
-    """Compare doublet Gaussian beam profiles at representative wavelengths."""
+def abcdef_runtime_single_lens_effective_focal_length_comparison(
+    wavelength_um: npt.ArrayLike,
+) -> ObservableComparison:
+    """Compare the ABCDEF runtime thick-lens optic against raytracing."""
 
-    spec = reference_doublet()
-    z_arr = (
-        np.linspace(0.0, 250.0, 161, dtype=float)
-        if z_samples is None
-        else np.asarray(z_samples, dtype=float).reshape(-1)
-    )
-    comparisons: list[ObservableComparison] = []
-    for wavelength in wavelengths_mm:
-        q_in = q_from_waist(waist_radius=1.024, wavelength=wavelength, distance_from_waist=0.0)
-        local = sample_doublet_beam_radius_profile(q_in, spec, wavelength, z_arr)
-        oracle_beam = propagate_gaussian_beam_raytracing(
-            q_in,
-            wavelength,
-            raytracing_doublet_elements_mm(spec, wavelength),
-        )
-        reference = sample_gaussian_beam_radii_raytracing(oracle_beam, z_arr)
-        comparisons.append(
-            ObservableComparison(
-                name=f"Doublet beam profile ({wavelength * 1e6:.0f} nm)",
-                observable_label="beam radius (mm)",
-                coordinates=z_arr,
-                coordinate_label="propagation distance (mm)",
-                local=local,
-                reference=reference,
+    wavelength_arr = np.asarray(wavelength_um, dtype=float).reshape(-1)
+    omega = wavelength_um_to_omega_rad_per_fs(wavelength_arr)
+    lens = single_lens_runtime_optic()
+    local = _effective_focal_length_from_matrix_batch(lens.matrix(omega))
+    reference = np.array(
+        [
+            _effective_focal_length_from_matrix(
+                from_raytracing_matrix(
+                    raytracing_thick_lens(
+                        n=float(n_value),
+                        R1=lens.R1,
+                        R2=lens.R2,
+                        thickness=lens.length,
+                        n_in=lens.n_in,
+                        n_out=lens.n_out,
+                    )
+                )
             )
+            for n_value in lens.n(omega)
+        ],
+        dtype=float,
+    )
+
+    return ObservableComparison(
+        name="ABCDEF runtime single thick lens effective focal length",
+        observable_label="effective focal length (mm)",
+        coordinates=wavelength_arr,
+        coordinate_label="wavelength (um)",
+        local=local,
+        reference=reference,
+    )
+
+
+def abcdef_runtime_doublet_effective_focal_length_comparison(
+    wavelength_um: npt.ArrayLike,
+) -> ObservableComparison:
+    """Compare the ABCDEF runtime doublet chain against raytracing."""
+
+    wavelength_arr = np.asarray(wavelength_um, dtype=float).reshape(-1)
+    omega = wavelength_um_to_omega_rad_per_fs(wavelength_arr)
+    first, second = doublet_runtime_optics()
+    local = _effective_focal_length_from_matrix_batch(second.matrix(omega) @ first.matrix(omega))
+    reference = np.array(
+        [
+            _effective_focal_length_from_matrix(
+                from_raytracing_matrix(
+                    raytracing_compose(*_runtime_doublet_raytracing_elements(float(wavelength)))
+                )
+            )
+            for wavelength in wavelength_arr
+        ],
+        dtype=float,
+    )
+
+    return ObservableComparison(
+        name="ABCDEF runtime doublet chain effective focal length",
+        observable_label="effective focal length (mm)",
+        coordinates=wavelength_arr,
+        coordinate_label="wavelength (um)",
+        local=local,
+        reference=reference,
+    )
+
+
+def abcdef_runtime_single_lens_ray_output_comparisons(
+    wavelength_um: npt.ArrayLike,
+    *,
+    ray_height: float = 0.7,
+    theta_in: float = 0.015,
+) -> tuple[ObservableComparison, ObservableComparison]:
+    """Compare ABCDEF runtime single-lens ray outputs against raytracing."""
+
+    wavelength_arr = np.asarray(wavelength_um, dtype=float).reshape(-1)
+    omega = wavelength_um_to_omega_rad_per_fs(wavelength_arr)
+    lens = single_lens_runtime_optic()
+    state_out = propagate_step(
+        _input_ray_state(batch_size=omega.size, x=ray_height, theta=theta_in),
+        lens.matrix(omega),
+    )
+    reference_rays = [
+        _runtime_single_lens_raytracing_element(float(wavelength))
+        * _import_raytracing().Ray(
+            y=ray_height,
+            theta=theta_in,
         )
-    return comparisons
+        for wavelength in wavelength_arr
+    ]
+    return _ray_output_comparisons(
+        wavelength_arr=wavelength_arr,
+        state_out=state_out,
+        reference_rays=reference_rays,
+        name_prefix="ABCDEF runtime single thick lens",
+    )
 
 
-def run_wavelength_tracking_benchmarks(
+def abcdef_runtime_doublet_ray_output_comparisons(
+    wavelength_um: npt.ArrayLike,
+    *,
+    ray_height: float = 0.7,
+    theta_in: float = 0.015,
+) -> tuple[ObservableComparison, ObservableComparison]:
+    """Compare ABCDEF runtime doublet ray outputs against raytracing."""
+
+    wavelength_arr = np.asarray(wavelength_um, dtype=float).reshape(-1)
+    omega = wavelength_um_to_omega_rad_per_fs(wavelength_arr)
+    first, second = doublet_runtime_optics()
+    state_mid = propagate_step(
+        _input_ray_state(batch_size=omega.size, x=ray_height, theta=theta_in),
+        first.matrix(omega),
+    )
+    state_out = propagate_step(state_mid, second.matrix(omega))
+    reference_rays = [
+        raytracing_compose(*_runtime_doublet_raytracing_elements(float(wavelength)))
+        * _import_raytracing().Ray(y=ray_height, theta=theta_in)
+        for wavelength in wavelength_arr
+    ]
+    return _ray_output_comparisons(
+        wavelength_arr=wavelength_arr,
+        state_out=state_out,
+        reference_rays=reference_rays,
+        name_prefix="ABCDEF runtime doublet chain",
+    )
+
+
+def run_abcdef_runtime_wavelength_tracking_benchmarks(
     wavelength_counts: Sequence[int],
     *,
     warmup_runs: int = 2,
     measured_runs: int = 5,
 ) -> list[BenchmarkComparison]:
-    """Benchmark vectorized wavelength tracking against scalar raytracing loops."""
+    """Benchmark ABCDEF runtime wavelength tracking against raytracing loops."""
 
     counts = [int(count) for count in wavelength_counts]
     if not counts:
@@ -294,7 +403,7 @@ def run_wavelength_tracking_benchmarks(
         )
         comparisons.append(
             BenchmarkComparison(
-                scenario_name="Single thick lens ray trace",
+                scenario_name="ABCDEF runtime single thick lens ray trace",
                 wavelength_count=count,
                 local_seconds=local_single,
                 reference_seconds=reference_single,
@@ -313,7 +422,7 @@ def run_wavelength_tracking_benchmarks(
         )
         comparisons.append(
             BenchmarkComparison(
-                scenario_name="Doublet chain ray trace",
+                scenario_name="ABCDEF runtime doublet chain ray trace",
                 wavelength_count=count,
                 local_seconds=local_doublet,
                 reference_seconds=reference_doublet,
@@ -322,17 +431,17 @@ def run_wavelength_tracking_benchmarks(
     return comparisons
 
 
-def format_default_benchmark_table(
+def format_abcdef_runtime_benchmark_table(
     wavelength_counts: Sequence[int],
     *,
     warmup_runs: int = 2,
     measured_runs: int = 5,
 ) -> str:
-    """Run benchmarks and format them as Markdown."""
+    """Run ABCDEF runtime benchmarks and format them as Markdown."""
 
     from abcdef_sim.physics.validation import format_benchmark_table
 
-    comparisons = run_wavelength_tracking_benchmarks(
+    comparisons = run_abcdef_runtime_wavelength_tracking_benchmarks(
         wavelength_counts,
         warmup_runs=warmup_runs,
         measured_runs=measured_runs,
@@ -350,19 +459,13 @@ def _single_lens_runtime_trace(omega: NDArrayF) -> NDArrayF:
 
 
 def _single_lens_raytracing_trace(wavelength_um: NDArrayF) -> NDArrayF:
-    omega = wavelength_um_to_omega_rad_per_fs(wavelength_um)
-    lens = single_lens_runtime_optic()
     rt = _import_raytracing()
     outputs = np.empty((wavelength_um.size, 2), dtype=float)
-    for idx, n_value in enumerate(lens.n(omega)):
-        ray_out = raytracing_thick_lens(
-            n=float(n_value),
-            R1=lens.R1,
-            R2=lens.R2,
-            thickness=lens.length,
-            n_in=lens.n_in,
-            n_out=lens.n_out,
-        ) * rt.Ray(y=0.7, theta=0.015)
+    for idx, wavelength in enumerate(wavelength_um):
+        ray_out = _runtime_single_lens_raytracing_element(float(wavelength)) * rt.Ray(
+            y=0.7,
+            theta=0.015,
+        )
         outputs[idx, 0] = float(ray_out.y)
         outputs[idx, 1] = float(ray_out.theta)
     return outputs
@@ -380,34 +483,82 @@ def _doublet_runtime_trace(omega: NDArrayF) -> NDArrayF:
 
 def _doublet_raytracing_trace(wavelength_um: NDArrayF) -> NDArrayF:
     rt = _import_raytracing()
-    first, second = doublet_runtime_optics()
-    omega = wavelength_um_to_omega_rad_per_fs(wavelength_um)
-    first_n = first.n(omega)
-    second_n = second.n(omega)
     outputs = np.empty((wavelength_um.size, 2), dtype=float)
-    for idx, (n_first, n_second) in enumerate(zip(first_n, second_n, strict=True)):
-        ray_out = (
-            raytracing_thick_lens(
-                n=float(n_second),
-                R1=second.R1,
-                R2=second.R2,
-                thickness=second.length,
-                n_in=second.n_in,
-                n_out=second.n_out,
-            )
-            * raytracing_thick_lens(
-                n=float(n_first),
-                R1=first.R1,
-                R2=first.R2,
-                thickness=first.length,
-                n_in=first.n_in,
-                n_out=first.n_out,
-            )
-            * rt.Ray(y=0.7, theta=0.015)
+    for idx, wavelength in enumerate(wavelength_um):
+        ray_out = raytracing_compose(
+            *_runtime_doublet_raytracing_elements(float(wavelength))
+        ) * rt.Ray(
+            y=0.7,
+            theta=0.015,
         )
         outputs[idx, 0] = float(ray_out.y)
         outputs[idx, 1] = float(ray_out.theta)
     return outputs
+
+
+def _ray_output_comparisons(
+    *,
+    wavelength_arr: NDArrayF,
+    state_out: RayState,
+    reference_rays: Sequence[object],
+    name_prefix: str,
+) -> tuple[ObservableComparison, ObservableComparison]:
+    x_out = ObservableComparison(
+        name=f"{name_prefix} output height",
+        observable_label="x_out (mm)",
+        coordinates=wavelength_arr,
+        coordinate_label="wavelength (um)",
+        local=state_out.rays[:, 0, 0],
+        reference=np.array([float(getattr(ray, "y")) for ray in reference_rays], dtype=float),
+    )
+    theta_out = ObservableComparison(
+        name=f"{name_prefix} output angle",
+        observable_label="theta_out (rad)",
+        coordinates=wavelength_arr,
+        coordinate_label="wavelength (um)",
+        local=state_out.rays[:, 1, 0],
+        reference=np.array([float(getattr(ray, "theta")) for ray in reference_rays], dtype=float),
+    )
+    return x_out, theta_out
+
+
+def _runtime_single_lens_raytracing_element(wavelength_um: float) -> object:
+    lens = single_lens_runtime_optic()
+    omega = wavelength_um_to_omega_rad_per_fs([wavelength_um])
+    n_lens = float(lens.n(omega)[0])
+    return raytracing_thick_lens(
+        n=n_lens,
+        R1=lens.R1,
+        R2=lens.R2,
+        thickness=lens.length,
+        n_in=lens.n_in,
+        n_out=lens.n_out,
+    )
+
+
+def _runtime_doublet_raytracing_elements(wavelength_um: float) -> tuple[object, object]:
+    first, second = doublet_runtime_optics()
+    omega = wavelength_um_to_omega_rad_per_fs([wavelength_um])
+    first_n = float(first.n(omega)[0])
+    second_n = float(second.n(omega)[0])
+    return (
+        raytracing_thick_lens(
+            n=first_n,
+            R1=first.R1,
+            R2=first.R2,
+            thickness=first.length,
+            n_in=first.n_in,
+            n_out=first.n_out,
+        ),
+        raytracing_thick_lens(
+            n=second_n,
+            R1=second.R1,
+            R2=second.R2,
+            thickness=second.length,
+            n_in=second.n_in,
+            n_out=second.n_out,
+        ),
+    )
 
 
 def _median_elapsed_seconds(
@@ -462,6 +613,15 @@ def raytracing_doublet_elements_mm(spec: DoubletAssembly, wavelength_mm: float) 
     return elements
 
 
+def _effective_focal_length_from_matrix_batch(matrices: NDArrayF) -> NDArrayF:
+    matrices_arr = np.asarray(matrices, dtype=float)
+    return -1.0 / matrices_arr[:, 1, 0]
+
+
+def _effective_focal_length_from_matrix(matrix: NDArrayF) -> float:
+    return float(-1.0 / np.asarray(matrix, dtype=float)[1, 0])
+
+
 def _n_lak22_mm() -> SellmeierMaterial:
     return SellmeierMaterial(
         name="N-LAK22-mm",
@@ -507,3 +667,13 @@ def _import_raytracing() -> Any:
     import raytracing as rt
 
     return rt
+
+
+# Backward-compatible aliases retained for existing tests/imports.
+single_lens_effective_focal_length_comparison = (
+    abcdef_runtime_single_lens_effective_focal_length_comparison
+)
+single_lens_batched_ray_output_comparisons = abcdef_runtime_single_lens_ray_output_comparisons
+doublet_beam_profile_comparisons = abcd_helper_doublet_beam_profile_comparisons
+run_wavelength_tracking_benchmarks = run_abcdef_runtime_wavelength_tracking_benchmarks
+format_default_benchmark_table = format_abcdef_runtime_benchmark_table

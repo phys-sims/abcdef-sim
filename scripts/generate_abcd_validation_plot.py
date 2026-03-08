@@ -23,12 +23,12 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "artifacts" / "physics" / "thick_lens_similarity.png",
+        default=ROOT / "artifacts" / "physics" / "abcd_helper_similarity.png",
     )
     args = parser.parse_args()
 
     module = _load_example_module()
-    output_path = module.write_similarity_plot(args.output.resolve())
+    output_path = module.write_abcd_helper_similarity_plot(args.output.resolve())
     print(f"Wrote {output_path}")
     return 0
 

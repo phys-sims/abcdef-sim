@@ -16,7 +16,7 @@ from abcdef_sim.physics.abcd.raytracing_ref import (
     raytracing_thick_lens,
 )
 from abcdef_sim.physics.abcd.raytracing_validation import (
-    doublet_beam_profile_comparisons,
+    abcd_helper_doublet_beam_profile_comparisons,
     raytracing_doublet_elements_mm,
     reference_doublet,
 )
@@ -158,7 +158,7 @@ def test_doublet_matrix_matches_raytracing_primitive_composition(wavelength: flo
 @pytest.mark.parametrize("wavelength", [0.000810, 0.001550])
 def test_doublet_gaussian_beam_profile_matches_raytracing(wavelength: float) -> None:
     z_samples = np.linspace(0.0, 250.0, 33, dtype=float)
-    comparison = doublet_beam_profile_comparisons(
+    comparison = abcd_helper_doublet_beam_profile_comparisons(
         wavelengths_mm=(wavelength,),
         z_samples=z_samples,
     )[0]

@@ -14,8 +14,11 @@ from abcdef_sim.physics.abcd.lenses import (
 )
 from abcdef_sim.physics.abcd.matrices import free_space, thick_lens
 from abcdef_sim.physics.abcd.raytracing_validation import (
+    abcdef_runtime_doublet_effective_focal_length_comparison,
+    abcdef_runtime_doublet_ray_output_comparisons,
+    abcdef_runtime_single_lens_effective_focal_length_comparison,
+    run_abcdef_runtime_wavelength_tracking_benchmarks,
     single_lens_batched_ray_output_comparisons,
-    single_lens_effective_focal_length_comparison,
     single_lens_wavelength_grid_um,
 )
 from abcdef_sim.physics.abcdef.conventions import theta_abcd_to_xprime_abcdef
@@ -140,7 +143,9 @@ def test_thick_lens_runtime_matches_abcd_thick_lens_ray_propagation() -> None:
 def test_thick_lens_runtime_effective_focal_length_matches_raytracing() -> None:
     pytest.importorskip("raytracing")
 
-    comparison = single_lens_effective_focal_length_comparison(single_lens_wavelength_grid_um(25))
+    comparison = abcdef_runtime_single_lens_effective_focal_length_comparison(
+        single_lens_wavelength_grid_um(25)
+    )
 
     np.testing.assert_allclose(comparison.local, comparison.reference, rtol=1e-10, atol=1e-10)
     assert comparison.max_abs_error() <= 1e-10
@@ -155,6 +160,43 @@ def test_thick_lens_runtime_batched_ray_outputs_match_raytracing() -> None:
 
     np.testing.assert_allclose(x_out.local, x_out.reference, rtol=1e-12, atol=1e-12)
     np.testing.assert_allclose(theta_out.local, theta_out.reference, rtol=1e-12, atol=1e-12)
+
+
+def test_doublet_runtime_effective_focal_length_matches_raytracing() -> None:
+    pytest.importorskip("raytracing")
+
+    comparison = abcdef_runtime_doublet_effective_focal_length_comparison(
+        single_lens_wavelength_grid_um(25)
+    )
+
+    np.testing.assert_allclose(comparison.local, comparison.reference, rtol=1e-10, atol=1e-10)
+    assert comparison.max_abs_error() <= 1e-10
+
+
+def test_doublet_runtime_batched_ray_outputs_match_raytracing() -> None:
+    pytest.importorskip("raytracing")
+
+    x_out, theta_out = abcdef_runtime_doublet_ray_output_comparisons(
+        single_lens_wavelength_grid_um(19)
+    )
+
+    np.testing.assert_allclose(x_out.local, x_out.reference, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(theta_out.local, theta_out.reference, rtol=1e-12, atol=1e-12)
+
+
+def test_runtime_benchmark_runner_returns_runtime_scenarios() -> None:
+    pytest.importorskip("raytracing")
+
+    comparisons = run_abcdef_runtime_wavelength_tracking_benchmarks(
+        [1],
+        warmup_runs=0,
+        measured_runs=1,
+    )
+
+    assert len(comparisons) == 2
+    assert all(comparison.scenario_name.startswith("ABCDEF runtime") for comparison in comparisons)
+    assert all(comparison.local_seconds > 0.0 for comparison in comparisons)
+    assert all(comparison.reference_seconds > 0.0 for comparison in comparisons)
 
 
 def test_weighted_taylor_fit_recovers_known_coefficients() -> None:
