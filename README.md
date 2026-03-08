@@ -55,6 +55,24 @@ python scripts/generate_abcd_validation_plot.py
 
 This writes a deterministic PNG to `artifacts/physics/thick_lens_vs_raytracing.png`.
 
+To generate the Treacy compressor validation and benchmarking artifacts:
+
+```bash
+python scripts/generate_treacy_benchmark_artifacts.py
+```
+
+This writes deterministic JSON/PNG artifacts to `artifacts/physics/`:
+
+- `treacy_radius_convergence.json`
+- `treacy_radius_convergence.png`
+- `treacy_radius_mirror_heatmap.json`
+- `treacy_radius_mirror_heatmap.png`
+
+The benchmark uses the local Treacy analytic model as the plane-wave baseline and
+plots how the ABCDEF runtime deviates from it as beam radius shrinks and as the
+double-pass mirror leg grows. The large-beam limit should approach the analytic
+baseline.
+
 
 ## Running tests by marker
 

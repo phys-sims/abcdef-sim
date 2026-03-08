@@ -1,0 +1,370 @@
+{
+  "beam_radii_mm": [
+    0.1,
+    0.2,
+    0.5,
+    1.0,
+    2.0,
+    5.0,
+    10.0
+  ],
+  "mirror_lengths_um": [
+    0.0,
+    25000.0,
+    50000.0,
+    75000.0,
+    100000.0
+  ],
+  "points": [
+    {
+      "beam_radius_mm": 0.1,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": 3588611.647484334,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 3.707162279588282,
+      "abcdef_tod_fs3": -83275233.70433949,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 16.573852856129644
+    },
+    {
+      "beam_radius_mm": 0.2,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": 2897716.551130411,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 3.185967642850979,
+      "abcdef_tod_fs3": -85282972.23973793,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 16.94933333373348
+    },
+    {
+      "beam_radius_mm": 0.5,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -697368.3235337754,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.4739221164335823,
+      "abcdef_tod_fs3": -20482232.607960105,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 4.830517941671879
+    },
+    {
+      "beam_radius_mm": 1.0,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -1281109.8948938842,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.03356152068021393,
+      "abcdef_tod_fs3": 3349012.1363065257,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.3736790651418814
+    },
+    {
+      "beam_radius_mm": 2.0,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -1322795.478120876,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.0021149197102094544,
+      "abcdef_tod_fs3": 5220404.94820754,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.023697504092880527
+    },
+    {
+      "beam_radius_mm": 5.0,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -1325527.2549965878,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 5.413296574168429e-05,
+      "abcdef_tod_fs3": 5343871.920954723,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.000607127991586103
+    },
+    {
+      "beam_radius_mm": 10.0,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -1325594.539989814,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 3.374785827749424e-06,
+      "abcdef_tod_fs3": 5346915.529644155,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 3.792257753534664e-05
+    },
+    {
+      "beam_radius_mm": 0.1,
+      "length_to_mirror_um": 25000.0,
+      "abcdef_gdd_fs2": 4684209.689490121,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 4.533655080777295,
+      "abcdef_tod_fs3": -98300350.79690753,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 19.383799491362915
+    },
+    {
+      "beam_radius_mm": 0.2,
+      "length_to_mirror_um": 25000.0,
+      "abcdef_gdd_fs2": 4109367.250411825,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 4.100007776291116,
+      "abcdef_tod_fs3": -100879493.12960654,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 19.86614197660984
+    },
+    {
+      "beam_radius_mm": 0.5,
+      "length_to_mirror_um": 25000.0,
+      "abcdef_gdd_fs2": -214316.19838101655,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.8383250167042825,
+      "abcdef_tod_fs3": -37165838.85808463,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 7.950629615828663
+    },
+    {
+      "beam_radius_mm": 1.0,
+      "length_to_mirror_um": 25000.0,
+      "abcdef_gdd_fs2": -1241829.5293594692,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.06319368329601342,
+      "abcdef_tod_fs3": 1702811.7556342643,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.6815458985310072
+    },
+    {
+      "beam_radius_mm": 2.0,
+      "length_to_mirror_um": 25000.0,
+      "abcdef_gdd_fs2": -1320295.7093410492,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.004000685129597629,
+      "abcdef_tod_fs3": 5114151.265342297,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.04356870887676975
+    },
+    {
+      "beam_radius_mm": 5.0,
+      "length_to_mirror_um": 25000.0,
+      "abcdef_gdd_fs2": -1325463.1955017147,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.00010245790730825107,
+      "abcdef_tod_fs3": 5341146.185189726,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.00111688588526515
+    },
+    {
+      "beam_radius_mm": 10.0,
+      "length_to_mirror_um": 25000.0,
+      "abcdef_gdd_fs2": -1325590.5384491426,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 6.393451827251455e-06,
+      "abcdef_tod_fs3": 5346745.184881742,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 6.977987947998894e-05
+    },
+    {
+      "beam_radius_mm": 0.1,
+      "length_to_mirror_um": 50000.0,
+      "abcdef_gdd_fs2": 5776854.622190114,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 5.357920127362169,
+      "abcdef_tod_fs3": -113407032.51214933,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 22.209000066756797
+    },
+    {
+      "beam_radius_mm": 0.2,
+      "length_to_mirror_um": 50000.0,
+      "abcdef_gdd_fs2": 5288001.821839201,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 4.9891413372947575,
+      "abcdef_tod_fs3": -116071095.01656473,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 22.707224035609322
+    },
+    {
+      "beam_radius_mm": 0.5,
+      "length_to_mirror_um": 50000.0,
+      "abcdef_gdd_fs2": 415602.769306282,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 1.3135207291508155,
+      "abcdef_tod_fs3": -56951951.80720957,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 11.650961610794601
+    },
+    {
+      "beam_radius_mm": 1.0,
+      "length_to_mirror_um": 50000.0,
+      "abcdef_gdd_fs2": -1184747.583066904,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.10625493010354815,
+      "abcdef_tod_fs3": -635391.1826428932,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 1.1188287122639076
+    },
+    {
+      "beam_radius_mm": 2.0,
+      "length_to_mirror_um": 50000.0,
+      "abcdef_gdd_fs2": -1316632.0117419723,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.0067644904443889195,
+      "abcdef_tod_fs3": 4960956.726578446,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.07221863393782109
+    },
+    {
+      "beam_radius_mm": 5.0,
+      "length_to_mirror_um": 50000.0,
+      "abcdef_gdd_fs2": -1325369.2514939501,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.0001733270063348556,
+      "abcdef_tod_fs3": 5337212.3270423915,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.0018525827451621488
+    },
+    {
+      "beam_radius_mm": 10.0,
+      "length_to_mirror_um": 50000.0,
+      "abcdef_gdd_fs2": -1325584.668990821,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 1.0821229957178186e-05,
+      "abcdef_tod_fs3": 5346499.322532734,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.00011576022532820147
+    },
+    {
+      "beam_radius_mm": 0.1,
+      "length_to_mirror_um": 75000.0,
+      "abcdef_gdd_fs2": 6867871.387661722,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 6.180956923766048,
+      "abcdef_tod_fs3": -128562518.85069971,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 25.043327917911984
+    },
+    {
+      "beam_radius_mm": 0.2,
+      "length_to_mirror_um": 75000.0,
+      "abcdef_gdd_fs2": 6444111.527172432,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 5.861282681298382,
+      "abcdef_tod_fs3": -131139514.71206237,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 25.52526897734159
+    },
+    {
+      "beam_radius_mm": 0.5,
+      "length_to_mirror_um": 75000.0,
+      "abcdef_gdd_fs2": 1179216.3223977275,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 1.8895724199378914,
+      "abcdef_tod_fs3": -78778193.9814771,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 15.732831680726093
+    },
+    {
+      "beam_radius_mm": 1.0,
+      "length_to_mirror_um": 75000.0,
+      "abcdef_gdd_fs2": -1106879.4615680361,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.16499676734077254,
+      "abcdef_tod_fs3": -3763359.093699961,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 1.703810702929392
+    },
+    {
+      "beam_radius_mm": 2.0,
+      "length_to_mirror_um": 75000.0,
+      "abcdef_gdd_fs2": -1311583.4074320958,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.01057303605891519,
+      "abcdef_tod_fs3": 4752352.576795992,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.11123107724628901
+    },
+    {
+      "beam_radius_mm": 5.0,
+      "length_to_mirror_um": 75000.0,
+      "abcdef_gdd_fs2": -1325239.7051286765,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.0002710536672212294,
+      "abcdef_tod_fs3": 5331849.228889209,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.002855571242164582
+    },
+    {
+      "beam_radius_mm": 10.0,
+      "length_to_mirror_um": 75000.0,
+      "abcdef_gdd_fs2": -1325576.5741555996,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 1.6927778874663627e-05,
+      "abcdef_tod_fs3": 5346164.116058865,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.0001784494075524966
+    },
+    {
+      "beam_radius_mm": 0.1,
+      "length_to_mirror_um": 100000.0,
+      "abcdef_gdd_fs2": 7957898.874970806,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 7.003247432527607,
+      "abcdef_tod_fs3": -143749426.49405518,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 27.883532075332724
+    },
+    {
+      "beam_radius_mm": 0.2,
+      "length_to_mirror_um": 100000.0,
+      "abcdef_gdd_fs2": 7584674.58193412,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 6.72169600618611,
+      "abcdef_tod_fs3": -146182821.39476264,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 28.338617368266572
+    },
+    {
+      "beam_radius_mm": 0.5,
+      "length_to_mirror_um": 100000.0,
+      "abcdef_gdd_fs2": 2057924.1359327887,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 2.5524484514664594,
+      "abcdef_tod_fs3": -101680106.06098762,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 20.01586990210942
+    },
+    {
+      "beam_radius_mm": 1.0,
+      "length_to_mirror_um": 100000.0,
+      "abcdef_gdd_fs2": -1005448.0122706704,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.24151421210086305,
+      "abcdef_tod_fs3": -7765669.123660241,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 2.4523092026455826
+    },
+    {
+      "beam_radius_mm": 2.0,
+      "length_to_mirror_um": 100000.0,
+      "abcdef_gdd_fs2": -1304929.8449162305,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.01559232352638466,
+      "abcdef_tod_fs3": 4479934.009591855,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.16217787729944594
+    },
+    {
+      "beam_radius_mm": 5.0,
+      "length_to_mirror_um": 100000.0,
+      "abcdef_gdd_fs2": -1325068.8391737062,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.00039995083236461635,
+      "abcdef_tod_fs3": 5324835.815608136,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.004167196098678943
+    },
+    {
+      "beam_radius_mm": 10.0,
+      "length_to_mirror_um": 100000.0,
+      "abcdef_gdd_fs2": -1325565.896486621,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 2.498275543177065e-05,
+      "abcdef_tod_fs3": 5345725.739087953,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.0002604331875648027
+    }
+  ]
+}

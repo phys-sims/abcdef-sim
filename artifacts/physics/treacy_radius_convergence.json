@@ -1,0 +1,84 @@
+{
+  "beam_radii_mm": [
+    0.1,
+    0.2,
+    0.5,
+    1.0,
+    2.0,
+    5.0,
+    10.0
+  ],
+  "length_to_mirror_um": 0.0,
+  "points": [
+    {
+      "beam_radius_mm": 0.1,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": 3588611.647484334,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 3.707162279588282,
+      "abcdef_tod_fs3": -83275233.70433949,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 16.573852856129644
+    },
+    {
+      "beam_radius_mm": 0.2,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": 2897716.551130411,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 3.185967642850979,
+      "abcdef_tod_fs3": -85282972.23973793,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 16.94933333373348
+    },
+    {
+      "beam_radius_mm": 0.5,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -697368.3235337754,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.4739221164335823,
+      "abcdef_tod_fs3": -20482232.607960105,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 4.830517941671879
+    },
+    {
+      "beam_radius_mm": 1.0,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -1281109.8948938842,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.03356152068021393,
+      "abcdef_tod_fs3": 3349012.1363065257,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.3736790651418814
+    },
+    {
+      "beam_radius_mm": 2.0,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -1322795.478120876,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 0.0021149197102094544,
+      "abcdef_tod_fs3": 5220404.94820754,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.023697504092880527
+    },
+    {
+      "beam_radius_mm": 5.0,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -1325527.2549965878,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 5.413296574168429e-05,
+      "abcdef_tod_fs3": 5343871.920954723,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 0.000607127991586103
+    },
+    {
+      "beam_radius_mm": 10.0,
+      "length_to_mirror_um": 0.0,
+      "abcdef_gdd_fs2": -1325594.539989814,
+      "analytic_gdd_fs2": -1325599.0136025783,
+      "gdd_rel_error": 3.374785827749424e-06,
+      "abcdef_tod_fs3": 5346915.529644155,
+      "analytic_tod_fs3": 5347118.306152711,
+      "tod_rel_error": 3.792257753534664e-05
+    }
+  ]
+}
