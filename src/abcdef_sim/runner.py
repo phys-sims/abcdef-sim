@@ -87,7 +87,9 @@ def run_abcdef_on_state(
         order=4,
     )
     delta_omega = np.asarray(pipeline_result.delta_omega_rad_per_fs, dtype=np.float64).reshape(-1)
-    coefficients = tuple(float(value) for value in np.asarray(fit.coefficients_rad, dtype=np.float64))
+    coefficients = tuple(
+        float(value) for value in np.asarray(fit.coefficients_rad, dtype=np.float64)
+    )
 
     pulse_state_out = apply_phase_to_state(initial_state, fit.phi_fit_rad)
     beam_matrix = _beam_matrix_for_cfg(cfg, omega0_rad_per_fs=internal_laser_spec.omega0_rad_per_fs)

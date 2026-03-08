@@ -4,16 +4,34 @@ import numpy as np
 import pytest
 
 from abcdef_sim.data_models.standalone import BeamSpec, PulseSpec, StandaloneLaserSpec
+from abcdef_sim.data_models.states import RayState
 from abcdef_sim.optics.grating import Grating
 from abcdef_sim.optics.thick_lens import ThickLens
+from abcdef_sim.physics.abcd.lenses import (
+    SellmeierMaterial,
+    ThickLensSpec,
+    thick_lens_matrix_for_spec,
+)
 from abcdef_sim.physics.abcd.matrices import free_space, thick_lens
+from abcdef_sim.physics.abcdef.conventions import theta_abcd_to_xprime_abcdef
 from abcdef_sim.physics.abcdef.dispersion import evaluate_phase_polynomial, fit_phase_taylor
+from abcdef_sim.physics.abcdef.propagation import propagate_step
 from abcdef_sim.physics.abcdef.pulse import (
     build_standalone_laser_state,
     update_beam_state_from_abcd,
 )
 
 pytestmark = pytest.mark.physics
+
+_C_UM_PER_FS = 0.299792458
+
+
+def _omega_to_wavelength_um(omega: float) -> float:
+    return (2.0 * np.pi * _C_UM_PER_FS) / float(omega)
+
+
+def _theta_ray_to_martinez_column(*, x: float, theta: float, n: float) -> np.ndarray:
+    return np.array([[[x], [n * theta], [1.0]]], dtype=float)
 
 
 def test_grating_matrix_frequency_shift_is_centered_at_omega0() -> None:
@@ -28,7 +46,48 @@ def test_grating_matrix_frequency_shift_is_centered_at_omega0() -> None:
     assert matrix[2, 1, 2] > 0.0
 
 
-def test_thick_lens_runtime_respects_xprime_conversion() -> None:
+def test_thick_lens_runtime_matches_abcd_thick_lens_over_frequency_grid() -> None:
+    omega = np.linspace(1.76, 1.94, 7, dtype=float)
+    material = SellmeierMaterial(
+        name="demo",
+        b_terms=(1.0, 0.2, 0.1),
+        c_terms=(0.01, 0.04, 120.0),
+    )
+    lens = ThickLens(
+        name="ThickLens",
+        instance_name="lens-1",
+        _length=6.0,
+        R1=85.0,
+        R2=-55.0,
+        n_in=1.0,
+        n_out=1.33,
+        refractive_index_model=material,
+    )
+    spec = ThickLensSpec(
+        refractive_index=material,
+        R1=85.0,
+        R2=-55.0,
+        thickness=6.0,
+        n_in=1.0,
+        n_out=1.33,
+    )
+
+    expected = np.stack(
+        [
+            theta_abcd_to_xprime_abcdef(
+                thick_lens_matrix_for_spec(spec, wavelength=_omega_to_wavelength_um(omega_i)),
+                n_in=spec.n_in,
+                n_out=spec.n_out,
+            )
+            for omega_i in omega
+        ],
+        axis=0,
+    )
+
+    np.testing.assert_allclose(lens.matrix(omega), expected, rtol=1e-12, atol=1e-12)
+
+
+def test_thick_lens_runtime_matches_abcd_thick_lens_ray_propagation() -> None:
     omega = np.array([1.82], dtype=float)
     lens = ThickLens(
         name="ThickLens",
@@ -49,13 +108,28 @@ def test_thick_lens_runtime_respects_xprime_conversion() -> None:
         n_in=1.0,
         n_out=1.33,
     )
-    expected = np.eye(3, dtype=float)
-    expected[0, 0] = theta_matrix[0, 0]
-    expected[0, 1] = theta_matrix[0, 1]
-    expected[1, 0] = 1.33 * theta_matrix[1, 0]
-    expected[1, 1] = 1.33 * theta_matrix[1, 1]
+    state_in = RayState(
+        rays=_theta_ray_to_martinez_column(x=0.7, theta=0.015, n=1.0),
+        system=np.eye(3, dtype=float)[None, ...],
+        meta={},
+    )
 
-    np.testing.assert_allclose(lens.matrix(omega)[0], expected)
+    state_out = propagate_step(state_in, lens.matrix(omega))
+    expected_theta_ray = theta_matrix @ np.array([0.7, 0.015], dtype=float)
+
+    assert state_out.rays[0, 2, 0] == pytest.approx(1.0, abs=1e-12)
+    assert state_out.rays[0, 0, 0] == pytest.approx(expected_theta_ray[0], rel=1e-12, abs=1e-12)
+    assert state_out.rays[0, 1, 0] / 1.33 == pytest.approx(
+        expected_theta_ray[1],
+        rel=1e-12,
+        abs=1e-12,
+    )
+    np.testing.assert_allclose(
+        state_out.system[0],
+        theta_abcd_to_xprime_abcdef(theta_matrix, n_in=1.0, n_out=1.33),
+        rtol=1e-12,
+        atol=1e-12,
+    )
 
 
 def test_weighted_taylor_fit_recovers_known_coefficients() -> None:

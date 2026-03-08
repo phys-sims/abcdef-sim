@@ -7,23 +7,9 @@ import numpy as np
 from abcdef_sim.optics.base import ArrayLike, NDArrayF, Optic
 from abcdef_sim.physics.abcd.lenses import SellmeierMaterial, refractive_index_sellmeier
 from abcdef_sim.physics.abcd.matrices import thick_lens
+from abcdef_sim.physics.abcdef.conventions import theta_abcd_to_xprime_abcdef
 
 _C_UM_PER_FS = 0.299792458
-
-
-def _theta_to_xprime_matrix(
-    matrix_theta: NDArrayF,
-    *,
-    n_in: float,
-    n_out: float,
-) -> NDArrayF:
-    out = np.zeros((3, 3), dtype=np.float64)
-    out[0, 0] = matrix_theta[0, 0]
-    out[0, 1] = matrix_theta[0, 1] / n_in
-    out[1, 0] = n_out * matrix_theta[1, 0]
-    out[1, 1] = (n_out / n_in) * matrix_theta[1, 1]
-    out[2, 2] = 1.0
-    return out
 
 
 @dataclass(slots=True)
@@ -51,7 +37,7 @@ class ThickLens(Optic):
                 n_in=self.n_in,
                 n_out=self.n_out,
             )
-            matrices[idx] = _theta_to_xprime_matrix(
+            matrices[idx] = theta_abcd_to_xprime_abcdef(
                 theta_matrix,
                 n_in=float(self.n_in),
                 n_out=float(self.n_out),
