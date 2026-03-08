@@ -94,12 +94,14 @@ def phi1_rad(abcdef: object, q_in: object, w_in: object, w_out: object) -> NDArr
 
     z = extract_A(matrices).astype(np.complex128) + extract_B(matrices) / q_arr
     lhs = 1.0 / np.sqrt(z)
-    expected_ratio = w_out_arr / w_in_arr
-    actual_ratio = np.abs(lhs)
-    if not np.allclose(actual_ratio, expected_ratio, rtol=1e-9, atol=1e-12):
-        raise ValueError("w_out / w_in must match |1 / sqrt(A + B / q_in)| from Martinez eq. 25")
+    amplitude_factor = np.sqrt(w_in_arr / w_out_arr)
+    normalized_phase = lhs / amplitude_factor
+    if not np.allclose(np.abs(normalized_phase), 1.0, rtol=1e-9, atol=1e-12):
+        raise ValueError(
+            "sqrt(w_in / w_out) must match |1 / sqrt(A + B / q_in)| from Martinez eq. 25"
+        )
 
-    return -np.angle(lhs)
+    return -np.angle(normalized_phase)
 
 
 def combine_phi_total_rad(*terms: object | None) -> NDArrayF:

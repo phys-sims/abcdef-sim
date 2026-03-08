@@ -46,10 +46,10 @@ def test_phi1_rad_matches_martinez_equation_25_phase_factor() -> None:
 
     lhs = 1.0 / np.sqrt(matrices[:, 0, 0].astype(np.complex128) + matrices[:, 0, 1] / q_in)
     w_in = np.array([1.0, 1.3, 0.8], dtype=float)
-    w_out = w_in * np.abs(lhs)
+    w_out = w_in / np.abs(lhs) ** 2
     expected = -np.angle(lhs)
 
-    # Martinez eq. 25: 1/sqrt(A + B/q_in) = (w_out / w_in) * exp(-j phi1).
+    # Martinez eq. 25: 1/sqrt(A + B/q_in) = sqrt(w_in / w_out) * exp(-j phi1).
     np.testing.assert_allclose(phi1_rad(matrices, q_in, w_in, w_out), expected)
 
 
@@ -62,7 +62,7 @@ def test_phi1_rad_accepts_unbatched_abcdef_matrix() -> None:
 
     lhs = 1.0 / np.sqrt(matrix[0, 0].astype(np.complex128) + matrix[0, 1] / q_in)
     w_in = 1.2
-    w_out = w_in * np.abs(lhs)
+    w_out = w_in / np.abs(lhs) ** 2
     expected = np.array([-np.angle(lhs)], dtype=float)
 
     np.testing.assert_allclose(phi1_rad(matrix, q_in, w_in, w_out), expected)
