@@ -1,7 +1,7 @@
 ## abcdef-sim
 `abcdef-sim` is an **architecture-first simulation scaffold** for frequency-dependent ray-transfer (ABCDEF) optics on top of `phys-pipeline`.
 
-> Current state: the repository includes data models, assembly, caching, and pipeline wiring. The actual stage physics update is still a placeholder from an ongoing refactor.
+> Current state: the repository includes validated data models, pipeline assembly, Martinez-aligned stage propagation, and pure-data result synthesis helpers.
 
 ## What is implemented today
 
@@ -21,10 +21,12 @@
   - `SystemAssembler.build_optic_cfgs(...)`
   - `SystemAssembler.build_pipeline(...)`
   - `AbcdefOpticStage` wrapper stages
+- Stage physics + result synthesis:
+  - `physics.abcdef.adapters.apply_cfg(...)`
+  - `physics.abcdef.compute_pipeline_result(...)`
 
 ## What is intentionally not implemented yet
 
-- Physics propagation in `AbcdefOpticStage.process(...)` (currently returns input state unchanged).
 - Additional optic implementations (e.g., `Grating` builder is stubbed/not registered).
 - Stage-result caching at pipeline execution level.
 
@@ -32,7 +34,9 @@
 
 New additive pure-physics modules live under:
 - `src/abcdef_sim/physics/abcd` for paraxial ABCD transfer math (matrices, rays, Gaussian q propagation).
-- `src/abcdef_sim/physics/abcdef` for structured ABCDEF conventions, dispersion helpers, and batched propagation kernels.
+- `src/abcdef_sim/physics/abcdef` for structured ABCDEF conventions, Martinez phase helpers, batched propagation kernels, and pure-data pipeline result synthesis.
+
+Martinez phase bookkeeping is stored in radians. The per-optic `phi3_rad` term uses the post-element displacement sign already validated in `tests/physics/test_martinez_phase_terms.py`.
 
 To run reference validation tests against the external `raytracing` package:
 

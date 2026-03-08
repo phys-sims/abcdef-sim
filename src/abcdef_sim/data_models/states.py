@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Final
 
 import numpy as np
 import numpy.typing as npt
@@ -11,6 +11,7 @@ import numpy.typing as npt
 from abcdef_sim._phys_pipeline import State, hash_ndarray
 
 NDArrayF = npt.NDArray[np.float64]
+PHASE_CONTRIBUTIONS_META_KEY: Final[str] = "phase_contributions"
 
 
 @dataclass(slots=True)
@@ -59,4 +60,76 @@ class RayState(State):
         h = hashlib.sha256()
         h.update(hash_ndarray(self.rays))
         h.update(hash_ndarray(self.system))
+        phase_contributions = self.meta.get(PHASE_CONTRIBUTIONS_META_KEY)
+        if phase_contributions is not None:
+            h.update(_hash_phase_contributions_meta(phase_contributions))
         return h.digest()
+
+
+def _hash_phase_contributions_meta(phase_contributions: Any) -> bytes:
+    if not isinstance(phase_contributions, tuple):
+        raise TypeError(
+            "RayState.meta['phase_contributions'] must be stored as a tuple "
+            "for deterministic hashing"
+        )
+
+    h = hashlib.sha256()
+    for contribution in phase_contributions:
+        optic_name = getattr(contribution, "optic_name", None)
+        instance_name = getattr(contribution, "instance_name", None)
+        backend_id = getattr(contribution, "backend_id", None)
+        if not isinstance(optic_name, str) or not isinstance(instance_name, str):
+            raise TypeError(
+                "Each phase contribution must expose string optic_name and instance_name fields"
+            )
+
+        _update_string_hash(h, optic_name)
+        _update_string_hash(h, instance_name)
+        if backend_id is None:
+            h.update(b"\x00")
+        elif isinstance(backend_id, str):
+            h.update(b"\x01")
+            _update_string_hash(h, backend_id)
+        else:
+            raise TypeError("Phase contribution backend_id must be a string or None")
+
+        _update_array_hash(h, getattr(contribution, "omega", None), name="omega")
+        _update_array_hash(h, getattr(contribution, "phi0_rad", None), name="phi0_rad")
+        _update_array_hash(h, getattr(contribution, "phi3_rad", None), name="phi3_rad")
+        _update_array_hash(
+            h,
+            getattr(contribution, "filter_amp", None),
+            name="filter_amp",
+            allow_none=True,
+        )
+        _update_array_hash(
+            h,
+            getattr(contribution, "filter_phase_rad", None),
+            name="filter_phase_rad",
+            allow_none=True,
+        )
+
+    return h.digest()
+
+
+def _update_string_hash(hasher: Any, value: str) -> None:
+    encoded = value.encode("utf-8")
+    hasher.update(len(encoded).to_bytes(8, byteorder="big", signed=False))
+    hasher.update(encoded)
+
+
+def _update_array_hash(
+    hasher: Any,
+    value: Any,
+    *,
+    name: str,
+    allow_none: bool = False,
+) -> None:
+    if value is None:
+        if allow_none:
+            hasher.update(b"\x00")
+            return
+        raise TypeError(f"Phase contribution {name} must not be None")
+
+    hasher.update(b"\x01")
+    hasher.update(hash_ndarray(np.asarray(value, dtype=float)))
