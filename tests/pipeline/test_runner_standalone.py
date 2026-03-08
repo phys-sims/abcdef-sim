@@ -21,6 +21,10 @@ from abcdef_sim.physics.abcd.lenses import (
 )
 from abcdef_sim.physics.abcd.matrices import compose, free_space
 from abcdef_sim.physics.abcdef.conventions import theta_abcd_to_xprime_abcdef
+from abcdef_sim.physics.abcdef.pulse import (
+    build_standalone_laser_state,
+    update_beam_state_from_abcd,
+)
 
 pytestmark = pytest.mark.integration
 
@@ -131,3 +135,32 @@ def test_run_abcdef_matches_abcd_for_free_space_thick_lens_chain() -> None:
         "fs2",
         "lens2",
     ]
+
+
+@pytest.mark.physics
+def test_run_abcdef_beam_update_respects_free_space_medium_index() -> None:
+    cfg = AbcdefCfg(
+        optics=(
+            FreeSpaceCfg(
+                instance_name="fs-medium",
+                length=50_000.0,
+                medium_refractive_index=1.5,
+            ),
+        )
+    )
+    laser_spec = StandaloneLaserSpec(
+        pulse=PulseSpec(width_fs=100.0, center_wavelength_nm=1030.0, n_samples=128),
+        beam=BeamSpec(radius_mm=1.0, m2=1.2),
+    )
+
+    result = run_abcdef(cfg, laser_spec)
+    expected_final_state = update_beam_state_from_abcd(
+        build_standalone_laser_state(laser_spec),
+        free_space(50_000.0 / 1.5),
+    )
+
+    assert result.final_state.beam.radius_mm == pytest.approx(
+        expected_final_state.beam.radius_mm,
+        rel=1e-12,
+        abs=1e-12,
+    )

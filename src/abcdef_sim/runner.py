@@ -153,7 +153,8 @@ def _beam_matrix_for_cfg(cfg: AbcdefCfg, *, omega0_rad_per_fs: float) -> np.ndar
     matrices: list[np.ndarray] = []
     for optic in cfg.optics:
         if isinstance(optic, FreeSpaceCfg):
-            matrices.append(free_space(float(optic.length)))
+            # Gaussian q propagation through a uniform medium uses B = L / n.
+            matrices.append(free_space(float(optic.length) / float(optic.medium_refractive_index)))
         elif isinstance(optic, GratingCfg):
             from abcdef_sim.optics.grating import Grating
 

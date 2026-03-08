@@ -46,15 +46,15 @@ class OpticStageCfgGenerator:
         freeze_arrays: bool = False,
     ) -> OpticStageCfg:
         w = np.asarray(omega, dtype=np.float64).reshape(-1)
+        omega0 = float(np.mean(w) if omega0_rad_per_fs is None else omega0_rad_per_fs)
         if delta_omega is None:
-            delta_w = w - float(np.mean(w))
+            delta_w = w - omega0
         else:
             delta_w = np.asarray(delta_omega, dtype=np.float64).reshape(-1)
             if delta_w.shape != w.shape:
                 raise ValueError(
                     f"delta_omega shape must match omega shape {w.shape}; got {delta_w.shape}"
                 )
-        omega0 = float(np.mean(w) if omega0_rad_per_fs is None else omega0_rad_per_fs)
 
         grid: LinspaceGrid | None = None
         if infer_grid:
