@@ -50,11 +50,11 @@ def abcd_from_raytracing(obj: Any) -> NDArrayF:
     return from_raytracing_matrix(obj)
 
 
-def raytracing_space(d: float) -> Any:
+def raytracing_space(d: float, n: float = 1.0) -> Any:
     """Build a raytracing native space element for oracle-mode validation."""
 
     rt = _import_raytracing()
-    return rt.Space(d=d)
+    return rt.Space(d=d, n=n)
 
 
 def raytracing_thin_lens(f: float) -> Any:
@@ -76,22 +76,63 @@ def raytracing_thick_lens(
     R1: float | None,
     R2: float | None,
     thickness: float,
+    n_in: float = 1.0,
+    n_out: float = 1.0,
 ) -> Any:
     """Build a raytracing native thick lens element for oracle-mode validation.
 
-    For finite radii on both sides this uses ``rt.ThickLens`` directly. If either
-    side is planar (``None``), the lens is assembled from native interfaces and
-    a propagation space via matrix multiplication.
+    For an air-to-air lens with finite radii on both sides this uses
+    ``rt.ThickLens`` directly. Otherwise the lens is assembled from native
+    interfaces and a propagation space via matrix multiplication.
     """
 
     rt = _import_raytracing()
-    if R1 is not None and R2 is not None:
+    if n_in == 1.0 and n_out == 1.0 and R1 is not None and R2 is not None:
         return rt.ThickLens(n=n, R1=R1, R2=R2, thickness=thickness)
 
-    front = raytracing_interface(n1=1.0, n2=n, R=R1)
-    middle = raytracing_space(d=thickness)
-    back = raytracing_interface(n1=n, n2=1.0, R=R2)
+    front = raytracing_interface(n1=n_in, n2=n, R=R1)
+    middle = raytracing_space(d=thickness, n=n)
+    back = raytracing_interface(n1=n, n2=n_out, R=R2)
     return back * middle * front
+
+
+def raytracing_compose(*elements: Any) -> Any:
+    """Compose raytracing-native elements in optical traversal order."""
+
+    rt = _import_raytracing()
+    total = rt.Matrix(A=1.0, B=0.0, C=0.0, D=1.0)
+    for element in elements:
+        total = element * total
+    return total
+
+
+def raytracing_gaussian_beam(q: complex, wavelength: float) -> Any:
+    """Build a raytracing GaussianBeam with an explicit q-parameter."""
+
+    rt = _import_raytracing()
+    return rt.GaussianBeam(q=q, wavelength=wavelength)
+
+
+def propagate_gaussian_beam_raytracing(
+    q: complex,
+    wavelength: float,
+    elements: Sequence[Any],
+) -> Any:
+    """Propagate a Gaussian beam through native raytracing elements."""
+
+    beam = raytracing_gaussian_beam(q=q, wavelength=wavelength)
+    return raytracing_compose(*elements) * beam
+
+
+def sample_gaussian_beam_radii_raytracing(beam: Any, z_samples: npt.ArrayLike) -> NDArrayF:
+    """Sample Gaussian beam radii after extra free-space propagation distances."""
+
+    rt = _import_raytracing()
+    z_arr = np.asarray(z_samples, dtype=float)
+    radii = np.empty_like(z_arr, dtype=float)
+    for idx in np.ndindex(z_arr.shape):
+        radii[idx] = float((rt.Space(d=float(z_arr[idx])) * beam).w)
+    return radii
 
 
 def trace_ray_raytracing(ray: Ray, elements: Sequence[NDArrayF]) -> Ray:
@@ -102,10 +143,7 @@ def trace_ray_raytracing(ray: Ray, elements: Sequence[NDArrayF]) -> Ray:
 
     rt = _import_raytracing()
     rt_ray = rt.Ray(y=ray.y, theta=ray.theta)
-
-    total = rt.Matrix(A=1.0, B=0.0, C=0.0, D=1.0)
-    for element in elements:
-        total = to_raytracing_matrix(element) * total
+    total = raytracing_compose(*(to_raytracing_matrix(element) for element in elements))
 
     out = total * rt_ray
     return Ray(y=float(out.y), theta=float(out.theta))
