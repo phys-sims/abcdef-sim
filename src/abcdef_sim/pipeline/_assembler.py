@@ -29,6 +29,8 @@ class SystemAssembler:
         policy: PolicyBag | None = None,
     ) -> list[OpticStageCfg]:
         w = laser.omega()
+        delta_w = laser.delta_omega()
+        omega0 = laser.omega0_rad_per_fs
 
         cfgs: list[OpticStageCfg] = []
         for spec in preset.optics:
@@ -36,6 +38,8 @@ class SystemAssembler:
             cfg = self.cfg_gen.build(
                 optic,
                 w,
+                delta_omega=delta_w,
+                omega0_rad_per_fs=omega0,
                 tags={"preset": preset.name, "optic_kind": spec.kind},
                 policy=policy,
             )

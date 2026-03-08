@@ -7,23 +7,25 @@ This document explains the architecture for the CPA optics simulation on top of 
 ## High-level flow
 
 ```text
-SystemPreset (OpticSpec[])  +  LaserSpec  +  PolicyBag
-              |                    |            |
-              |                    |            |
-              v                    v            v
-                      SystemAssembler
-                          |  (uses OpticFactory)
-                          v
-          OpticStageCfg[] (aligned to omega grid)
-                          |
-                          v
-                   Pipeline stages
-                          |
-                          v
-                SequentialPipeline.run
-                          |
-                          v
-                     LaserState -> StageResult
+AbcdefCfg + StandaloneLaserSpec/LaserState + PolicyBag
+    |
+    v
+normalize to SystemPreset + LaserSpec(delta_omega, omega0)
+    |
+    v
+SystemAssembler
+    |  (uses OpticFactory)
+    v
+OpticStageCfg[] (aligned to absolute omega and centered delta_omega)
+    |
+    v
+Pipeline stages
+    |
+    v
+SequentialPipeline.run / run_abcdef_on_state
+    |
+    v
+RayState + phase bookkeeping + Taylor fit + mutated laser state
 ```
 
 ### Key invariants
@@ -48,6 +50,16 @@ SystemPreset (OpticSpec[])  +  LaserSpec  +  PolicyBag
   - `tags`: optional metadata for optimizers or policies.
 
 **Why:** Presets must be immutable and hashable to support caching and topology search. Live `Optic` objects are hard to serialize and hash deterministically.
+
+### Public typed config boundary
+
+**Purpose:** Present one stable user-facing config while keeping cache-friendly internal assembly untouched.
+
+- `AbcdefCfg` is the public typed config for standalone runs and `cpa-sim` wrapping.
+- `AbcdefCfg.optics` is a typed ordered union over `free_space`, single-primitive `grating`, and `thick_lens`.
+- `AbcdefCfg.input_ray` is one fixed Martinez input ray for the whole chain in v1.
+
+**Why:** Optimizers and external wrappers need a typed API, but the assembler/cache seam still wants immutable normalized data (`SystemPreset` + `LaserSpec`).
 
 ### OpticFactory
 
@@ -74,6 +86,8 @@ SystemPreset (OpticSpec[])  +  LaserSpec  +  PolicyBag
 
 - **LaserSpec (immutable):** Pydantic frozen model with pulse/beam parameters + omega grid. Hashable and validated.
 - **LaserState (mutable):** Runtime arrays evolving through GLNSE/fiber/amp stages; a `State` subclass with `hashable_repr` for caching.
+- Internal spectral contract is explicit `omega0 + delta_omega`, not only absolute `omega`.
+- Standalone runs use `run_abcdef(...)` / `run_abcdef_on_state(...)` to generate or mutate a local pulse-and-beam state without importing `cpa-sim`.
 
 **Why:** Pydantic models are ideal for stable config hashing, not for large mutable numpy arrays.
 

@@ -94,6 +94,16 @@ def _hash_phase_contributions_meta(phase_contributions: Any) -> bytes:
             raise TypeError("Phase contribution backend_id must be a string or None")
 
         _update_array_hash(h, getattr(contribution, "omega", None), name="omega")
+        _update_array_hash(
+            h,
+            getattr(contribution, "delta_omega_rad_per_fs", None),
+            name="delta_omega_rad_per_fs",
+        )
+        _update_array_hash(
+            h,
+            np.asarray([getattr(contribution, "omega0_rad_per_fs", None)], dtype=float),
+            name="omega0_rad_per_fs",
+        )
         _update_array_hash(h, getattr(contribution, "phi0_rad", None), name="phi0_rad")
         _update_array_hash(h, getattr(contribution, "phi3_rad", None), name="phi3_rad")
         _update_array_hash(
