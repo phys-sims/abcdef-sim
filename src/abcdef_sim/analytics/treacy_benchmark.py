@@ -3,10 +3,32 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Literal
 
-from abcdef_sim import BeamSpec, PulseSpec, StandaloneLaserSpec, run_abcdef, treacy_compressor_preset
+import numpy as np
+
+from abcdef_sim import (
+    BeamSpec,
+    PulseSpec,
+    StandaloneLaserSpec,
+    run_abcdef,
+    treacy_compressor_preset,
+)
+from abcdef_sim.data_models.results import AbcdefRunResult
+from abcdef_sim.physics.abcdef.dispersion import (
+    fit_phase_taylor,
+    gdd_from_phase_coeffs,
+    tod_from_phase_coeffs,
+)
 from abcdef_sim.physics.abcdef.treacy import compute_treacy_analytic_metrics
 
-DEFAULT_TREACY_BENCHMARK_BEAM_RADII_MM: tuple[float, ...] = (0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0)
+DEFAULT_TREACY_BENCHMARK_BEAM_RADII_MM: tuple[float, ...] = (
+    0.1,
+    0.2,
+    0.5,
+    1.0,
+    2.0,
+    5.0,
+    10.0,
+)
 DEFAULT_TREACY_BENCHMARK_MIRROR_LENGTHS_UM: tuple[float, ...] = (
     0.0,
     25_000.0,
@@ -29,12 +51,14 @@ __all__ = [
 class TreacyBenchmarkPoint:
     beam_radius_mm: float
     length_to_mirror_um: float
-    abcdef_gdd_fs2: float
+    comparison_gdd_fs2: float
     analytic_gdd_fs2: float
     gdd_rel_error: float
-    abcdef_tod_fs3: float
+    comparison_tod_fs3: float
     analytic_tod_fs3: float
     tod_rel_error: float
+    runner_gdd_fs2: float
+    runner_tod_fs3: float
 
     def to_dict(self) -> dict[str, float]:
         return {key: float(value) for key, value in asdict(self).items()}
@@ -81,17 +105,20 @@ def run_treacy_benchmark_point(
         diffraction_order=diffraction_order,
         n_passes=n_passes,
     )
-    abcdef_gdd_fs2 = float(result.final_state.metrics["abcdef.gdd_fs2"])
-    abcdef_tod_fs3 = float(result.final_state.metrics["abcdef.tod_fs3"])
+    comparison_gdd_fs2, comparison_tod_fs3 = _benchmark_dispersion_without_phi2(result)
+    runner_gdd_fs2 = float(result.final_state.metrics["abcdef.gdd_fs2"])
+    runner_tod_fs3 = float(result.final_state.metrics["abcdef.tod_fs3"])
     return TreacyBenchmarkPoint(
         beam_radius_mm=float(beam_radius_mm),
         length_to_mirror_um=float(length_to_mirror_um),
-        abcdef_gdd_fs2=abcdef_gdd_fs2,
+        comparison_gdd_fs2=comparison_gdd_fs2,
         analytic_gdd_fs2=float(analytic.gdd_fs2),
-        gdd_rel_error=_relative_error(abcdef_gdd_fs2, analytic.gdd_fs2),
-        abcdef_tod_fs3=abcdef_tod_fs3,
+        gdd_rel_error=_relative_error(comparison_gdd_fs2, analytic.gdd_fs2),
+        comparison_tod_fs3=comparison_tod_fs3,
         analytic_tod_fs3=float(analytic.tod_fs3),
-        tod_rel_error=_relative_error(abcdef_tod_fs3, analytic.tod_fs3),
+        tod_rel_error=_relative_error(comparison_tod_fs3, analytic.tod_fs3),
+        runner_gdd_fs2=runner_gdd_fs2,
+        runner_tod_fs3=runner_tod_fs3,
     )
 
 
@@ -160,3 +187,22 @@ def _relative_error(value: float, reference: float) -> float:
     if reference == 0.0:
         return abs(float(value))
     return abs(float(value) - float(reference)) / abs(float(reference))
+
+
+def _benchmark_dispersion_without_phi2(result: AbcdefRunResult) -> tuple[float, float]:
+    comparison_phase = np.asarray(result.pipeline_result.phi_total_rad, dtype=np.float64).reshape(
+        -1
+    )
+    phi2 = result.pipeline_result.phi2_rad
+    if phi2 is not None:
+        comparison_phase = comparison_phase - np.asarray(phi2, dtype=np.float64).reshape(-1)
+
+    fit = fit_phase_taylor(
+        result.pipeline_result.delta_omega_rad_per_fs,
+        comparison_phase,
+        omega0_rad_per_fs=result.pipeline_result.omega0_rad_per_fs,
+        weights=result.fit.weights,
+        order=4,
+    )
+    coefficients = tuple(float(value) for value in fit.coefficients_rad)
+    return gdd_from_phase_coeffs(coefficients), tod_from_phase_coeffs(coefficients)

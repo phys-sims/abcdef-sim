@@ -68,7 +68,7 @@ def _plot_radius_convergence(points: tuple[object, ...], output_path: Path) -> N
     ax.set_yscale("log")
     ax.set_xlabel("Input beam radius (mm)")
     ax.set_ylabel("Relative error")
-    ax.set_title("Treacy Compressor vs Analytic Baseline at length_to_mirror = 0 um")
+    ax.set_title("Treacy Finite-Beam Error vs Analytic Baseline at length_to_mirror = 0 um")
     ax.grid(True, which="both", alpha=0.3)
     ax.legend()
     fig.savefig(output_path, dpi=200)
@@ -110,7 +110,7 @@ def _plot_mirror_heatmap(points: tuple[object, ...], output_path: Path) -> None:
         ax.set_title(title)
         fig.colorbar(im, ax=ax, shrink=0.85)
 
-    fig.suptitle("Treacy Compressor Error Surface vs Beam Radius and Mirror Leg")
+    fig.suptitle("Treacy Finite-Beam Error Surface vs Beam Radius and Mirror Leg")
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
 

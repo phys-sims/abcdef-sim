@@ -25,7 +25,9 @@ def test_treacy_preset_defaults_to_double_pass_with_explicit_return_leg() -> Non
 def test_treacy_preset_folds_one_way_mirror_length_into_round_trip_segment() -> None:
     cfg = treacy_compressor_preset(length_to_mirror_um=37_500.0)
 
-    mirror_leg = next(optic for optic in cfg.optics if optic.instance_name == "mirror_leg_round_trip")
+    mirror_leg = next(
+        optic for optic in cfg.optics if optic.instance_name == "mirror_leg_round_trip"
+    )
     assert isinstance(mirror_leg, FreeSpaceCfg)
     assert mirror_leg.length == 75_000.0
 

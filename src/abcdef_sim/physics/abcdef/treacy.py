@@ -87,32 +87,29 @@ def compute_treacy_analytic_metrics(
     littrow_arg = wavelength_um / (2.0 * period_um)
     theta_l_rad = _safe_asin(littrow_arg, context="littrow angle")
 
-    diff_arg = -float(order) * (wavelength_um / period_um) - math.sin(theta_i_rad)
+    diffraction_geometry = -float(order) * (wavelength_um / period_um)
+    diff_arg = diffraction_geometry - math.sin(theta_i_rad)
     theta_d_rad = _safe_asin(diff_arg, context="diffraction angle")
 
     gdd_bracket = 1.0 - diff_arg**2
     if gdd_bracket <= 0.0:
         raise ValueError(
-            "Invalid Treacy geometry: GDD radical argument must be > 0. "
-            f"Got {gdd_bracket:.12g}."
+            f"Invalid Treacy geometry: GDD radical argument must be > 0. Got {gdd_bracket:.12g}."
         )
     gdd_fs2 = -(
         (passes * float(order) ** 2 * separation * wavelength_um**3)
         / (2.0 * math.pi * _C_UM_PER_FS**2 * period_um**2)
     ) * gdd_bracket ** (-1.5)
 
-    tod_den = 1.0 - ((wavelength_um / period_um) - math.sin(theta_i_rad)) ** 2
+    tod_den = gdd_bracket
     if tod_den <= 0.0:
         raise ValueError(
-            "Invalid Treacy geometry: TOD denominator must be > 0. "
-            f"Got {tod_den:.12g}."
+            f"Invalid Treacy geometry: TOD denominator must be > 0. Got {tod_den:.12g}."
         )
-    tod_num = 1.0 + (wavelength_um / period_um) * math.sin(theta_i_rad) - math.sin(
-        theta_i_rad
-    ) ** 2
-    tod_fs3 = -((3.0 * wavelength_um) / (2.0 * math.pi * _C_UM_PER_FS)) * (
-        tod_num / tod_den
-    ) * gdd_fs2
+    tod_num = 1.0 + diffraction_geometry * math.sin(theta_i_rad) - math.sin(theta_i_rad) ** 2
+    tod_fs3 = (
+        -((3.0 * wavelength_um) / (2.0 * math.pi * _C_UM_PER_FS)) * (tod_num / tod_den) * gdd_fs2
+    )
     if not include_tod:
         tod_fs3 = 0.0
 

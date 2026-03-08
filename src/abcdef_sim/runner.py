@@ -121,11 +121,12 @@ def run_abcdef_on_state(
             omega0_rad_per_fs=pipeline_result.omega0_rad_per_fs,
             contributions=pipeline_result.contributions,
             phi1_rad=pipeline_result.phi1_rad,
-            phi2_rad=None,
+            phi2_rad=pipeline_result.phi2_rad,
             phi4_rad=pipeline_result.phi4_rad,
             phi_total_rad=combine_phi_total_rad(
                 analytic_phase,
                 pipeline_result.phi1_rad,
+                pipeline_result.phi2_rad,
                 pipeline_result.phi4_rad,
             ),
         )

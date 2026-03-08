@@ -69,9 +69,11 @@ This writes deterministic JSON/PNG artifacts to `artifacts/physics/`:
 - `treacy_radius_mirror_heatmap.png`
 
 The benchmark uses the local Treacy analytic model as the plane-wave baseline and
-plots how the ABCDEF runtime deviates from it as beam radius shrinks and as the
-double-pass mirror leg grows. The large-beam limit should approach the analytic
-baseline.
+plots the finite-beam comparison phase after removing the Martinez ray-centering
+term `phi2`, which does not belong to the plane-wave model and does not vanish
+with beam radius. The large-beam limit of that reduced comparison should
+approach the analytic baseline while mirror-leg length still perturbs the
+finite-beam result.
 
 
 ## Running tests by marker

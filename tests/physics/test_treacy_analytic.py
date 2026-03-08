@@ -17,6 +17,7 @@ RTOL_GDD_TOD = 5e-3
 ATOL_GDD = 5e3
 ATOL_TOD = 1e4
 ATOL_ANGLE_DEG = 0.05
+_C_UM_PER_FS = 0.299792458
 
 
 def _separation_um(case: dict[str, float | int | str | None]) -> float:
@@ -56,6 +57,48 @@ def _finite_d2_d3_at_zero_from_phase(*, gdd_fs2: float, tod_fs3: float) -> tuple
     )
     d3phi = (-phase[0] + 2.0 * phase[1] - 2.0 * phase[3] + phase[4]) / (2.0 * step_rad_per_fs**3)
     return float(d2phi), float(d3phi)
+
+
+def _wavelength_nm_from_omega(omega_rad_per_fs: float) -> float:
+    return 1e3 * ((2.0 * np.pi * _C_UM_PER_FS) / float(omega_rad_per_fs))
+
+
+def _finite_tod_from_gdd_frequency_derivative(
+    *,
+    line_density_lpmm: float,
+    incidence_angle_deg: float,
+    separation_um: float,
+    wavelength_nm: float,
+    diffraction_order: int,
+    n_passes: int,
+    step_rad_per_fs: float = 1e-5,
+) -> float:
+    center = compute_treacy_analytic_metrics(
+        line_density_lpmm=line_density_lpmm,
+        incidence_angle_deg=incidence_angle_deg,
+        separation_um=separation_um,
+        wavelength_nm=wavelength_nm,
+        diffraction_order=diffraction_order,
+        n_passes=n_passes,
+    )
+    omega0 = center.omega0_rad_per_fs
+    lower = compute_treacy_analytic_metrics(
+        line_density_lpmm=line_density_lpmm,
+        incidence_angle_deg=incidence_angle_deg,
+        separation_um=separation_um,
+        wavelength_nm=_wavelength_nm_from_omega(omega0 - step_rad_per_fs),
+        diffraction_order=diffraction_order,
+        n_passes=n_passes,
+    )
+    upper = compute_treacy_analytic_metrics(
+        line_density_lpmm=line_density_lpmm,
+        incidence_angle_deg=incidence_angle_deg,
+        separation_um=separation_um,
+        wavelength_nm=_wavelength_nm_from_omega(omega0 + step_rad_per_fs),
+        diffraction_order=diffraction_order,
+        n_passes=n_passes,
+    )
+    return float((upper.gdd_fs2 - lower.gdd_fs2) / (2.0 * step_rad_per_fs))
 
 
 @pytest.mark.parametrize(
@@ -106,6 +149,27 @@ def test_treacy_invalid_geometry_raises() -> None:
             wavelength_nm=1030.0,
             diffraction_order=-3,
         )
+
+
+def test_treacy_tod_matches_gdd_frequency_derivative_for_nondefault_order() -> None:
+    metrics = compute_treacy_analytic_metrics(
+        line_density_lpmm=300.0,
+        incidence_angle_deg=10.0,
+        separation_um=100_000.0,
+        wavelength_nm=800.0,
+        diffraction_order=1,
+        n_passes=2,
+    )
+    finite_tod = _finite_tod_from_gdd_frequency_derivative(
+        line_density_lpmm=300.0,
+        incidence_angle_deg=10.0,
+        separation_um=100_000.0,
+        wavelength_nm=800.0,
+        diffraction_order=1,
+        n_passes=2,
+    )
+
+    assert finite_tod == pytest.approx(metrics.tod_fs3, rel=5e-5, abs=50.0)
 
 
 def test_treacy_matches_golden_fixture_when_expectations_present() -> None:
