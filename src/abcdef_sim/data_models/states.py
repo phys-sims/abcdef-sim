@@ -17,7 +17,8 @@ NDArrayF = npt.NDArray[np.float64]
 class RayState(State):
     """
     State carrying:
-      - rays:   (N,3,1) column vectors (x, x', 1)^T
+      - rays:   (N,3,1) column vectors following
+                ``abcdef_sim.physics.abcdef.conventions``
       - system: (N,3,3) cumulative system matrices for each w
     """
 

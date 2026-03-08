@@ -19,14 +19,16 @@ def get_abcdef_matrices(
     """
     Build an array of 3x3 ABCDEF matrices for a frequency grid.
 
-    For each ω_n:
+    For each omega_n:
 
-        [ a   b   E(ω_n) ]
-        [ c   d   F(ω_n) ]
-        [ 0   0     1    ]
+        [ a   b   E(omega_n) ]
+        [ c   d   F(omega_n) ]
+        [ 0   0      1       ]
 
-    If e_of_omega or f_of_omega is None, the corresponding E or F
-    is taken as 0 for all ω.
+    The meaning and sign of ``E`` and ``F`` follow
+    ``abcdef_sim.physics.abcdef.conventions``. If ``e_of_omega`` or
+    ``f_of_omega`` is None, the corresponding term is taken as 0 for all
+    ``omega``.
     """
     w = np.asarray(omega, dtype=np.float64)
 
