@@ -3,9 +3,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-
-pytestmark = pytest.mark.physics
-
 from abcdef_sim.physics.abcdef.conventions import (
     compose_system,
     extract_E,
@@ -13,6 +10,8 @@ from abcdef_sim.physics.abcdef.conventions import (
     validate_matrix_shape,
     validate_ray_shape,
 )
+
+pytestmark = pytest.mark.physics
 
 
 def test_extract_e_and_f_read_the_inhomogeneous_terms() -> None:
