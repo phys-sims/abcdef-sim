@@ -44,7 +44,7 @@ class PhaseContribution(BaseModel):
         return _coerce_vector(value)
 
     @model_validator(mode="after")
-    def _check_shapes(self) -> "PhaseContribution":
+    def _check_shapes(self) -> PhaseContribution:
         omega = self.omega
         expected_shape = (omega.size,)
         for field_name in ("phi0_rad", "phi3_rad", "filter_amp", "filter_phase_rad"):
@@ -77,7 +77,7 @@ class PipelineResult(BaseModel):
         return _coerce_vector(value)
 
     @model_validator(mode="after")
-    def _check_shapes(self) -> "PipelineResult":
+    def _check_shapes(self) -> PipelineResult:
         omega = self.omega
         expected_shape = (omega.size,)
 
@@ -102,8 +102,6 @@ class PipelineResult(BaseModel):
                     f"expected {expected_shape}, got {contribution.omega.shape}"
                 )
             if not np.array_equal(contribution.omega, omega):
-                raise ValueError(
-                    "each contribution omega must exactly match pipeline omega values"
-                )
+                raise ValueError("each contribution omega must exactly match pipeline omega values")
 
         return self

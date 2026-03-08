@@ -58,7 +58,8 @@ Use these locations first for impact analysis and for placing new physics tests 
 Testing is a delivery requirement, not optional cleanup. Before opening a PR, run pre-commit on all files and then select pytest/mypy lanes by risk; run broader lanes before merge for physics-impacting work.
 
 - **Pre-PR hygiene (required for every PR)**:
-  - `pre-commit run --all-files`
+  - Run `pre-commit run --all-files` and rerun it until it exits clean with no file modifications.
+  - Treat auto-fixing hooks (for example `mixed-line-ending`, `ruff --fix`, and `ruff-format`) as first-pass mutations: stage their changes and run `pre-commit run --all-files` again before opening a PR.
 - **Fast gate** (required baseline for all non-trivial changes):
   - `pytest -m "not slow" -q`
 - **Physics lane** (required for any optics/math/propagation change):
@@ -90,6 +91,7 @@ Minimum expectation by change type:
 - [ ] Physics assumptions/equations and units are explicit in code/tests/docs.
 - [ ] Cache-key invariants and policy propagation rules remain intact.
 - [ ] `pre-commit run --all-files` was run before PR creation.
+- [ ] If any pre-commit hook modified files, those changes were staged and `pre-commit run --all-files` was rerun until clean.
 - [ ] Appropriate validation lanes were run (fast gate, physics lane, mypy, and/or full suite).
 - [ ] Tests were added/updated for each behavioral physics change.
 - [ ] Residual placeholders (if any) are explicitly documented with limitations.

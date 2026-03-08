@@ -27,8 +27,6 @@ def test_phi2_rad_matches_martinez_equation_26() -> None:
         dtype=float,
     )
 
-    expected = 0.5 * k * (
-        ray_in[:, 0, 0] * ray_in[:, 1, 0] - ray_out[:, 0, 0] * ray_out[:, 1, 0]
-    )
+    expected = 0.5 * k * (ray_in[:, 0, 0] * ray_in[:, 1, 0] - ray_out[:, 0, 0] * ray_out[:, 1, 0])
 
     np.testing.assert_allclose(phi2_rad(k, ray_in, ray_out), expected)
