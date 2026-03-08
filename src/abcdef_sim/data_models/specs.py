@@ -1,21 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import numpy as np
 import numpy.typing as npt
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 CanonicalOpticKind = Literal["FreeSpace", "Grating"]
-OpticKind = Literal["FreeSpace", "Grating", "free_space", "grating"]
+OpticKind = CanonicalOpticKind
 NDArrayF = npt.NDArray[np.float64]
-
-_KIND_ALIASES: dict[str, CanonicalOpticKind] = {
-    "FreeSpace": "FreeSpace",
-    "free_space": "FreeSpace",
-    "Grating": "Grating",
-    "grating": "Grating",
-}
 
 
 class OpticSpec(BaseModel):
@@ -39,14 +32,14 @@ class OpticSpec(BaseModel):
 
     @field_validator("kind", mode="before")
     @classmethod
-    def _normalize_kind(cls, value: Any) -> CanonicalOpticKind:
+    def _validate_kind(cls, value: Any) -> CanonicalOpticKind:
         if not isinstance(value, str):
             raise ValueError("OpticSpec.kind must be a string.")
-        try:
-            return _KIND_ALIASES[value]
-        except KeyError as e:
-            allowed = ", ".join(repr(k) for k in _KIND_ALIASES)
-            raise ValueError(f"Unknown OpticSpec.kind {value!r}. Allowed values: {allowed}.") from e
+        allowed: tuple[CanonicalOpticKind, ...] = ("FreeSpace", "Grating")
+        if value not in allowed:
+            allowed_str = ", ".join(repr(k) for k in allowed)
+            raise ValueError(f"Unknown OpticSpec.kind {value!r}. Allowed values: {allowed_str}.")
+        return cast(CanonicalOpticKind, value)
 
 
 class SystemPreset(BaseModel):
