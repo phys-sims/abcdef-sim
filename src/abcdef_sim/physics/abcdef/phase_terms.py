@@ -18,15 +18,26 @@ from abcdef_sim.physics.abcdef.conventions import (
 
 NDArrayF = npt.NDArray[np.float64]
 NDArrayC = npt.NDArray[np.complex128]
+SPEED_OF_LIGHT_UM_PER_FS = 0.299792458
 
 __all__ = [
     "combine_phi_total_rad",
+    "martinez_k_center",
     "phi0_rad_i",
     "phi1_rad",
     "phi2_rad",
     "phi3_rad_i",
     "phi4_rad",
 ]
+
+
+def martinez_k_center(omega: object) -> float:
+    """Return the Martinez reference wavenumber from an ECO-0001 omega grid."""
+
+    omega_arr = _as_real_vector("omega", omega)
+    if omega_arr.size == 0:
+        raise ValueError("omega must contain at least one sample")
+    return float(np.mean(omega_arr) / SPEED_OF_LIGHT_UM_PER_FS)
 
 
 def phi0_rad_i(k: object, length: float, n: object) -> NDArrayF:
