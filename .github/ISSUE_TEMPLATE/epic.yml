@@ -27,9 +27,9 @@ body:
       label: Scope In / Out
       value: |
         **In**
-        - 
+        -
         **Out (explicitly not doing)**
-        - 
+        -
     validations:
       required: true
 
@@ -51,9 +51,9 @@ body:
       label: Milestones (vertical slices)
       description: "2–5 demoable slices that map to Features"
       value: |
-        1) 
-        2) 
-        3) 
+        1)
+        2)
+        3)
 
   - type: textarea
     id: breakdown
@@ -92,7 +92,7 @@ body:
         - Risk:
         - Mitigation:
         - Spike needed? (#issue)
-  
+
   - type: textarea
     id: deps
     attributes:
