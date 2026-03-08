@@ -30,37 +30,34 @@ __all__ = [
 
 
 def phi0_rad_i(k: object, length: float, n: object) -> NDArrayF:
-    """Return the per-element plane-wave phase from Martinez eq. 24."""
+    """Return the per-element plane-wave phase using the center-frequency ``k``."""
 
-    k_arr = _as_real_vector("k", k)
+    k_center = _as_real_scalar("k", k)
     n_arr = _as_real_vector("n", n)
-    _require_matching_size(("k", k_arr), ("n", n_arr))
-    return k_arr * float(length) * n_arr
+    return k_center * float(length) * n_arr
 
 
 def phi3_rad_i(k: object, F_i: object, x_after: object) -> NDArrayF:
-    """Return the per-element angular-dispersion phase from Martinez eq. 27."""
+    """Return the per-element angular-dispersion phase using the center-frequency ``k``."""
 
-    k_arr = _as_real_vector("k", k)
+    k_center = _as_real_scalar("k", k)
     f_arr = _as_real_vector("F_i", F_i)
     x_arr = _as_real_vector("x_after", x_after)
-    _require_matching_size(("k", k_arr), ("F_i", f_arr), ("x_after", x_arr))
-    return 0.5 * k_arr * f_arr * x_arr
+    _require_matching_size(("F_i", f_arr), ("x_after", x_arr))
+    return 0.5 * k_center * f_arr * x_arr
 
 
 def phi2_rad(k: object, ray_in: object, ray_out: object) -> NDArrayF:
-    """Return the input/output ray-centering phase from Martinez eq. 26."""
+    """Return the input/output ray-centering phase using the center-frequency ``k``."""
 
-    k_arr = _as_real_vector("k", k)
+    k_center = _as_real_scalar("k", k)
     rays_in = validate_ray_shape(ray_in)
     rays_out = validate_ray_shape(ray_out)
 
-    batch_size = k_arr.size
-    if rays_in.shape[0] != batch_size or rays_out.shape[0] != batch_size:
+    if rays_in.shape[0] != rays_out.shape[0]:
         raise ValueError(
-            "k, ray_in, and ray_out must have matching batch sizes: "
-            f"k.shape={k_arr.shape}, ray_in.shape={rays_in.shape}, "
-            f"ray_out.shape={rays_out.shape}"
+            "ray_in and ray_out must have matching batch sizes: "
+            f"ray_in.shape={rays_in.shape}, ray_out.shape={rays_out.shape}"
         )
 
     x_in = rays_in[:, 0, 0]
@@ -68,7 +65,7 @@ def phi2_rad(k: object, ray_in: object, ray_out: object) -> NDArrayF:
     x_out = rays_out[:, 0, 0]
     x_prime_out = rays_out[:, 1, 0]
 
-    return 0.5 * k_arr * (x_in * x_prime_in - x_out * x_prime_out)
+    return 0.5 * k_center * (x_in * x_prime_in - x_out * x_prime_out)
 
 
 def phi1_rad(abcdef: object, q_in: object, w_in: object, w_out: object) -> NDArrayF:
@@ -106,15 +103,15 @@ def phi1_rad(abcdef: object, q_in: object, w_in: object, w_out: object) -> NDArr
 
 
 def phi4_rad(k: object, x: object, x_out: object, q_out: object) -> NDArrayF:
-    """Return the spatial phase term from Martinez eq. 30."""
+    """Return the spatial phase term from Martinez eq. 30 using the center-frequency ``k``."""
 
-    k_arr = _as_real_vector("k", k)
-    x_arr = _broadcast_real_vector("x", x, size=k_arr.size)
+    k_center = _as_real_scalar("k", k)
     x_out_arr = _as_real_vector("x_out", x_out)
     q_out_arr = _as_complex_vector("q_out", q_out)
-    _require_matching_size(("k", k_arr), ("x_out", x_out_arr), ("q_out", q_out_arr))
+    x_arr = _broadcast_real_vector("x", x, size=x_out_arr.size)
+    _require_matching_size(("x_out", x_out_arr), ("q_out", q_out_arr))
 
-    return np.real(k_arr * (x_arr - x_out_arr) ** 2 / (2.0 * q_out_arr))
+    return np.real(k_center * (x_arr - x_out_arr) ** 2 / (2.0 * q_out_arr))
 
 
 def combine_phi_total_rad(*terms: object | None) -> NDArrayF:
@@ -140,6 +137,13 @@ def _as_real_vector(name: str, value: object) -> NDArrayF:
     if arr.ndim != 1:
         raise ValueError(f"{name} must be coercible to shape (N,); got {arr.shape}")
     return arr
+
+
+def _as_real_scalar(name: str, value: object) -> float:
+    arr = _as_real_vector(name, value)
+    if arr.size != 1:
+        raise ValueError(f"{name} must be a scalar or shape (1,); got {arr.shape}")
+    return float(arr.item())
 
 
 def _as_complex_vector(name: str, value: object) -> NDArrayC:

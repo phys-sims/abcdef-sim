@@ -9,7 +9,7 @@ pytestmark = pytest.mark.physics
 
 
 def test_phi2_rad_matches_martinez_equation_26() -> None:
-    k = np.array([2.0, 4.0, 6.0], dtype=float)
+    k = 4.0
     ray_in = np.array(
         [
             [[1.0], [0.2], [1.0]],

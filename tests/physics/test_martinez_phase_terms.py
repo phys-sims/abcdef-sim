@@ -15,7 +15,7 @@ pytestmark = pytest.mark.physics
 
 
 def test_phi0_rad_i_matches_plane_wave_optical_path_phase() -> None:
-    k = np.linspace(2.0, 6.0, 5, dtype=float)
+    k = 4.5
     n = np.linspace(1.1, 1.5, 5, dtype=float)
     length = 3.5
 
@@ -25,7 +25,7 @@ def test_phi0_rad_i_matches_plane_wave_optical_path_phase() -> None:
 
 
 def test_phi3_rad_i_uses_post_element_displacement_with_martinez_sign() -> None:
-    k = np.linspace(1.0, 5.0, 5, dtype=float)
+    k = 3.0
     F_i = np.array([0.0, 0.1, -0.2, 0.3, -0.4], dtype=float)
     x_after = np.array([1.5, -2.0, 0.5, -1.0, 2.5], dtype=float)
 
@@ -70,7 +70,7 @@ def test_phi1_rad_accepts_unbatched_abcdef_matrix() -> None:
 
 
 def test_phi4_rad_matches_martinez_equation_30_and_broadcasts_scalar_x() -> None:
-    k = np.array([2.0, 3.0, 4.0], dtype=float)
+    k = 3.5
     x = 0.5
     x_out = np.array([0.1, -0.2, 0.4], dtype=float)
     q_out = np.array([1.0 + 2.0j, 2.0 + 1.0j, 3.0 + 4.0j], dtype=np.complex128)
