@@ -45,9 +45,14 @@ python scripts/generate_abcd_validation_plot.py
 The checked-in figure below is generated from the same example code path and shows:
 
 - single-lens effective focal length versus wavelength
-- residuals against `raytracing`
+- residuals defined explicitly as `abcdef-sim - raytracing`
 - doublet Gaussian beam-radius overlays at 810 nm and 1550 nm
-- residuals for the doublet beam profiles
+- residuals for the doublet beam profiles using the same `abcdef-sim - raytracing` convention
+
+The overlay styling is backend-specific even when the curves are nearly identical:
+
+- `abcdef-sim`: solid lines with circle markers
+- `raytracing`: dashed lines with `x` markers
 
 ![Thick lens similarity](images/thick_lens_similarity.png)
 

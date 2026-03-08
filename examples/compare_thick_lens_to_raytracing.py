@@ -58,24 +58,68 @@ def write_similarity_plot(output_path: Path) -> Path:
     beam_profiles = doublet_beam_profile_comparisons()
 
     fig, axes = plt.subplots(2, 2, figsize=(12, 8), constrained_layout=True)
+    local_style = {
+        "linewidth": 2.0,
+        "linestyle": "-",
+        "marker": "o",
+        "markersize": 5.5,
+        "markerfacecolor": "white",
+        "markeredgewidth": 1.2,
+        "markevery": 8,
+        "zorder": 2,
+    }
+    reference_style = {
+        "linewidth": 1.8,
+        "linestyle": "--",
+        "marker": "x",
+        "markersize": 6.0,
+        "markeredgewidth": 1.4,
+        "markevery": 8,
+        "zorder": 3,
+    }
 
-    axes[0, 0].plot(focal.coordinates, focal.local, color="tab:blue", label="abcdef-sim")
+    axes[0, 0].plot(
+        focal.coordinates,
+        focal.local,
+        color="tab:blue",
+        label="abcdef-sim (solid, o)",
+        **local_style,
+    )
     axes[0, 0].plot(
         focal.coordinates,
         focal.reference,
         color="black",
-        linestyle="--",
-        label="raytracing",
+        label="raytracing (dashed, x)",
+        **reference_style,
     )
     axes[0, 0].set_title(focal.name)
     axes[0, 0].set_xlabel("Wavelength (um)")
     axes[0, 0].set_ylabel(focal.observable_label)
     axes[0, 0].legend()
 
-    axes[1, 0].plot(focal.coordinates, focal.residual(), color="tab:red")
+    axes[1, 0].plot(
+        focal.coordinates,
+        focal.residual(),
+        color="tab:red",
+        linewidth=1.8,
+        marker="o",
+        markersize=4.5,
+        markerfacecolor="white",
+        markeredgewidth=1.0,
+        markevery=8,
+    )
     axes[1, 0].axhline(0.0, color="black", linewidth=0.8)
     axes[1, 0].set_xlabel("Wavelength (um)")
-    axes[1, 0].set_ylabel("Residual (mm)")
+    axes[1, 0].set_ylabel("Residual (abcdef-sim - raytracing) (mm)")
+    axes[1, 0].text(
+        0.02,
+        0.96,
+        "Residual = abcdef-sim - raytracing",
+        transform=axes[1, 0].transAxes,
+        va="top",
+        fontsize=9,
+        bbox={"facecolor": "white", "alpha": 0.8, "edgecolor": "none"},
+    )
 
     colors = ["tab:green", "tab:orange"]
     for comparison, color in zip(beam_profiles, colors, strict=True):
@@ -83,20 +127,27 @@ def write_similarity_plot(output_path: Path) -> Path:
             comparison.coordinates,
             comparison.local,
             color=color,
-            label=f"{comparison.name} abcdef-sim",
+            label=f"{comparison.name} abcdef-sim (solid, o)",
+            **local_style,
         )
         axes[0, 1].plot(
             comparison.coordinates,
             comparison.reference,
             color=color,
-            linestyle="--",
-            label=f"{comparison.name} raytracing",
+            label=f"{comparison.name} raytracing (dashed, x)",
+            **reference_style,
         )
         axes[1, 1].plot(
             comparison.coordinates,
             comparison.residual(),
             color=color,
             label=comparison.name,
+            linewidth=1.8,
+            marker="o",
+            markersize=4.5,
+            markerfacecolor="white",
+            markeredgewidth=1.0,
+            markevery=8,
         )
 
     axes[0, 1].set_title("Doublet Gaussian beam radius")
@@ -106,8 +157,17 @@ def write_similarity_plot(output_path: Path) -> Path:
 
     axes[1, 1].axhline(0.0, color="black", linewidth=0.8)
     axes[1, 1].set_xlabel("Propagation distance (mm)")
-    axes[1, 1].set_ylabel("Residual (mm)")
+    axes[1, 1].set_ylabel("Residual (abcdef-sim - raytracing) (mm)")
     axes[1, 1].legend(fontsize=8)
+    axes[1, 1].text(
+        0.02,
+        0.96,
+        "Residual = abcdef-sim - raytracing",
+        transform=axes[1, 1].transAxes,
+        va="top",
+        fontsize=9,
+        bbox={"facecolor": "white", "alpha": 0.8, "edgecolor": "none"},
+    )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=200)
