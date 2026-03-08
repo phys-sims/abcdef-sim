@@ -34,6 +34,8 @@ def apply_cfg(
         optic_name=cfg.optic_name,
         instance_name=cfg.instance_name,
         omega=cfg.omega,
+        delta_omega_rad_per_fs=cfg.delta_omega_rad_per_fs,
+        omega0_rad_per_fs=cfg.omega0_rad_per_fs,
         phi0_rad=phi0_rad,
         phi3_rad=phi3_rad,
     )

@@ -38,12 +38,23 @@ class OpticStageCfgGenerator:
         optic: Optic,
         omega: npt.ArrayLike,
         *,
+        delta_omega: npt.ArrayLike | None = None,
+        omega0_rad_per_fs: float | None = None,
         tags: dict[str, Any] | None = None,
         policy: PolicyBag | None = None,
         infer_grid: bool = True,
         freeze_arrays: bool = False,
     ) -> OpticStageCfg:
         w = np.asarray(omega, dtype=np.float64).reshape(-1)
+        omega0 = float(np.mean(w) if omega0_rad_per_fs is None else omega0_rad_per_fs)
+        if delta_omega is None:
+            delta_w = w - omega0
+        else:
+            delta_w = np.asarray(delta_omega, dtype=np.float64).reshape(-1)
+            if delta_w.shape != w.shape:
+                raise ValueError(
+                    f"delta_omega shape must match omega shape {w.shape}; got {delta_w.shape}"
+                )
 
         grid: LinspaceGrid | None = None
         if infer_grid:
@@ -53,6 +64,9 @@ class OpticStageCfgGenerator:
         use_cache = True if policy is None else bool(policy.get("cfg.use_cache", True))
         use_l1 = True if policy is None else bool(policy.get("cfg.cache_l1", True))
         use_l2 = True if policy is None else bool(policy.get("cfg.cache_l2", True))
+        if not optic.l2_cache_safe():
+            use_l1 = False
+            use_l2 = False
 
         should_cache = use_cache and self.is_expensive(optic)
 
@@ -61,14 +75,14 @@ class OpticStageCfgGenerator:
                 optic,
                 w,
                 grid,
-                matrix_fn=lambda o, ww: o.matrix(ww),
-                n_fn=lambda o, ww: o.n(ww),
+                matrix_fn=lambda o, ww: o.matrix(ww, omega0=omega0),
+                n_fn=lambda o, ww: o.n(ww, omega0=omega0),
                 use_l1=use_l1,
                 use_l2=use_l2,
             )
         else:
-            mats = np.asarray(optic.matrix(w), dtype=np.float64)
-            ns = np.asarray(optic.n(w), dtype=np.float64).reshape(-1)
+            mats = np.asarray(optic.matrix(w, omega0=omega0), dtype=np.float64)
+            ns = np.asarray(optic.n(w, omega0=omega0), dtype=np.float64).reshape(-1)
 
         if mats.shape != (w.size, 3, 3):
             raise ValueError(f"{optic} matrix returned {mats.shape}, expected {(w.size, 3, 3)}")
@@ -87,6 +101,8 @@ class OpticStageCfgGenerator:
             instance_name=optic.instance_name,
             length=float(optic.length),
             omega=w,
+            delta_omega_rad_per_fs=delta_w,
+            omega0_rad_per_fs=omega0,
             abcdef=mats,
             refractive_index=ns,
         )

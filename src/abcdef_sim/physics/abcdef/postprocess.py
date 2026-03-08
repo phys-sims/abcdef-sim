@@ -31,7 +31,7 @@ def compute_pipeline_result(
     """Build a PipelineResult from pure ray-state and phase-contribution data."""
 
     contribution_tuple = tuple(contributions)
-    omega = _validate_contributions_and_get_omega(contribution_tuple)
+    omega, delta_omega, omega0 = _validate_contributions_and_get_grid(contribution_tuple)
     k_center = martinez_k_center(omega)
 
     phi0_total = np.zeros_like(omega)
@@ -48,6 +48,8 @@ def compute_pipeline_result(
     return PipelineResult(
         final_state=final_state,
         omega=omega,
+        delta_omega_rad_per_fs=delta_omega,
+        omega0_rad_per_fs=omega0,
         contributions=contribution_tuple,
         phi1_rad=phi1,
         phi2_rad=phi2,
@@ -56,13 +58,18 @@ def compute_pipeline_result(
     )
 
 
-def _validate_contributions_and_get_omega(
+def _validate_contributions_and_get_grid(
     contributions: tuple[PhaseContribution, ...],
-) -> NDArrayF:
+) -> tuple[NDArrayF, NDArrayF, float]:
     if not contributions:
         raise ValueError("compute_pipeline_result requires at least one phase contribution")
 
     omega = np.asarray(contributions[0].omega, dtype=np.float64).reshape(-1)
+    delta_omega = np.asarray(
+        contributions[0].delta_omega_rad_per_fs,
+        dtype=np.float64,
+    ).reshape(-1)
+    omega0 = float(contributions[0].omega0_rad_per_fs)
     for contribution in contributions[1:]:
         if contribution.omega.shape != omega.shape:
             raise ValueError(
@@ -71,7 +78,14 @@ def _validate_contributions_and_get_omega(
             )
         if not np.array_equal(contribution.omega, omega):
             raise ValueError("all phase contributions must share identical omega values")
-    return omega
+        if not np.array_equal(
+            np.asarray(contribution.delta_omega_rad_per_fs, dtype=np.float64).reshape(-1),
+            delta_omega,
+        ):
+            raise ValueError("all phase contributions must share identical delta_omega values")
+        if float(contribution.omega0_rad_per_fs) != omega0:
+            raise ValueError("all phase contributions must share one omega0_rad_per_fs value")
+    return omega, delta_omega, omega0
 
 
 def _compute_phi1(

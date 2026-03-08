@@ -16,11 +16,14 @@ def _dummy_ray_state(batch_size: int) -> RayState:
 
 def test_pipeline_result_roundtrip_keeps_structure_and_arrays() -> None:
     omega = np.linspace(1.0, 2.0, 3, dtype=float)
+    delta_omega = omega - np.mean(omega)
     contribution = PhaseContribution(
         optic_name="grating",
         instance_name="g1",
         backend_id="rcwa:order=1",
         omega=omega,
+        delta_omega_rad_per_fs=delta_omega,
+        omega0_rad_per_fs=1.5,
         phi0_rad=np.array([0.1, 0.2, 0.3], dtype=float),
         phi3_rad=np.array([0.4, 0.5, 0.6], dtype=float),
         filter_amp=np.array([0.9, 0.8, 0.7], dtype=float),
@@ -29,6 +32,8 @@ def test_pipeline_result_roundtrip_keeps_structure_and_arrays() -> None:
     result = PipelineResult(
         final_state=_dummy_ray_state(batch_size=3),
         omega=omega,
+        delta_omega_rad_per_fs=delta_omega,
+        omega0_rad_per_fs=1.5,
         contributions=(contribution,),
         phi1_rad=np.array([1.0, 1.1, 1.2], dtype=float),
         phi2_rad=np.array([2.0, 2.1, 2.2], dtype=float),
@@ -40,6 +45,8 @@ def test_pipeline_result_roundtrip_keeps_structure_and_arrays() -> None:
     assert list(dumped) == [
         "final_state",
         "omega",
+        "delta_omega_rad_per_fs",
+        "omega0_rad_per_fs",
         "contributions",
         "phi1_rad",
         "phi2_rad",
@@ -55,6 +62,7 @@ def test_pipeline_result_roundtrip_keeps_structure_and_arrays() -> None:
     restored = PipelineResult.model_validate(dumped)
 
     np.testing.assert_allclose(restored.omega, omega)
+    np.testing.assert_allclose(restored.delta_omega_rad_per_fs, delta_omega)
     np.testing.assert_allclose(restored.contributions[0].phi0_rad, contribution.phi0_rad)
     np.testing.assert_allclose(restored.phi_total_rad, result.phi_total_rad)
     np.testing.assert_allclose(restored.final_state.rays, result.final_state.rays)

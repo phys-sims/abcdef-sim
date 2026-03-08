@@ -35,7 +35,7 @@ class Optic(ABC):
     _n_fn: RefractiveIndexFn | None = field(default=None, repr=False)
 
     @abstractmethod
-    def matrix(self, omega: ArrayLike) -> NDArrayF:
+    def matrix(self, omega: ArrayLike, *, omega0: float | None = None) -> NDArrayF:
         """Return the 3x3 transfer matrix for angular frequency omega.
 
         - omega can be scalar or array-like
@@ -43,8 +43,9 @@ class Optic(ABC):
         """
         raise NotImplementedError
 
-    def n(self, omega: ArrayLike) -> NDArrayF:
+    def n(self, omega: ArrayLike, *, omega0: float | None = None) -> NDArrayF:
         """Refractive index vs angular frequency (defaults to n=1)."""
+        del omega0
         omega_arr = np.asarray(omega, dtype=np.float64)
 
         if self._n_fn is None:
@@ -60,6 +61,11 @@ class Optic(ABC):
     def cache_params(self) -> tuple:
         """Override in subclasses for parameters that change matrix/n behavior."""
         return ()
+
+    def l2_cache_safe(self) -> bool:
+        """Return whether per-omega L2 caching is correct for this optic."""
+
+        return True
 
     def cache_key(self) -> Hashable:
         """Stable hashable identity for cache buckets."""
