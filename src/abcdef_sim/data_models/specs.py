@@ -32,7 +32,7 @@ class OpticSpec(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    kind: OpticKind
+    kind: CanonicalOpticKind
     instance_name: str
     params: dict[str, float] = Field(default_factory=dict)
     tags: dict[str, Any] = Field(default_factory=dict)
