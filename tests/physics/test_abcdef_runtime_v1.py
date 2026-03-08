@@ -13,6 +13,11 @@ from abcdef_sim.physics.abcd.lenses import (
     thick_lens_matrix_for_spec,
 )
 from abcdef_sim.physics.abcd.matrices import free_space, thick_lens
+from abcdef_sim.physics.abcd.raytracing_validation import (
+    single_lens_batched_ray_output_comparisons,
+    single_lens_effective_focal_length_comparison,
+    single_lens_wavelength_grid_um,
+)
 from abcdef_sim.physics.abcdef.conventions import theta_abcd_to_xprime_abcdef
 from abcdef_sim.physics.abcdef.dispersion import evaluate_phase_polynomial, fit_phase_taylor
 from abcdef_sim.physics.abcdef.propagation import propagate_step
@@ -130,6 +135,26 @@ def test_thick_lens_runtime_matches_abcd_thick_lens_ray_propagation() -> None:
         rtol=1e-12,
         atol=1e-12,
     )
+
+
+def test_thick_lens_runtime_effective_focal_length_matches_raytracing() -> None:
+    pytest.importorskip("raytracing")
+
+    comparison = single_lens_effective_focal_length_comparison(single_lens_wavelength_grid_um(25))
+
+    np.testing.assert_allclose(comparison.local, comparison.reference, rtol=1e-10, atol=1e-10)
+    assert comparison.max_abs_error() <= 1e-10
+
+
+def test_thick_lens_runtime_batched_ray_outputs_match_raytracing() -> None:
+    pytest.importorskip("raytracing")
+
+    x_out, theta_out = single_lens_batched_ray_output_comparisons(
+        single_lens_wavelength_grid_um(19)
+    )
+
+    np.testing.assert_allclose(x_out.local, x_out.reference, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(theta_out.local, theta_out.reference, rtol=1e-12, atol=1e-12)
 
 
 def test_weighted_taylor_fit_recovers_known_coefficients() -> None:

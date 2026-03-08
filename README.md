@@ -47,13 +47,27 @@ pytest tests/physics/test_abcd_against_raytracing.py
 
 If `raytracing` is not installed, the validation test module is skipped.
 
-To generate the graphical validation artifact described by the physics tests:
+To generate the canonical comparison figure and wavelength-scaling benchmark report:
+
+```bash
+python examples/compare_thick_lens_to_raytracing.py
+```
+
+This writes:
+
+- `artifacts/physics/thick_lens_similarity.png`
+- `artifacts/physics/wavelength_tracking_benchmarks.md`
+
+The legacy plot-only wrapper still works:
 
 ```bash
 python scripts/generate_abcd_validation_plot.py
 ```
 
-This writes a deterministic PNG to `artifacts/physics/thick_lens_vs_raytracing.png`.
+For the checked-in figure, benchmark sample table, and scope notes about what is and is not
+validated against `raytracing`, see `docs/raytracing-validation.md`.
+
+![raytracing validation snapshot](docs/images/thick_lens_similarity.png)
 
 
 ## Running tests by marker
