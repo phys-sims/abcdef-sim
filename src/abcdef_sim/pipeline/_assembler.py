@@ -6,9 +6,9 @@ from typing import Any
 from abcdef_sim._phys_pipeline import PolicyBag, SequentialPipeline
 from abcdef_sim.cfg_generator import OpticStageCfgGenerator
 from abcdef_sim.data_models.configs import OpticStageCfg
-from abcdef_sim.data_models.factory import OpticFactory
 from abcdef_sim.data_models.specs import LaserSpec, SystemPreset
 from abcdef_sim.data_models.stages import AbcdefOpticStage
+from abcdef_sim.optics.registry import OpticFactory
 
 
 @dataclass

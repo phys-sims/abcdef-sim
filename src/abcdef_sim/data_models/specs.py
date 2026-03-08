@@ -6,7 +6,7 @@ import numpy as np
 import numpy.typing as npt
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-OpticKind = Literal["FreeSpace", "Grating"]  # extend as optics added
+OpticKind = Literal["FreeSpace", "Grating"]
 NDArrayF = npt.NDArray[np.float64]
 
 
