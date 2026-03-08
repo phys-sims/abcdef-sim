@@ -53,6 +53,21 @@ def test_phi1_rad_matches_martinez_equation_25_phase_factor() -> None:
     np.testing.assert_allclose(phi1_rad(matrices, q_in, w_in, w_out), expected)
 
 
+def test_phi1_rad_accepts_unbatched_abcdef_matrix() -> None:
+    matrix = np.array(
+        [[1.0, 0.4, 0.0], [0.2, 1.2, 0.0], [0.0, 0.0, 1.0]],
+        dtype=float,
+    )
+    q_in = 2.0 + 3.0j
+
+    lhs = 1.0 / np.sqrt(matrix[0, 0].astype(np.complex128) + matrix[0, 1] / q_in)
+    w_in = 1.2
+    w_out = w_in * np.abs(lhs)
+    expected = np.array([-np.angle(lhs)], dtype=float)
+
+    np.testing.assert_allclose(phi1_rad(matrix, q_in, w_in, w_out), expected)
+
+
 def test_combine_phi_total_rad_sums_present_terms_only() -> None:
     phi0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0], dtype=float)
     phi1 = np.array([0.5, 0.4, 0.3, 0.2, 0.1], dtype=float)

@@ -74,8 +74,8 @@ def phi1_rad(abcdef: object, q_in: object, w_in: object, w_out: object) -> NDArr
     """Return the Gaussian-beam correction phase from Martinez eq. 25."""
 
     matrices = validate_matrix_shape(abcdef)
-    if matrices.ndim != 3:
-        raise ValueError(f"abcdef must have shape (N,3,3); got {matrices.shape}")
+    if matrices.ndim == 2:
+        matrices = matrices[None, ...]
 
     q_arr = _as_complex_vector("q_in", q_in)
     w_in_arr = _as_real_vector("w_in", w_in)
