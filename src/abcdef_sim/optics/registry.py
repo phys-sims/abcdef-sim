@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from abcdef_sim.data_models.specs import CanonicalOpticKind, OpticSpec
+from abcdef_sim.data_models.specs import OpticKind, OpticSpec
 from abcdef_sim.optics.base import Optic
 from abcdef_sim.optics.freespace import FreeSpace
 
@@ -17,7 +17,7 @@ class OpticFactory:
     Centralizing this avoids scattered ad-hoc instantiation logic.
     """
 
-    registry: dict[CanonicalOpticKind, BuilderFn]
+    registry: dict[OpticKind, BuilderFn]
 
     @staticmethod
     def default() -> OpticFactory:
@@ -28,19 +28,17 @@ class OpticFactory:
         # def build_grating(spec: OpticSpec) -> Optic:
         #     return Grating(name="Grating", instance_name=spec.instance_name, **spec.params)
 
-        reg: dict[CanonicalOpticKind, BuilderFn] = {
+        reg: dict[OpticKind, BuilderFn] = {
             "FreeSpace": build_free_space,
             # "Grating": build_grating,
         }
         return OpticFactory(registry=reg)
 
     def build(self, spec: OpticSpec) -> Optic:
-        # OpticSpec.kind is normalized to canonical PascalCase values by validation.
-        kind: CanonicalOpticKind = spec.kind
         try:
-            fn = self.registry[kind]
+            fn = self.registry[spec.kind]
         except KeyError as e:
-            raise ValueError(f"No optic builder registered for kind={kind!r}") from e
+            raise ValueError(f"No optic builder registered for kind={spec.kind!r}") from e
         return fn(spec)
 
 

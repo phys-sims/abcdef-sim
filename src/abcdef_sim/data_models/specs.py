@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Literal, cast
+from typing import Any, Literal
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-CanonicalOpticKind = Literal["FreeSpace", "Grating"]
-OpticKind = CanonicalOpticKind
+OpticKind = Literal["FreeSpace", "Grating"]
 NDArrayF = npt.NDArray[np.float64]
 
 
@@ -19,27 +18,14 @@ class OpticSpec(BaseModel):
     - instance_name: unique identifier within a preset (also used for caching identity)
     - params: numeric parameters needed to construct the optic
     - tags: metadata (e.g., "expensive", "requires_gpu", etc.)
-
-    Canonical internal kind values are PascalCase (e.g., "FreeSpace").
     """
 
     model_config = ConfigDict(frozen=True)
 
-    kind: CanonicalOpticKind
+    kind: OpticKind
     instance_name: str
     params: dict[str, float] = Field(default_factory=dict)
     tags: dict[str, Any] = Field(default_factory=dict)
-
-    @field_validator("kind", mode="before")
-    @classmethod
-    def _validate_kind(cls, value: Any) -> CanonicalOpticKind:
-        if not isinstance(value, str):
-            raise ValueError("OpticSpec.kind must be a string.")
-        allowed: tuple[CanonicalOpticKind, ...] = ("FreeSpace", "Grating")
-        if value not in allowed:
-            allowed_str = ", ".join(repr(k) for k in allowed)
-            raise ValueError(f"Unknown OpticSpec.kind {value!r}. Allowed values: {allowed_str}.")
-        return cast(CanonicalOpticKind, value)
 
 
 class SystemPreset(BaseModel):
