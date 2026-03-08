@@ -32,7 +32,7 @@
 
 New additive pure-physics modules live under:
 - `src/abcdef_sim/physics/abcd` for paraxial ABCD transfer math (matrices, rays, Gaussian q propagation).
-- `src/abcdef_sim/physics/abcdef` for structured dispersion-aware ABCDEF placeholders.
+- `src/abcdef_sim/physics/abcdef` for structured ABCDEF conventions, dispersion helpers, and batched propagation kernels.
 
 To run reference validation tests against the external `raytracing` package:
 

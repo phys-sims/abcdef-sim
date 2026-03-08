@@ -37,11 +37,14 @@ class RayState(State):
         if self.rays.ndim != 3 or self.rays.shape[-2:] != (3, 1):
             raise ValueError(f"rays must have shape (N,3,1) or (N,3); got {self.rays.shape}")
 
-        if self.system.shape != self.rays.shape[:-1] + (3,):
-            # rays: (N,3,1) -> (N,3)
-            # system: should be (N,3,3)
-            if self.system.ndim != 3 or self.system.shape[1:] != (3, 3):
-                raise ValueError(f"system must have shape (N,3,3); got {self.system.shape}")
+        if self.system.ndim != 3 or self.system.shape[1:] != (3, 3):
+            raise ValueError(f"system must have shape (N,3,3); got {self.system.shape}")
+
+        if self.system.shape[0] != self.rays.shape[0]:
+            raise ValueError(
+                "system batch dimension must match rays: "
+                f"rays.shape={self.rays.shape}, system.shape={self.system.shape}"
+            )
 
     # --- State API ---
 
