@@ -32,6 +32,10 @@ __all__ = [
     "RAY_VECTOR_DOC",
     "SlopeConvention",
     "compose_system",
+    "extract_A",
+    "extract_B",
+    "extract_C",
+    "extract_D",
     "extract_E",
     "extract_F",
     "validate_matrix_shape",
@@ -63,6 +67,34 @@ def validate_ray_shape(rays: object) -> NDArrayF:
     raise ValueError(
         f"Ray vectors must have shape (3, 1), (N, 3, 1), or (N, 3); got {rays_arr.shape}"
     )
+
+
+def extract_A(M: object) -> NDArrayF:
+    """Return the ``A`` term batch from ABCDEF matrices."""
+
+    matrices, _ = _as_matrix_batch(M)
+    return matrices[:, 0, 0]
+
+
+def extract_B(M: object) -> NDArrayF:
+    """Return the ``B`` term batch from ABCDEF matrices."""
+
+    matrices, _ = _as_matrix_batch(M)
+    return matrices[:, 0, 1]
+
+
+def extract_C(M: object) -> NDArrayF:
+    """Return the ``C`` term batch from ABCDEF matrices."""
+
+    matrices, _ = _as_matrix_batch(M)
+    return matrices[:, 1, 0]
+
+
+def extract_D(M: object) -> NDArrayF:
+    """Return the ``D`` term batch from ABCDEF matrices."""
+
+    matrices, _ = _as_matrix_batch(M)
+    return matrices[:, 1, 1]
 
 
 def extract_E(M: object) -> NDArrayF:
