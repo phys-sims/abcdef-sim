@@ -211,7 +211,7 @@ def test_compose_order_matches_raytracing_matrix_multiplication() -> None:
     np.testing.assert_allclose(local, from_raytracing_matrix(rt_total), rtol=1e-12, atol=1e-12)
 
 
-@pytest.mark.parametrize("wavelength", [0.810, 1.550])
+@pytest.mark.parametrize("wavelength", [0.000810, 0.001550])
 def test_doublet_matrix_matches_raytracing_primitive_composition(wavelength: float) -> None:
     spec = _reference_doublet()
 
@@ -224,7 +224,7 @@ def test_doublet_matrix_matches_raytracing_primitive_composition(wavelength: flo
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("wavelength", [0.810, 1.550])
+@pytest.mark.parametrize("wavelength", [0.000810, 0.001550])
 def test_doublet_gaussian_beam_profile_matches_raytracing(wavelength: float) -> None:
     spec = _reference_doublet()
     q_in = q_from_waist(waist_radius=1.024, wavelength=wavelength, distance_from_waist=0.0)

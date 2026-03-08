@@ -103,7 +103,8 @@ def _doublet_profile_comparisons() -> list[ObservableComparison]:
     z_samples = np.linspace(0.0, 250.0, 161, dtype=float)
     comparisons: list[ObservableComparison] = []
 
-    for wavelength, label in [(0.810, "810 nm"), (1.550, "1550 nm")]:
+    # Wavelengths are in mm throughout the ABCD helpers.
+    for wavelength, label in [(0.000810, "810 nm"), (0.001550, "1550 nm")]:
         q_in = q_from_waist(waist_radius=1.024, wavelength=wavelength, distance_from_waist=0.0)
         local = sample_doublet_beam_radius_profile(q_in, doublet, wavelength, z_samples)
 
