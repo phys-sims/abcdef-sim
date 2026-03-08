@@ -38,6 +38,7 @@ __all__ = [
     "extract_D",
     "extract_E",
     "extract_F",
+    "theta_abcd_to_xprime_abcdef",
     "validate_matrix_shape",
     "validate_ray_shape",
 ]
@@ -67,6 +68,40 @@ def validate_ray_shape(rays: object) -> NDArrayF:
     raise ValueError(
         f"Ray vectors must have shape (3, 1), (N, 3, 1), or (N, 3); got {rays_arr.shape}"
     )
+
+
+def theta_abcd_to_xprime_abcdef(
+    matrix_theta: object,
+    *,
+    n_in: float,
+    n_out: float,
+    E: float = 0.0,
+    F: float = 0.0,
+) -> NDArrayF:
+    """Lift a 2x2 ``[x, theta]`` ABCD matrix into Martinez ``[x, x_prime]`` form."""
+
+    theta_arr = np.asarray(matrix_theta, dtype=float)
+    if theta_arr.shape != (2, 2):
+        raise ValueError(
+            f"matrix_theta must have shape (2, 2) when converting to ABCDEF; got {theta_arr.shape}"
+        )
+
+    n_in_f = float(n_in)
+    n_out_f = float(n_out)
+    if n_in_f <= 0.0:
+        raise ValueError("n_in must be > 0 when converting to Martinez x_prime form")
+    if n_out_f <= 0.0:
+        raise ValueError("n_out must be > 0 when converting to Martinez x_prime form")
+
+    out = np.zeros((3, 3), dtype=np.float64)
+    out[0, 0] = theta_arr[0, 0]
+    out[0, 1] = theta_arr[0, 1] / n_in_f
+    out[1, 0] = n_out_f * theta_arr[1, 0]
+    out[1, 1] = (n_out_f / n_in_f) * theta_arr[1, 1]
+    out[0, 2] = float(E)
+    out[1, 2] = float(F)
+    out[2, 2] = 1.0
+    return out
 
 
 def extract_A(M: object) -> NDArrayF:

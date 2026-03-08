@@ -20,12 +20,15 @@ def _coerce_length(value: float | int | str | bytes | bytearray) -> float:
 class FreeSpace(Optic):
     """Free-space propagation optic."""
 
+    medium_refractive_index: float = 1.0
+
     def __init__(
         self,
         *args: object,
         length: float | None = None,
         name: str = "FreeSpace",
         instance_name: str = "inst0",
+        medium_refractive_index: float = 1.0,
         _length: float | None = None,
         _n_fn: RefractiveIndexFn | None = None,
     ) -> None:
@@ -63,8 +66,24 @@ class FreeSpace(Optic):
         self.name = name
         self.instance_name = instance_name
         self._length = resolved_length
+        self.medium_refractive_index = float(medium_refractive_index)
         self._n_fn = _n_fn
 
-    def matrix(self, omega: ArrayLike) -> NDArrayF:
+    def matrix(self, omega: ArrayLike, *, omega0: float | None = None) -> NDArrayF:
+        del omega0
         omega_arr = np.asarray(omega, dtype=np.float64)
-        return get_abcdef_matrices(a=1.0, b=self.length, c=0.0, d=1.0, omega=omega_arr)
+        return get_abcdef_matrices(
+            a=1.0,
+            b=self.length / self.medium_refractive_index,
+            c=0.0,
+            d=1.0,
+            omega=omega_arr,
+        )
+
+    def n(self, omega: ArrayLike, *, omega0: float | None = None) -> NDArrayF:
+        del omega0
+        omega_arr = np.asarray(omega, dtype=np.float64)
+        return np.full_like(omega_arr, self.medium_refractive_index, dtype=np.float64)
+
+    def cache_params(self) -> tuple:
+        return (self.medium_refractive_index,)
