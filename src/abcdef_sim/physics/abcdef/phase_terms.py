@@ -25,6 +25,7 @@ __all__ = [
     "phi1_rad",
     "phi2_rad",
     "phi3_rad_i",
+    "phi4_rad",
 ]
 
 
@@ -44,7 +45,7 @@ def phi3_rad_i(k: object, F_i: object, x_after: object) -> NDArrayF:
     f_arr = _as_real_vector("F_i", F_i)
     x_arr = _as_real_vector("x_after", x_after)
     _require_matching_size(("k", k_arr), ("F_i", f_arr), ("x_after", x_arr))
-    return -0.5 * k_arr * f_arr * x_arr
+    return 0.5 * k_arr * f_arr * x_arr
 
 
 def phi2_rad(k: object, ray_in: object, ray_out: object) -> NDArrayF:
@@ -104,6 +105,18 @@ def phi1_rad(abcdef: object, q_in: object, w_in: object, w_out: object) -> NDArr
     return -np.angle(normalized_phase)
 
 
+def phi4_rad(k: object, x: object, x_out: object, q_out: object) -> NDArrayF:
+    """Return the spatial phase term from Martinez eq. 30."""
+
+    k_arr = _as_real_vector("k", k)
+    x_arr = _broadcast_real_vector("x", x, size=k_arr.size)
+    x_out_arr = _as_real_vector("x_out", x_out)
+    q_out_arr = _as_complex_vector("q_out", q_out)
+    _require_matching_size(("k", k_arr), ("x_out", x_out_arr), ("q_out", q_out_arr))
+
+    return np.real(k_arr * (x_arr - x_out_arr) ** 2 / (2.0 * q_out_arr))
+
+
 def combine_phi_total_rad(*terms: object | None) -> NDArrayF:
     """Sum any provided phase terms into a total phase array."""
 
@@ -134,6 +147,15 @@ def _as_complex_vector(name: str, value: object) -> NDArrayC:
     if arr.ndim != 1:
         raise ValueError(f"{name} must be coercible to shape (N,); got {arr.shape}")
     return arr
+
+
+def _broadcast_real_vector(name: str, value: object, *, size: int) -> NDArrayF:
+    arr = _as_real_vector(name, value)
+    if arr.size == size:
+        return arr
+    if arr.size == 1:
+        return np.full(size, arr.item(), dtype=np.float64)
+    raise ValueError(f"{name} must have shape ({size},); got {arr.shape}")
 
 
 def _require_matching_size(*named_arrays: tuple[str, npt.NDArray[np.generic]]) -> None:

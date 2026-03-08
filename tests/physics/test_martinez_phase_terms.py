@@ -8,6 +8,7 @@ from abcdef_sim.physics.abcdef.phase_terms import (
     phi0_rad_i,
     phi1_rad,
     phi3_rad_i,
+    phi4_rad,
 )
 
 pytestmark = pytest.mark.physics
@@ -28,7 +29,7 @@ def test_phi3_rad_i_uses_post_element_displacement_with_martinez_sign() -> None:
     F_i = np.array([0.0, 0.1, -0.2, 0.3, -0.4], dtype=float)
     x_after = np.array([1.5, -2.0, 0.5, -1.0, 2.5], dtype=float)
 
-    expected = -0.5 * k * F_i * x_after
+    expected = 0.5 * k * F_i * x_after
 
     np.testing.assert_allclose(phi3_rad_i(k, F_i, x_after), expected)
 
@@ -66,6 +67,17 @@ def test_phi1_rad_accepts_unbatched_abcdef_matrix() -> None:
     expected = np.array([-np.angle(lhs)], dtype=float)
 
     np.testing.assert_allclose(phi1_rad(matrix, q_in, w_in, w_out), expected)
+
+
+def test_phi4_rad_matches_martinez_equation_30_and_broadcasts_scalar_x() -> None:
+    k = np.array([2.0, 3.0, 4.0], dtype=float)
+    x = 0.5
+    x_out = np.array([0.1, -0.2, 0.4], dtype=float)
+    q_out = np.array([1.0 + 2.0j, 2.0 + 1.0j, 3.0 + 4.0j], dtype=np.complex128)
+
+    expected = np.real(k * (x - x_out) ** 2 / (2.0 * q_out))
+
+    np.testing.assert_allclose(phi4_rad(k, x, x_out, q_out), expected)
 
 
 def test_combine_phi_total_rad_sums_present_terms_only() -> None:
