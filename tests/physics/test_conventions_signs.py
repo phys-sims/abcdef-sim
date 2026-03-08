@@ -3,6 +3,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+
+pytestmark = pytest.mark.physics
+
 from abcdef_sim.physics.abcdef.conventions import (
     compose_system,
     extract_E,
