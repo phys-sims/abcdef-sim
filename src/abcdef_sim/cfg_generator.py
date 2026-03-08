@@ -65,6 +65,7 @@ class OpticStageCfgGenerator:
         use_l1 = True if policy is None else bool(policy.get("cfg.cache_l1", True))
         use_l2 = True if policy is None else bool(policy.get("cfg.cache_l2", True))
         if not optic.l2_cache_safe():
+            use_l1 = False
             use_l2 = False
 
         should_cache = use_cache and self.is_expensive(optic)
