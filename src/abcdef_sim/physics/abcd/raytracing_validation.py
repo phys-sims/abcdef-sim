@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
 from collections.abc import Callable, Sequence
 from time import perf_counter
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -99,7 +99,8 @@ def single_lens_effective_focal_length_comparison(
     refractive_indices = lens.n(omega)
     reference = np.array(
         [
-            -1.0 / from_raytracing_matrix(
+            -1.0
+            / from_raytracing_matrix(
                 raytracing_thick_lens(
                     n=float(n_value),
                     R1=lens.R1,

@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import sys
+from pathlib import Path
+from typing import Any
 
 import matplotlib
 
@@ -13,16 +14,27 @@ import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
 
-from abcdef_sim.physics.abcd.raytracing_validation import (
-    doublet_beam_profile_comparisons,
-    run_wavelength_tracking_benchmarks,
-    single_lens_effective_focal_length_comparison,
-    single_lens_wavelength_grid_um,
-)
-from abcdef_sim.physics.validation import format_benchmark_table
+
+def _load_validation_helpers() -> tuple[Any, Any, Any, Any, Any]:
+    if str(SRC) not in sys.path:
+        sys.path.insert(0, str(SRC))
+
+    from abcdef_sim.physics.abcd.raytracing_validation import (
+        doublet_beam_profile_comparisons,
+        run_wavelength_tracking_benchmarks,
+        single_lens_effective_focal_length_comparison,
+        single_lens_wavelength_grid_um,
+    )
+    from abcdef_sim.physics.validation import format_benchmark_table
+
+    return (
+        doublet_beam_profile_comparisons,
+        run_wavelength_tracking_benchmarks,
+        single_lens_effective_focal_length_comparison,
+        single_lens_wavelength_grid_um,
+        format_benchmark_table,
+    )
 
 
 def _parse_wavelength_counts(raw: str) -> list[int]:
@@ -35,6 +47,13 @@ def _parse_wavelength_counts(raw: str) -> list[int]:
 
 
 def write_similarity_plot(output_path: Path) -> Path:
+    (
+        doublet_beam_profile_comparisons,
+        _run_wavelength_tracking_benchmarks,
+        single_lens_effective_focal_length_comparison,
+        single_lens_wavelength_grid_um,
+        _format_benchmark_table,
+    ) = _load_validation_helpers()
     focal = single_lens_effective_focal_length_comparison(single_lens_wavelength_grid_um(151))
     beam_profiles = doublet_beam_profile_comparisons()
 
@@ -103,6 +122,13 @@ def write_benchmark_report(
     warmup_runs: int,
     measured_runs: int,
 ) -> Path:
+    (
+        _doublet_beam_profile_comparisons,
+        run_wavelength_tracking_benchmarks,
+        _single_lens_effective_focal_length_comparison,
+        _single_lens_wavelength_grid_um,
+        format_benchmark_table,
+    ) = _load_validation_helpers()
     comparisons = run_wavelength_tracking_benchmarks(
         wavelength_counts,
         warmup_runs=warmup_runs,
