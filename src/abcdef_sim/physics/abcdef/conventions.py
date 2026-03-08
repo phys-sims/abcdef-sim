@@ -47,10 +47,7 @@ def validate_matrix_shape(M: object) -> NDArrayF:
         return M_arr
     if M_arr.ndim == 3 and M_arr.shape[1:] == (3, 3):
         return M_arr
-    raise ValueError(
-        "ABCDEF matrix must have shape (3, 3) or (N, 3, 3); "
-        f"got {M_arr.shape}"
-    )
+    raise ValueError(f"ABCDEF matrix must have shape (3, 3) or (N, 3, 3); got {M_arr.shape}")
 
 
 def validate_ray_shape(rays: object) -> NDArrayF:
@@ -64,8 +61,7 @@ def validate_ray_shape(rays: object) -> NDArrayF:
     if rays_arr.ndim == 3 and rays_arr.shape[1:] == (3, 1):
         return rays_arr
     raise ValueError(
-        "Ray vectors must have shape (3, 1), (N, 3, 1), or (N, 3); "
-        f"got {rays_arr.shape}"
+        f"Ray vectors must have shape (3, 1), (N, 3, 1), or (N, 3); got {rays_arr.shape}"
     )
 
 
