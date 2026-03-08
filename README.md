@@ -43,6 +43,14 @@ pytest tests/physics/test_abcd_against_raytracing.py
 
 If `raytracing` is not installed, the validation test module is skipped.
 
+To generate the graphical validation artifact described by the physics tests:
+
+```bash
+python scripts/generate_abcd_validation_plot.py
+```
+
+This writes a deterministic PNG to `artifacts/physics/thick_lens_vs_raytracing.png`.
+
 
 ## Running tests by marker
 
