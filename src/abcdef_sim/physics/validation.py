@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -55,3 +56,53 @@ class ObservableComparison:
 
         residual = self.residual()
         return float(np.sqrt(np.mean(np.square(residual))))
+
+
+@dataclass(frozen=True, slots=True)
+class BenchmarkComparison:
+    """Comparable wall-clock timings for one validation scenario."""
+
+    scenario_name: str
+    wavelength_count: int
+    local_seconds: float
+    reference_seconds: float
+    local_label: str = "abcdef-sim"
+    reference_label: str = "raytracing"
+
+    def __post_init__(self) -> None:
+        local_seconds = float(self.local_seconds)
+        reference_seconds = float(self.reference_seconds)
+        if local_seconds <= 0.0:
+            raise ValueError("local_seconds must be > 0")
+        if reference_seconds <= 0.0:
+            raise ValueError("reference_seconds must be > 0")
+
+        object.__setattr__(self, "local_seconds", local_seconds)
+        object.__setattr__(self, "reference_seconds", reference_seconds)
+
+    def speedup_factor(self) -> float:
+        """Return reference/backend speedup using ``reference / local``."""
+
+        return float(self.reference_seconds / self.local_seconds)
+
+
+def format_benchmark_table(comparisons: Sequence[BenchmarkComparison]) -> str:
+    """Render benchmark comparisons as a Markdown table."""
+
+    rows = list(comparisons)
+    if not rows:
+        raise ValueError("comparisons must be non-empty")
+
+    header = [
+        "| Scenario | Wavelengths | abcdef-sim (ms) | raytracing (ms) | Speedup |",
+        "| --- | ---: | ---: | ---: | ---: |",
+    ]
+    body = [
+        (
+            f"| {row.scenario_name} | {row.wavelength_count} | "
+            f"{row.local_seconds * 1e3:.3f} | {row.reference_seconds * 1e3:.3f} | "
+            f"{row.speedup_factor():.2f}x |"
+        )
+        for row in rows
+    ]
+    return "\n".join([*header, *body])

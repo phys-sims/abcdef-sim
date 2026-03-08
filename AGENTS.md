@@ -38,6 +38,9 @@ Use these locations first for impact analysis and for placing new physics tests 
    - Prefer focused diffs with clear physical intent.
    - Preserve/extend type hints and validation contracts.
    - Document equations/assumptions in-code when nontrivial.
+   - For repo-local runnable scripts in `examples/` or `scripts/`, keep module-level imports lint-clean:
+     if a script must adjust `sys.path` for local execution, do the package imports inside a helper or
+     `main()` after path setup rather than at module scope.
 
 3. **High-quality testing is mandatory**
    - Every physics behavior change must include or update tests.
@@ -60,6 +63,8 @@ Testing is a delivery requirement, not optional cleanup. Before opening a PR, ru
 - **Pre-PR hygiene (required for every PR)**:
   - Run `pre-commit run --all-files` and rerun it until it exits clean with no file modifications.
   - Treat auto-fixing hooks (for example `mixed-line-ending`, `ruff --fix`, and `ruff-format`) as first-pass mutations: stage their changes and run `pre-commit run --all-files` again before opening a PR.
+  - When a change touches `examples/` or `scripts/`, explicitly watch for Ruff import-order violations
+    such as `E402` before pushing.
 - **Fast gate** (required baseline for all non-trivial changes):
   - `pytest -m "not slow" -q`
 - **Physics lane** (required for any optics/math/propagation change):
