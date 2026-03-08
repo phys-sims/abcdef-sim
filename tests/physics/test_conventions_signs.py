@@ -5,6 +5,10 @@ import pytest
 
 from abcdef_sim.physics.abcdef.conventions import (
     compose_system,
+    extract_A,
+    extract_B,
+    extract_C,
+    extract_D,
     extract_E,
     extract_F,
     validate_matrix_shape,
@@ -12,6 +16,31 @@ from abcdef_sim.physics.abcdef.conventions import (
 )
 
 pytestmark = pytest.mark.physics
+
+
+def test_extract_a_through_f_read_abcdef_terms() -> None:
+    matrices = np.array(
+        [
+            [
+                [1.0, 2.0, 3.0],
+                [4.0, 5.0, 6.0],
+                [0.0, 0.0, 1.0],
+            ],
+            [
+                [7.0, 8.0, 9.0],
+                [10.0, 11.0, 12.0],
+                [0.0, 0.0, 1.0],
+            ],
+        ],
+        dtype=float,
+    )
+
+    np.testing.assert_allclose(extract_A(matrices), np.array([1.0, 7.0], dtype=float))
+    np.testing.assert_allclose(extract_B(matrices), np.array([2.0, 8.0], dtype=float))
+    np.testing.assert_allclose(extract_C(matrices), np.array([4.0, 10.0], dtype=float))
+    np.testing.assert_allclose(extract_D(matrices), np.array([5.0, 11.0], dtype=float))
+    np.testing.assert_allclose(extract_E(matrices), np.array([3.0, 9.0], dtype=float))
+    np.testing.assert_allclose(extract_F(matrices), np.array([6.0, 12.0], dtype=float))
 
 
 def test_extract_e_and_f_read_the_inhomogeneous_terms() -> None:

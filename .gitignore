@@ -36,3 +36,4 @@ Thumbs.db
 *.log
 *.tmp
 ca.dcclab.python.raytracing.json
+docs/refs/private/
