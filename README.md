@@ -68,12 +68,16 @@ This writes deterministic JSON/PNG artifacts to `artifacts/physics/`:
 - `treacy_radius_mirror_heatmap.json`
 - `treacy_radius_mirror_heatmap.png`
 
-The benchmark uses the local Treacy analytic model as the plane-wave baseline and
-plots the finite-beam comparison phase after removing the Martinez ray-centering
-term `phi2`, which does not belong to the plane-wave model and does not vanish
-with beam radius. The large-beam limit of that reduced comparison should
-approach the analytic baseline while mirror-leg length still perturbs the
-finite-beam result.
+The benchmark uses the local Treacy analytic model as the baseline and writes
+both:
+
+- the full ABCDEF-vs-analytic error
+- the same comparison with the Martinez ray-centering term `phi2` removed as a
+  diagnostic decomposition
+
+This keeps the poster-facing “actual simulator vs analytic equation” result
+visible while still showing the large-beam convergence story for the
+`without_phi2` diagnostic.
 
 
 ## Running tests by marker

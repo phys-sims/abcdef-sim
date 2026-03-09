@@ -77,19 +77,24 @@ def test_treacy_runtime_gdd_error_decreases_with_beam_radius() -> None:
         n_samples=256,
     )
 
-    gdd_errors = np.array([point.gdd_rel_error for point in points], dtype=np.float64)
+    gdd_errors = np.array([point.without_phi2_gdd_rel_error for point in points], dtype=np.float64)
     assert np.all(np.isfinite(gdd_errors))
     assert gdd_errors[-1] < gdd_errors[0]
     assert gdd_errors[-1] * 4.0 < gdd_errors[0]
 
     for point in points:
-        assert np.isfinite(point.comparison_gdd_fs2)
-        assert np.isfinite(point.comparison_tod_fs3)
-        assert np.isfinite(point.runner_gdd_fs2)
-        assert np.isfinite(point.runner_tod_fs3)
+        assert np.isfinite(point.full_gdd_fs2)
+        assert np.isfinite(point.full_gdd_rel_error)
+        assert np.isfinite(point.without_phi2_gdd_fs2)
+        assert np.isfinite(point.without_phi2_gdd_rel_error)
+        assert np.isfinite(point.full_tod_fs3)
+        assert np.isfinite(point.full_tod_rel_error)
+        assert np.isfinite(point.without_phi2_tod_fs3)
+        assert np.isfinite(point.without_phi2_tod_rel_error)
+    assert points[-1].full_gdd_rel_error > points[-1].without_phi2_gdd_rel_error
     for point in points[-4:]:
-        assert np.sign(point.comparison_gdd_fs2) == np.sign(point.analytic_gdd_fs2)
-        assert np.sign(point.comparison_tod_fs3) == np.sign(point.analytic_tod_fs3)
+        assert np.sign(point.without_phi2_gdd_fs2) == np.sign(point.analytic_gdd_fs2)
+        assert np.sign(point.without_phi2_tod_fs3) == np.sign(point.analytic_tod_fs3)
 
 
 def test_treacy_runtime_mirror_leg_changes_abcdef_result_while_analytic_stays_fixed() -> None:
@@ -100,11 +105,13 @@ def test_treacy_runtime_mirror_leg_changes_abcdef_result_while_analytic_stays_fi
     )
 
     analytic_gdd = {round(point.analytic_gdd_fs2, 6) for point in points}
-    comparison_gdd = np.array([point.comparison_gdd_fs2 for point in points], dtype=np.float64)
-    gdd_errors = np.array([point.gdd_rel_error for point in points], dtype=np.float64)
+    full_gdd = np.array([point.full_gdd_fs2 for point in points], dtype=np.float64)
+    without_phi2_gdd = np.array([point.without_phi2_gdd_fs2 for point in points], dtype=np.float64)
+    gdd_errors = np.array([point.without_phi2_gdd_rel_error for point in points], dtype=np.float64)
 
     assert len(analytic_gdd) == 1
-    assert np.max(np.abs(comparison_gdd - comparison_gdd[0])) > 1e2
+    assert np.max(np.abs(full_gdd - full_gdd[0])) > 1e2
+    assert np.max(np.abs(without_phi2_gdd - without_phi2_gdd[0])) > 1e2
     assert np.max(gdd_errors) > np.min(gdd_errors)
 
 

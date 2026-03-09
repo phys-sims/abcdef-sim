@@ -58,19 +58,45 @@ def generate_artifacts(output_dir: Path) -> tuple[Path, Path, Path, Path]:
 
 def _plot_radius_convergence(points: tuple[object, ...], output_path: Path) -> None:
     beam_radii = np.array([point.beam_radius_mm for point in points], dtype=np.float64)
-    gdd_errors = np.array([point.gdd_rel_error for point in points], dtype=np.float64)
-    tod_errors = np.array([point.tod_rel_error for point in points], dtype=np.float64)
+    full_gdd_errors = np.array([point.full_gdd_rel_error for point in points], dtype=np.float64)
+    without_phi2_gdd_errors = np.array(
+        [point.without_phi2_gdd_rel_error for point in points],
+        dtype=np.float64,
+    )
+    full_tod_errors = np.array([point.full_tod_rel_error for point in points], dtype=np.float64)
+    without_phi2_tod_errors = np.array(
+        [point.without_phi2_tod_rel_error for point in points],
+        dtype=np.float64,
+    )
 
-    fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
-    ax.plot(beam_radii, gdd_errors, marker="o", color="tab:blue", label="GDD relative error")
-    ax.plot(beam_radii, tod_errors, marker="s", color="tab:orange", label="TOD relative error")
-    ax.set_xscale("log")
-    ax.set_yscale("log")
-    ax.set_xlabel("Input beam radius (mm)")
-    ax.set_ylabel("Relative error")
-    ax.set_title("Treacy Finite-Beam Error vs Analytic Baseline at length_to_mirror = 0 um")
-    ax.grid(True, which="both", alpha=0.3)
-    ax.legend()
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5), constrained_layout=True)
+    for ax, full_errors, without_phi2_errors, title in [
+        (axes[0], full_gdd_errors, without_phi2_gdd_errors, "GDD relative error"),
+        (axes[1], full_tod_errors, without_phi2_tod_errors, "TOD relative error"),
+    ]:
+        ax.plot(
+            beam_radii,
+            full_errors,
+            marker="o",
+            color="tab:red",
+            label="Full ABCDEF",
+        )
+        ax.plot(
+            beam_radii,
+            without_phi2_errors,
+            marker="s",
+            color="tab:blue",
+            label="ABCDEF without phi2",
+        )
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlabel("Input beam radius (mm)")
+        ax.set_ylabel("Relative error")
+        ax.set_title(title)
+        ax.grid(True, which="both", alpha=0.3)
+        ax.legend()
+
+    fig.suptitle("Treacy Error vs Analytic Baseline at length_to_mirror = 0 um")
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
 
@@ -81,18 +107,24 @@ def _plot_mirror_heatmap(points: tuple[object, ...], output_path: Path) -> None:
         sorted({point.length_to_mirror_um for point in points}),
         dtype=np.float64,
     )
-    gdd_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
-    tod_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
+    full_gdd_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
+    without_phi2_gdd_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
+    full_tod_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
+    without_phi2_tod_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
     for point in points:
         row = int(np.where(mirror_lengths_um == point.length_to_mirror_um)[0][0])
         col = int(np.where(beam_radii == point.beam_radius_mm)[0][0])
-        gdd_grid[row, col] = point.gdd_rel_error
-        tod_grid[row, col] = point.tod_rel_error
+        full_gdd_grid[row, col] = point.full_gdd_rel_error
+        without_phi2_gdd_grid[row, col] = point.without_phi2_gdd_rel_error
+        full_tod_grid[row, col] = point.full_tod_rel_error
+        without_phi2_tod_grid[row, col] = point.without_phi2_tod_rel_error
 
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5), constrained_layout=True)
+    fig, axes = plt.subplots(2, 2, figsize=(12, 9), constrained_layout=True)
     for ax, grid, title in [
-        (axes[0], gdd_grid, "GDD relative error"),
-        (axes[1], tod_grid, "TOD relative error"),
+        (axes[0, 0], full_gdd_grid, "Full ABCDEF GDD relative error"),
+        (axes[0, 1], full_tod_grid, "Full ABCDEF TOD relative error"),
+        (axes[1, 0], without_phi2_gdd_grid, "ABCDEF without phi2 GDD relative error"),
+        (axes[1, 1], without_phi2_tod_grid, "ABCDEF without phi2 TOD relative error"),
     ]:
         im = ax.imshow(
             grid,
@@ -110,7 +142,7 @@ def _plot_mirror_heatmap(points: tuple[object, ...], output_path: Path) -> None:
         ax.set_title(title)
         fig.colorbar(im, ax=ax, shrink=0.85)
 
-    fig.suptitle("Treacy Finite-Beam Error Surface vs Beam Radius and Mirror Leg")
+    fig.suptitle("Treacy Error Surface vs Beam Radius and Mirror Leg")
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
 

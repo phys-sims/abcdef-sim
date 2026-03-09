@@ -51,14 +51,16 @@ __all__ = [
 class TreacyBenchmarkPoint:
     beam_radius_mm: float
     length_to_mirror_um: float
-    comparison_gdd_fs2: float
     analytic_gdd_fs2: float
-    gdd_rel_error: float
-    comparison_tod_fs3: float
+    full_gdd_fs2: float
+    full_gdd_rel_error: float
+    without_phi2_gdd_fs2: float
+    without_phi2_gdd_rel_error: float
     analytic_tod_fs3: float
-    tod_rel_error: float
-    runner_gdd_fs2: float
-    runner_tod_fs3: float
+    full_tod_fs3: float
+    full_tod_rel_error: float
+    without_phi2_tod_fs3: float
+    without_phi2_tod_rel_error: float
 
     def to_dict(self) -> dict[str, float]:
         return {key: float(value) for key, value in asdict(self).items()}
@@ -105,20 +107,22 @@ def run_treacy_benchmark_point(
         diffraction_order=diffraction_order,
         n_passes=n_passes,
     )
-    comparison_gdd_fs2, comparison_tod_fs3 = _benchmark_dispersion_without_phi2(result)
-    runner_gdd_fs2 = float(result.final_state.metrics["abcdef.gdd_fs2"])
-    runner_tod_fs3 = float(result.final_state.metrics["abcdef.tod_fs3"])
+    without_phi2_gdd_fs2, without_phi2_tod_fs3 = _benchmark_dispersion_without_phi2(result)
+    full_gdd_fs2 = float(result.final_state.metrics["abcdef.gdd_fs2"])
+    full_tod_fs3 = float(result.final_state.metrics["abcdef.tod_fs3"])
     return TreacyBenchmarkPoint(
         beam_radius_mm=float(beam_radius_mm),
         length_to_mirror_um=float(length_to_mirror_um),
-        comparison_gdd_fs2=comparison_gdd_fs2,
         analytic_gdd_fs2=float(analytic.gdd_fs2),
-        gdd_rel_error=_relative_error(comparison_gdd_fs2, analytic.gdd_fs2),
-        comparison_tod_fs3=comparison_tod_fs3,
+        full_gdd_fs2=full_gdd_fs2,
+        full_gdd_rel_error=_relative_error(full_gdd_fs2, analytic.gdd_fs2),
+        without_phi2_gdd_fs2=without_phi2_gdd_fs2,
+        without_phi2_gdd_rel_error=_relative_error(without_phi2_gdd_fs2, analytic.gdd_fs2),
         analytic_tod_fs3=float(analytic.tod_fs3),
-        tod_rel_error=_relative_error(comparison_tod_fs3, analytic.tod_fs3),
-        runner_gdd_fs2=runner_gdd_fs2,
-        runner_tod_fs3=runner_tod_fs3,
+        full_tod_fs3=full_tod_fs3,
+        full_tod_rel_error=_relative_error(full_tod_fs3, analytic.tod_fs3),
+        without_phi2_tod_fs3=without_phi2_tod_fs3,
+        without_phi2_tod_rel_error=_relative_error(without_phi2_tod_fs3, analytic.tod_fs3),
     )
 
 
