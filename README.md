@@ -75,6 +75,30 @@ Primary runtime snapshot (`ABCDEF runtime` vs `raytracing`):
 
 ![ABCDEF runtime validation snapshot](docs/images/abcdef_runtime_similarity.png)
 
+To generate the Treacy compressor validation and benchmarking artifacts:
+
+```bash
+python scripts/generate_treacy_benchmark_artifacts.py
+```
+
+This writes deterministic JSON/PNG artifacts to `artifacts/physics/`:
+
+- `treacy_radius_convergence.json`
+- `treacy_radius_convergence.png`
+- `treacy_radius_mirror_heatmap.json`
+- `treacy_radius_mirror_heatmap.png`
+
+The benchmark uses the local Treacy analytic model as the baseline and writes
+both:
+
+- the full ABCDEF-vs-analytic error
+- the same comparison with the Martinez ray-centering term `phi2` removed as a
+  diagnostic decomposition
+
+This keeps the poster-facing “actual simulator vs analytic equation” result
+visible while still showing the large-beam convergence story for the
+`without_phi2` diagnostic.
+
 
 ## Running tests by marker
 
