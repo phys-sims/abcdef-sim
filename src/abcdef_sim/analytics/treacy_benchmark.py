@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Literal
 
-import numpy as np
-
 from abcdef_sim import (
     BeamSpec,
     PulseSpec,
@@ -16,12 +14,6 @@ from abcdef_sim.analytics.spatiospectral import (
     build_output_plane_field_1d,
     summarize_output_plane_field,
     summarize_output_plane_geometry,
-)
-from abcdef_sim.data_models.results import AbcdefRunResult
-from abcdef_sim.physics.abcdef.dispersion import (
-    fit_phase_taylor,
-    gdd_from_phase_coeffs,
-    tod_from_phase_coeffs,
 )
 from abcdef_sim.physics.abcdef.treacy import compute_treacy_analytic_metrics
 
@@ -36,10 +28,12 @@ DEFAULT_TREACY_BENCHMARK_BEAM_RADII_MM: tuple[float, ...] = (
 )
 DEFAULT_TREACY_BENCHMARK_MIRROR_LENGTHS_UM: tuple[float, ...] = (
     0.0,
-    25_000.0,
     50_000.0,
-    75_000.0,
     100_000.0,
+    200_000.0,
+    400_000.0,
+    800_000.0,
+    1_600_000.0,
 )
 
 __all__ = [
@@ -59,13 +53,9 @@ class TreacyBenchmarkPoint:
     analytic_gdd_fs2: float
     full_gdd_fs2: float
     full_gdd_rel_error: float
-    without_phi2_gdd_fs2: float
-    without_phi2_gdd_rel_error: float
     analytic_tod_fs3: float
     full_tod_fs3: float
     full_tod_rel_error: float
-    without_phi2_tod_fs3: float
-    without_phi2_tod_rel_error: float
     x_centroid_span_um: float
     x_centroid_slope_um_per_rad_per_fs: float
     x_prime_span: float
@@ -124,7 +114,6 @@ def run_treacy_benchmark_point(
         diffraction_order=diffraction_order,
         n_passes=n_passes,
     )
-    without_phi2_gdd_fs2, without_phi2_tod_fs3 = _benchmark_dispersion_without_phi2(result)
     full_gdd_fs2 = float(result.final_state.metrics["abcdef.gdd_fs2"])
     full_tod_fs3 = float(result.final_state.metrics["abcdef.tod_fs3"])
     spatial_metrics = summarize_output_plane_geometry(result)
@@ -135,13 +124,9 @@ def run_treacy_benchmark_point(
         analytic_gdd_fs2=float(analytic.gdd_fs2),
         full_gdd_fs2=full_gdd_fs2,
         full_gdd_rel_error=_relative_error(full_gdd_fs2, analytic.gdd_fs2),
-        without_phi2_gdd_fs2=without_phi2_gdd_fs2,
-        without_phi2_gdd_rel_error=_relative_error(without_phi2_gdd_fs2, analytic.gdd_fs2),
         analytic_tod_fs3=float(analytic.tod_fs3),
         full_tod_fs3=full_tod_fs3,
         full_tod_rel_error=_relative_error(full_tod_fs3, analytic.tod_fs3),
-        without_phi2_tod_fs3=without_phi2_tod_fs3,
-        without_phi2_tod_rel_error=_relative_error(without_phi2_tod_fs3, analytic.tod_fs3),
         x_centroid_span_um=spatial_metrics.x_centroid_span_um,
         x_centroid_slope_um_per_rad_per_fs=spatial_metrics.x_centroid_slope_um_per_rad_per_fs,
         x_prime_span=spatial_metrics.x_prime_span,
@@ -222,22 +207,3 @@ def _relative_error(value: float, reference: float) -> float:
     if reference == 0.0:
         return abs(float(value))
     return abs(float(value) - float(reference)) / abs(float(reference))
-
-
-def _benchmark_dispersion_without_phi2(result: AbcdefRunResult) -> tuple[float, float]:
-    comparison_phase = np.asarray(result.pipeline_result.phi_total_rad, dtype=np.float64).reshape(
-        -1
-    )
-    phi2 = result.pipeline_result.phi2_rad
-    if phi2 is not None:
-        comparison_phase = comparison_phase - np.asarray(phi2, dtype=np.float64).reshape(-1)
-
-    fit = fit_phase_taylor(
-        result.pipeline_result.delta_omega_rad_per_fs,
-        comparison_phase,
-        omega0_rad_per_fs=result.pipeline_result.omega0_rad_per_fs,
-        weights=result.fit.weights,
-        order=4,
-    )
-    coefficients = tuple(float(value) for value in fit.coefficients_rad)
-    return gdd_from_phase_coeffs(coefficients), tod_from_phase_coeffs(coefficients)

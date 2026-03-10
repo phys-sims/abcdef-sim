@@ -94,19 +94,32 @@ This writes deterministic JSON/PNG artifacts to `artifacts/physics/`:
 - `treacy_output_plane_spatiospectral.json`
 - `treacy_output_plane_spatiospectral.png`
 
-The benchmark uses the local Treacy analytic model as the baseline and writes
-both:
+The artifacts are split into one primary error-comparison figure and several
+explicitly labeled full-ABCDEF companion plots.
 
-- the full ABCDEF-vs-analytic error
-- the same comparison with the Martinez ray-centering term `phi2` removed as a
-  diagnostic decomposition
+- Primary matched-comparison error heatmap:
+  - `treacy_radius_mirror_heatmap.png`
+  - shows full-ABCDEF relative error against the analytic plane-wave Treacy
+    baseline for GDD and TOD over beam radius and `length_to_mirror`
+  - the JSON includes the analytic reference values and the exact relative-error
+    definition used in the plot
+  - the default mirror-leg sweep uses larger geometric steps from `0` up to
+    `1.6e6 um` so mirror-distance trends remain visible on the same log-scaled
+    error map
+- Full-ABCDEF scalar error plot:
+  - `treacy_radius_convergence.png`
+  - uses relative error against the analytic Treacy baseline at
+    `length_to_mirror = 0`
+- Full-ABCDEF spatial companion plots:
+  - `treacy_spatial_metrics_vs_radius.png`
+  - `treacy_spatial_metrics_vs_radius_mirror.png`
+- Output-plane reconstruction:
+  - `treacy_output_plane_spatiospectral.png`
+  - shows only the full ABCDEF reconstruction
 
-The scalar radius/heatmap figures remain the baseline validation plots. The
-added spatial artifacts report output-plane spatial chirp, angular dispersion,
-and representative `x-omega` / `x-t` reconstructions for the Treacy
-compressor. This keeps the poster-facing "actual simulator vs analytic
-equation" result visible while still showing the large-beam convergence story
-for the `without_phi2` diagnostic.
+The local Treacy analytic model remains the scalar reference. Public benchmark
+artifacts now report only the full ABCDEF comparison; the old `without_phi2`
+diagnostic is not part of the generated benchmark figures or JSON payloads.
 
 The current Treacy preset resolves the second-grating and return-pass center
 incidence angles against the laser center wavelength at runtime. It also uses
