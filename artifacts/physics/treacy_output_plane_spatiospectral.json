@@ -20,10 +20,10 @@
         "x_centroid_slope_um_per_rad_per_fs": -197166.4016004875,
         "x_prime_span": 0.2279268139387879,
         "x_prime_slope_per_rad_per_fs": -0.00038367363061837817,
-        "pulse_front_tilt_fs_per_um": 0.000127754469719187,
-        "time_centroid_span_fs": 1932.6842927390858,
+        "pulse_front_tilt_fs_per_um": -0.00015560395253708142,
+        "time_centroid_span_fs": 1866.5110819759093,
         "mean_mode_overlap_with_center": 0.0707378052146879,
-        "center_frequency_x_um": 3.04899512172573e-14,
+        "center_frequency_x_um": -8.250778914473892e-15,
         "center_frequency_x_prime": 0.0
       }
     },
@@ -38,14 +38,14 @@
       "x_samples": 2009,
       "full_summary": {
         "phase_variant": "full",
-        "x_centroid_span_um": 82693.72495383289,
-        "x_centroid_slope_um_per_rad_per_fs": -197166.40160048753,
+        "x_centroid_span_um": 82693.72495383286,
+        "x_centroid_slope_um_per_rad_per_fs": -197166.40160048756,
         "x_prime_span": 0.2279268139387879,
         "x_prime_slope_per_rad_per_fs": -0.00038367363061837817,
-        "pulse_front_tilt_fs_per_um": -0.09207232481331862,
-        "time_centroid_span_fs": 1599.9175633109498,
-        "mean_mode_overlap_with_center": 0.2912225707164164,
-        "center_frequency_x_um": 1.105727819535728e-13,
+        "pulse_front_tilt_fs_per_um": 0.016553614422612467,
+        "time_centroid_span_fs": 1256.7822464160467,
+        "mean_mode_overlap_with_center": 0.2912225707164163,
+        "center_frequency_x_um": 9.063527086495443e-14,
         "center_frequency_x_prime": 0.0
       }
     },
@@ -60,14 +60,14 @@
       "x_samples": 512,
       "full_summary": {
         "phase_variant": "full",
-        "x_centroid_span_um": 82693.72491459906,
-        "x_centroid_slope_um_per_rad_per_fs": -197166.40160048756,
+        "x_centroid_span_um": 82693.72491459905,
+        "x_centroid_slope_um_per_rad_per_fs": -197166.40160048753,
         "x_prime_span": 0.2279268139387879,
         "x_prime_slope_per_rad_per_fs": -0.00038367363061837817,
-        "pulse_front_tilt_fs_per_um": -0.021256402140352206,
-        "time_centroid_span_fs": 924.0131389399762,
-        "mean_mode_overlap_with_center": 0.9495644053929009,
-        "center_frequency_x_um": -1.6566481897521159e-13,
+        "pulse_front_tilt_fs_per_um": 0.002737036197152273,
+        "time_centroid_span_fs": 491.05588494157104,
+        "mean_mode_overlap_with_center": 0.9495644053929003,
+        "center_frequency_x_um": -2.2509887301561025e-13,
         "center_frequency_x_prime": 0.0
       }
     },
@@ -86,10 +86,10 @@
         "x_centroid_slope_um_per_rad_per_fs": -197166.4016004875,
         "x_prime_span": 0.2279268139387879,
         "x_prime_slope_per_rad_per_fs": -0.00038367363061837817,
-        "pulse_front_tilt_fs_per_um": -0.09198997629216336,
-        "time_centroid_span_fs": 1639.580375011838,
-        "mean_mode_overlap_with_center": 0.29122466621142906,
-        "center_frequency_x_um": -2.9285041833751405e-14,
+        "pulse_front_tilt_fs_per_um": 0.021950959418767204,
+        "time_centroid_span_fs": 1888.7065526020122,
+        "mean_mode_overlap_with_center": 0.29122466621142895,
+        "center_frequency_x_um": -3.0564996876321284e-14,
         "center_frequency_x_prime": 0.0
       }
     }

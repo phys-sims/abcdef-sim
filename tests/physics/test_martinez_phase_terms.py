@@ -5,6 +5,7 @@ import pytest
 
 from abcdef_sim.physics.abcdef.phase_terms import (
     combine_phi_total_rad,
+    martinez_k,
     phi0_rad_i,
     phi1_rad,
     phi3_rad_i,
@@ -15,13 +16,13 @@ pytestmark = pytest.mark.physics
 
 
 def test_phi0_rad_i_matches_plane_wave_optical_path_phase() -> None:
-    k = 4.5
+    omega = np.linspace(3.0, 4.2, 5, dtype=float)
     n = np.linspace(1.1, 1.5, 5, dtype=float)
     length = 3.5
 
-    expected = k * length * n
+    expected = martinez_k(omega) * length * n
 
-    np.testing.assert_allclose(phi0_rad_i(k, length, n), expected)
+    np.testing.assert_allclose(phi0_rad_i(omega, length, n), expected)
 
 
 def test_phi3_rad_i_uses_post_element_displacement_with_martinez_sign() -> None:

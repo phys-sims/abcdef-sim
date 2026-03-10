@@ -39,7 +39,7 @@ def apply_cfg(
     else:
         state_out = propagate_step(state, cfg.abcdef)
         k_center = martinez_k_center(cfg.omega)
-        phi0_rad = phi0_rad_i(k_center, cfg.length, cfg.refractive_index)
+        phi0_rad = phi0_rad_i(cfg.omega, cfg.length, cfg.refractive_index)
         phi3_rad = phi3_rad_i(k_center, cfg.abcdef[:, 1, 2], state_out.rays[:, 0, 0])
 
     contribution = PhaseContribution(

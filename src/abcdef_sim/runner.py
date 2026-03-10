@@ -6,7 +6,7 @@ import numpy as np
 
 from abcdef_sim.cache.backend import NullCacheBackend
 from abcdef_sim.cfg_generator import OpticStageCfgGenerator
-from abcdef_sim.data_models.results import AbcdefRunResult, PhaseContribution, PipelineResult
+from abcdef_sim.data_models.results import AbcdefRunResult
 from abcdef_sim.data_models.specs import (
     AbcdefCfg,
     FrameTransformCfg,
@@ -27,12 +27,12 @@ from abcdef_sim.physics.abcd.lenses import (
 )
 from abcdef_sim.physics.abcd.matrices import compose, free_space
 from abcdef_sim.physics.abcdef.dispersion import (
-    fit_phase_taylor,
+    fit_phase_taylor_affine_detrended,
     fod_from_phase_coeffs,
     gdd_from_phase_coeffs,
     tod_from_phase_coeffs,
 )
-from abcdef_sim.physics.abcdef.phase_terms import combine_phi_total_rad, martinez_k_center, phi4_rad
+from abcdef_sim.physics.abcdef.phase_terms import martinez_k_center, phi4_rad
 from abcdef_sim.physics.abcdef.postprocess import compute_pipeline_result
 from abcdef_sim.physics.abcdef.pulse import (
     apply_phase_to_state,
@@ -42,8 +42,6 @@ from abcdef_sim.physics.abcdef.pulse import (
 )
 from abcdef_sim.physics.abcdef.treacy import (
     compute_grating_diffraction_angle_deg,
-    compute_treacy_analytic_metrics,
-    phase_from_treacy_dispersion,
 )
 from abcdef_sim.pipeline._assembler import SystemAssembler
 from abcdef_sim.pipeline.stages import AbcdefOpticStage
@@ -96,10 +94,8 @@ def run_abcdef_on_state(
         m2=float(initial_state.beam.m2),
         final_system=np.asarray(ray_state_out.system, dtype=np.float64),
     )
-    fit_contributions: tuple[PhaseContribution, ...] = contributions
     phi4 = None
     if _is_treacy_preset(resolved_cfg):
-        fit_contributions = (_treacy_analytic_contribution(resolved_cfg, internal_laser_spec),)
         phi4 = phi4_rad(
             martinez_k_center(np.asarray(internal_laser_spec.omega(), dtype=np.float64)),
             0.0,
@@ -109,34 +105,13 @@ def run_abcdef_on_state(
     pipeline_result = compute_pipeline_result(
         ray_state_in,
         ray_state_out,
-        fit_contributions,
+        contributions,
         q_in=q_in,
         w_in=w_in,
         w_out=w_out,
         phi4_rad=phi4,
     )
-    if _is_treacy_preset(resolved_cfg):
-        analytic_phase = np.asarray(
-            fit_contributions[0].filter_phase_rad,
-            dtype=np.float64,
-        ).reshape(-1)
-        pipeline_result = PipelineResult(
-            final_state=pipeline_result.final_state,
-            omega=pipeline_result.omega,
-            delta_omega_rad_per_fs=pipeline_result.delta_omega_rad_per_fs,
-            omega0_rad_per_fs=pipeline_result.omega0_rad_per_fs,
-            contributions=pipeline_result.contributions,
-            phi1_rad=pipeline_result.phi1_rad,
-            phi2_rad=pipeline_result.phi2_rad,
-            phi4_rad=pipeline_result.phi4_rad,
-            phi_total_rad=combine_phi_total_rad(
-                analytic_phase,
-                pipeline_result.phi1_rad,
-                pipeline_result.phi2_rad,
-                pipeline_result.phi4_rad,
-            ),
-        )
-    fit = fit_phase_taylor(
+    fit = fit_phase_taylor_affine_detrended(
         pipeline_result.delta_omega_rad_per_fs,
         pipeline_result.phi_total_rad,
         omega0_rad_per_fs=pipeline_result.omega0_rad_per_fs,
@@ -182,10 +157,6 @@ def run_abcdef_on_state(
         "per_optic": [_phase_contribution_payload(contribution) for contribution in contributions],
     }
     if _is_treacy_preset(resolved_cfg):
-        final_state.meta["abcdef"]["treacy_analytic_phase_rad"] = np.asarray(
-            fit_contributions[0].filter_phase_rad,
-            dtype=np.float64,
-        ).tolist()
         resolved_diffraction_angle_deg = _resolved_treacy_diffraction_angle_deg(
             resolved_cfg,
             center_wavelength_nm=float(internal_laser_spec.pulse["center_wavelength_nm"]),
@@ -310,36 +281,6 @@ def _resolved_treacy_diffraction_angle_deg(cfg: AbcdefCfg, *, center_wavelength_
         incidence_angle_deg=float(cfg.tags["incidence_angle_deg"]),
         wavelength_nm=float(center_wavelength_nm),
         diffraction_order=int(cfg.tags["diffraction_order"]),
-    )
-
-
-def _treacy_analytic_contribution(cfg: AbcdefCfg, laser: LaserSpec) -> PhaseContribution:
-    center_wavelength_nm = float(laser.pulse["center_wavelength_nm"])
-    metrics = compute_treacy_analytic_metrics(
-        line_density_lpmm=float(cfg.tags["line_density_lpmm"]),
-        incidence_angle_deg=float(cfg.tags["incidence_angle_deg"]),
-        separation_um=float(cfg.tags["separation_um"]),
-        wavelength_nm=center_wavelength_nm,
-        diffraction_order=int(cfg.tags["diffraction_order"]),
-        n_passes=int(cfg.tags["n_passes"]),
-    )
-    delta_omega = np.asarray(laser.delta_omega(), dtype=np.float64)
-    analytic_phase = phase_from_treacy_dispersion(
-        delta_omega,
-        gdd_fs2=metrics.gdd_fs2,
-        tod_fs3=metrics.tod_fs3,
-    )
-    zeros = np.zeros_like(delta_omega, dtype=np.float64)
-    return PhaseContribution(
-        optic_name="TreacyAnalyticBaseline",
-        instance_name="treacy_analytic_baseline",
-        backend_id="treacy_analytic",
-        omega=laser.omega(),
-        delta_omega_rad_per_fs=delta_omega,
-        omega0_rad_per_fs=laser.omega0_rad_per_fs,
-        phi0_rad=zeros,
-        phi3_rad=zeros,
-        filter_phase_rad=analytic_phase,
     )
 
 

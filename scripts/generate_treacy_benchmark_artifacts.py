@@ -68,10 +68,10 @@ def generate_artifacts(output_dir: Path) -> tuple[Path, ...]:
 
     radius_payload = {
         "plot_description": (
-            "Full ABCDEF relative-error curves versus the analytic Treacy baseline "
-            "at length_to_mirror_um = 0.0."
+            "Raw ABCDEF runtime relative-error curves versus the standalone analytic "
+            "Treacy equation at length_to_mirror_um = 0.0."
         ),
-        "headline_metric": "relative_error_full_abcdef_vs_analytic",
+        "headline_metric": "relative_error_raw_abcdef_vs_analytic",
         "beam_radii_mm": list(DEFAULT_TREACY_BENCHMARK_BEAM_RADII_MM),
         "length_to_mirror_um": 0.0,
         "points": [point.to_dict() for point in radius_points],
@@ -80,12 +80,12 @@ def generate_artifacts(output_dir: Path) -> tuple[Path, ...]:
 
     heatmap_payload = {
         "plot_description": (
-            "Primary matched comparison heatmap: relative error of the full ABCDEF "
-            "Treacy preset versus the analytic plane-wave Treacy GDD/TOD over beam "
-            "radius and mirror length."
+            "Primary matched comparison heatmap: relative error of the raw ABCDEF "
+            "Treacy runtime versus the standalone analytic plane-wave Treacy GDD/TOD "
+            "over beam radius and mirror length."
         ),
-        "headline_metric": "relative_error_full_abcdef_vs_analytic",
-        "relative_error_definition": "abs(full_abcdef - analytic) / abs(analytic)",
+        "headline_metric": "relative_error_raw_abcdef_vs_analytic",
+        "relative_error_definition": "abs(raw_abcdef - analytic) / abs(analytic)",
         "analytic_reference": {
             "gdd_fs2": float(radius_points[0].analytic_gdd_fs2),
             "tod_fs3": float(radius_points[0].analytic_tod_fs3),
@@ -96,7 +96,7 @@ def generate_artifacts(output_dir: Path) -> tuple[Path, ...]:
     }
     spatial_radius_payload = {
         "plot_description": (
-            "Full ABCDEF scalar-error and spatial-metric companion curves versus beam radius "
+            "Raw ABCDEF scalar-error and spatial-metric companion curves versus beam radius "
             "at length_to_mirror_um = 0.0."
         ),
         "beam_radii_mm": list(DEFAULT_TREACY_BENCHMARK_BEAM_RADII_MM),
@@ -105,7 +105,7 @@ def generate_artifacts(output_dir: Path) -> tuple[Path, ...]:
     }
     spatial_mirror_payload = {
         "plot_description": (
-            "Full ABCDEF spatial-metric companion heatmaps versus beam radius and "
+            "Raw ABCDEF spatial-metric companion heatmaps versus beam radius and "
             "length_to_mirror."
         ),
         "beam_radii_mm": list(DEFAULT_TREACY_BENCHMARK_BEAM_RADII_MM),
@@ -141,20 +141,26 @@ def generate_artifacts(output_dir: Path) -> tuple[Path, ...]:
 
 def _plot_radius_convergence(points: tuple[object, ...], output_path: Path) -> None:
     beam_radii = np.array([point.beam_radius_mm for point in points], dtype=np.float64)
-    full_gdd_errors = np.array([point.full_gdd_rel_error for point in points], dtype=np.float64)
-    full_tod_errors = np.array([point.full_tod_rel_error for point in points], dtype=np.float64)
+    raw_gdd_errors = np.array(
+        [point.raw_abcdef_gdd_rel_error for point in points],
+        dtype=np.float64,
+    )
+    raw_tod_errors = np.array(
+        [point.raw_abcdef_tod_rel_error for point in points],
+        dtype=np.float64,
+    )
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 5), constrained_layout=True)
-    for ax, full_errors, title, color in [
-        (axes[0], full_gdd_errors, "Full ABCDEF GDD relative error", "tab:red"),
-        (axes[1], full_tod_errors, "Full ABCDEF TOD relative error", "tab:orange"),
+    for ax, raw_errors, title, color in [
+        (axes[0], raw_gdd_errors, "Raw ABCDEF GDD relative error", "tab:red"),
+        (axes[1], raw_tod_errors, "Raw ABCDEF TOD relative error", "tab:orange"),
     ]:
         ax.plot(
             beam_radii,
-            full_errors,
+            raw_errors,
             marker="o",
             color=color,
-            label="Full ABCDEF vs analytic",
+            label="Raw ABCDEF vs analytic",
         )
         ax.set_xscale("log")
         ax.set_yscale("log")
@@ -164,14 +170,17 @@ def _plot_radius_convergence(points: tuple[object, ...], output_path: Path) -> N
         ax.grid(True, which="both", alpha=0.3)
         ax.legend()
 
-    fig.suptitle("Treacy Full-ABCDEF Relative Error vs Analytic Baseline at length_to_mirror = 0 um")
+    fig.suptitle("Treacy Raw ABCDEF Relative Error vs Analytic at length_to_mirror = 0 um")
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
 
 
 def _plot_spatial_metrics_vs_radius(points: tuple[object, ...], output_path: Path) -> None:
     beam_radii = np.array([point.beam_radius_mm for point in points], dtype=np.float64)
-    full_gdd_errors = np.array([point.full_gdd_rel_error for point in points], dtype=np.float64)
+    raw_gdd_errors = np.array(
+        [point.raw_abcdef_gdd_rel_error for point in points],
+        dtype=np.float64,
+    )
     normalized_spatial = np.array(
         [point.normalized_spatial_chirp_rms for point in points],
         dtype=np.float64,
@@ -181,14 +190,14 @@ def _plot_spatial_metrics_vs_radius(points: tuple[object, ...], output_path: Pat
     fig, axes = plt.subplots(3, 1, figsize=(9, 10), sharex=True, constrained_layout=True)
     axes[0].plot(
         beam_radii,
-        full_gdd_errors,
+        raw_gdd_errors,
         marker="o",
         color="tab:red",
-        label="Full ABCDEF vs analytic",
+        label="Raw ABCDEF vs analytic",
     )
     axes[0].set_yscale("log")
     axes[0].set_ylabel("GDD rel. error")
-    axes[0].set_title("Full ABCDEF Scalar Error")
+    axes[0].set_title("Raw ABCDEF Scalar Error")
     axes[0].grid(True, which="both", alpha=0.3)
     axes[0].legend()
 
@@ -206,7 +215,7 @@ def _plot_spatial_metrics_vs_radius(points: tuple[object, ...], output_path: Pat
     axes[2].set_title("Output Mode Recombination")
     axes[2].grid(True, which="both", alpha=0.3)
 
-    fig.suptitle("Treacy Full-ABCDEF Scalar Error and Spatial Metrics vs Beam Radius")
+    fig.suptitle("Treacy Raw ABCDEF Scalar Error and Spatial Metrics vs Beam Radius")
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
 
@@ -217,18 +226,18 @@ def _plot_mirror_heatmap(points: tuple[object, ...], output_path: Path) -> None:
         sorted({point.length_to_mirror_um for point in points}),
         dtype=np.float64,
     )
-    full_gdd_error_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
-    full_tod_error_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
+    raw_gdd_error_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
+    raw_tod_error_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
     for point in points:
         row = int(np.where(mirror_lengths_um == point.length_to_mirror_um)[0][0])
         col = int(np.where(beam_radii == point.beam_radius_mm)[0][0])
-        full_gdd_error_grid[row, col] = point.full_gdd_rel_error
-        full_tod_error_grid[row, col] = point.full_tod_rel_error
+        raw_gdd_error_grid[row, col] = point.raw_abcdef_gdd_rel_error
+        raw_tod_error_grid[row, col] = point.raw_abcdef_tod_rel_error
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 5.5), constrained_layout=True)
     for ax, grid, title in [
-        (axes[0], full_gdd_error_grid, "Full ABCDEF GDD relative error"),
-        (axes[1], full_tod_error_grid, "Full ABCDEF TOD relative error"),
+        (axes[0], raw_gdd_error_grid, "Raw ABCDEF GDD relative error"),
+        (axes[1], raw_tod_error_grid, "Raw ABCDEF TOD relative error"),
     ]:
         vmin, vmax, ticks = _decade_lognorm_bounds(grid)
         grid_display = np.maximum(grid, vmin)
@@ -253,7 +262,7 @@ def _plot_mirror_heatmap(points: tuple[object, ...], output_path: Path) -> None:
             (
                 f"Analytic GDD = {points[0].analytic_gdd_fs2:.3e} fs^2\n"
                 f"Analytic TOD = {points[0].analytic_tod_fs3:.3e} fs^3\n"
-                "Error = abs(full ABCDEF - analytic) / abs(analytic)"
+                "Error = abs(raw ABCDEF - analytic) / abs(analytic)"
             ),
             transform=ax.transAxes,
             va="top",
@@ -271,7 +280,7 @@ def _plot_mirror_heatmap(points: tuple[object, ...], output_path: Path) -> None:
             format=LogFormatterMathtext(),
         )
 
-    fig.suptitle("Matched Treacy Relative Error Heatmap: full ABCDEF vs analytic baseline")
+    fig.suptitle("Matched Treacy Relative Error Heatmap: raw ABCDEF vs analytic")
     fig.savefig(output_path, dpi=400)
     plt.close(fig)
 
@@ -323,8 +332,8 @@ def _plot_output_plane_spatiospectral(
 ) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), constrained_layout=True)
     for ax, field, title in [
-        (axes[0], full_field, "Full ABCDEF: x-omega"),
-        (axes[1], full_field, "Full ABCDEF: x-t"),
+        (axes[0], full_field, "Raw ABCDEF: x-omega"),
+        (axes[1], full_field, "Raw ABCDEF: x-t"),
     ]:
         x_mm = np.asarray(field.x_um, dtype=np.float64) / 1e3
         if "x-omega" in title:
@@ -351,7 +360,7 @@ def _plot_output_plane_spatiospectral(
         ax.set_title(title)
         fig.colorbar(im, ax=ax, shrink=0.85, label="log10(norm. intensity)")
 
-    fig.suptitle("Treacy Output-Plane Spatio-Spectral Reconstruction from Full ABCDEF")
+    fig.suptitle("Treacy Output-Plane Spatio-Spectral Reconstruction from Raw ABCDEF")
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
 

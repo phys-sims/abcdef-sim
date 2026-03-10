@@ -51,11 +51,11 @@ class TreacyBenchmarkPoint:
     beam_radius_mm: float
     length_to_mirror_um: float
     analytic_gdd_fs2: float
-    full_gdd_fs2: float
-    full_gdd_rel_error: float
+    raw_abcdef_gdd_fs2: float
+    raw_abcdef_gdd_rel_error: float
     analytic_tod_fs3: float
-    full_tod_fs3: float
-    full_tod_rel_error: float
+    raw_abcdef_tod_fs3: float
+    raw_abcdef_tod_rel_error: float
     x_centroid_span_um: float
     x_centroid_slope_um_per_rad_per_fs: float
     x_prime_span: float
@@ -114,19 +114,19 @@ def run_treacy_benchmark_point(
         diffraction_order=diffraction_order,
         n_passes=n_passes,
     )
-    full_gdd_fs2 = float(result.final_state.metrics["abcdef.gdd_fs2"])
-    full_tod_fs3 = float(result.final_state.metrics["abcdef.tod_fs3"])
+    raw_abcdef_gdd_fs2 = float(result.final_state.metrics["abcdef.gdd_fs2"])
+    raw_abcdef_tod_fs3 = float(result.final_state.metrics["abcdef.tod_fs3"])
     spatial_metrics = summarize_output_plane_geometry(result)
     field_summary = summarize_output_plane_field(build_output_plane_field_1d(result))
     return TreacyBenchmarkPoint(
         beam_radius_mm=float(beam_radius_mm),
         length_to_mirror_um=float(length_to_mirror_um),
         analytic_gdd_fs2=float(analytic.gdd_fs2),
-        full_gdd_fs2=full_gdd_fs2,
-        full_gdd_rel_error=_relative_error(full_gdd_fs2, analytic.gdd_fs2),
+        raw_abcdef_gdd_fs2=raw_abcdef_gdd_fs2,
+        raw_abcdef_gdd_rel_error=_relative_error(raw_abcdef_gdd_fs2, analytic.gdd_fs2),
         analytic_tod_fs3=float(analytic.tod_fs3),
-        full_tod_fs3=full_tod_fs3,
-        full_tod_rel_error=_relative_error(full_tod_fs3, analytic.tod_fs3),
+        raw_abcdef_tod_fs3=raw_abcdef_tod_fs3,
+        raw_abcdef_tod_rel_error=_relative_error(raw_abcdef_tod_fs3, analytic.tod_fs3),
         x_centroid_span_um=spatial_metrics.x_centroid_span_um,
         x_centroid_slope_um_per_rad_per_fs=spatial_metrics.x_centroid_slope_um_per_rad_per_fs,
         x_prime_span=spatial_metrics.x_prime_span,
