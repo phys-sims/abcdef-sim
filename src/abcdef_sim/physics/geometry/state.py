@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 from abcdef_sim.physics.geometry.frames import LocalFrame1D
 
@@ -19,7 +19,7 @@ class ChiefRayGeometryState:
             axis_angle_rad=float(self.axis_angle_rad),
         )
 
-    def reflected_about_normal(self, *, normal_angle_rad: float) -> "ChiefRayGeometryState":
+    def reflected_about_normal(self, *, normal_angle_rad: float) -> ChiefRayGeometryState:
         axis = float(self.axis_angle_rad)
         normal = float(normal_angle_rad)
         reflected_axis = (2.0 * normal) - axis + math.pi
