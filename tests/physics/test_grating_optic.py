@@ -5,14 +5,17 @@ import math
 import numpy as np
 import pytest
 
-from abcdef_sim.optics.grating import Grating
+from abcdef_sim.optics.grating import (
+    Grating,
+    _grating_f_exact_local,
+)
 
 pytestmark = pytest.mark.physics
 
 _C_UM_PER_FS = 0.299792458
 
 
-def test_grating_matrix_matches_first_order_grating_oracle() -> None:
+def test_grating_matrix_matches_first_order_grating_oracle_at_omega0_slope() -> None:
     omega = np.array([1.65, 1.75, 1.85], dtype=float)
     omega0 = 1.75
     grating = Grating(
@@ -29,13 +32,49 @@ def test_grating_matrix_matches_first_order_grating_oracle() -> None:
     theta_d_rad = np.arcsin(lambda_um / d_um - np.sin(theta_i_rad))
     expected_a = np.cos(theta_d_rad) / np.cos(theta_i_rad)
     expected_d = np.cos(theta_i_rad) / np.cos(theta_d_rad)
-    expected_f = (
-        (2.0 * np.pi * _C_UM_PER_FS * 1.3**2) / (omega**2 * d_um * np.cos(theta_d_rad))
-    ) * (omega - omega0)
+    expected_slope = (2.0 * np.pi * _C_UM_PER_FS * 1.3**2) / (
+        omega0**2 * d_um * math.cos(float(theta_d_rad[1]))
+    )
+    observed_slope = (matrix[2, 1, 2] - matrix[0, 1, 2]) / (omega[2] - omega[0])
 
     np.testing.assert_allclose(matrix[:, 0, 0], expected_a, rtol=1e-12, atol=1e-12)
     np.testing.assert_allclose(matrix[:, 1, 1], expected_d, rtol=1e-12, atol=1e-12)
-    np.testing.assert_allclose(matrix[:, 1, 2], expected_f, rtol=1e-12, atol=1e-12)
+    assert observed_slope == pytest.approx(expected_slope, rel=5e-3, abs=0.0)
+
+
+def test_grating_f_matches_exact_local_shift() -> None:
+    omega0 = 1.827
+    omega = omega0 + np.linspace(-0.18, 0.18, 13, dtype=float)
+    period_um = 1000.0 / 1200.0
+    incidence_angle_rad = math.radians(35.0)
+    grating = Grating(
+        line_density_lpmm=1200.0,
+        incidence_angle_deg=35.0,
+        diffraction_order=-1,
+        immersion_refractive_index=1.0,
+    )
+
+    matrix = grating.matrix(omega, omega0=omega0)
+    exact_f = _grating_f_exact_local(
+        omega,
+        omega_ref=omega0,
+        period_um=period_um,
+        incidence_angle_rad=incidence_angle_rad,
+        diffraction_order=-1.0,
+        immersion_refractive_index=1.0,
+    )
+    theta_d = np.arcsin(
+        ((2.0 * np.pi * _C_UM_PER_FS) / omega) / period_um - math.sin(incidence_angle_rad)
+    )
+    first_order_f = (
+        (2.0 * np.pi * _C_UM_PER_FS) / (omega0**2 * period_um * math.cos(float(theta_d[6])))
+    ) * (omega - omega0)
+
+    exact_error = np.sqrt(np.mean((matrix[:, 1, 2] - exact_f) ** 2))
+    first_order_error = np.sqrt(np.mean((first_order_f - exact_f) ** 2))
+
+    assert exact_error < 1e-12
+    assert first_order_error > 1e-2
 
 
 def test_grating_abcd_block_preserves_unit_determinant() -> None:
