@@ -121,8 +121,8 @@ def build_output_plane_field_1d(
         dx_chunk = x_chunk - x_out_um[None, :]
         amplitude = normalization[None, :] * np.exp(-(dx_chunk**2) / (w_out_um[None, :] ** 2))
         transverse_phase = np.real(k_center * dx_chunk**2 / (2.0 * q_out_um[None, :]))
-        field_x_omega[start:stop] = amplitude * scalar_prefactor[None, :] * np.exp(
-            1j * transverse_phase
+        field_x_omega[start:stop] = (
+            amplitude * scalar_prefactor[None, :] * np.exp(1j * transverse_phase)
         )
 
     intensity_x_omega = np.abs(field_x_omega) ** 2
@@ -190,7 +190,9 @@ def summarize_output_plane_field(field: OutputPlaneField1D) -> OutputPlaneFieldS
     weights_x = np.sum(field.intensity_x_t, axis=1)
     spatial_weights = np.asarray(field.spectral_power_au, dtype=np.float64).reshape(-1)
     spatial_metrics = OutputPlaneSpatialMetrics(
-        x_centroid_span_um=float(np.max(field.x_centroids_omega_um) - np.min(field.x_centroids_omega_um)),
+        x_centroid_span_um=float(
+            np.max(field.x_centroids_omega_um) - np.min(field.x_centroids_omega_um)
+        ),
         x_centroid_slope_um_per_rad_per_fs=_weighted_linear_slope(
             x=field.delta_omega_rad_per_fs,
             y=field.x_centroids_omega_um,
@@ -205,13 +207,16 @@ def summarize_output_plane_field(field: OutputPlaneField1D) -> OutputPlaneFieldS
     )
     center_idx = int(np.argmin(np.abs(field.delta_omega_rad_per_fs)))
     normalized_modes = _normalize_modes(field.field_x_omega, x_um=field.x_um)
-    overlaps = np.abs(
-        np.trapezoid(
-            np.conjugate(normalized_modes[:, center_idx])[:, None] * normalized_modes,
-            x=field.x_um,
-            axis=0,
+    overlaps = (
+        np.abs(
+            np.trapezoid(
+                np.conjugate(normalized_modes[:, center_idx])[:, None] * normalized_modes,
+                x=field.x_um,
+                axis=0,
+            )
         )
-    ) ** 2
+        ** 2
+    )
     mean_mode_overlap = float(np.average(overlaps, weights=spatial_weights))
 
     return OutputPlaneFieldSummary(
@@ -225,7 +230,9 @@ def summarize_output_plane_field(field: OutputPlaneField1D) -> OutputPlaneFieldS
             y=field.time_centroids_x_fs,
             weights=weights_x,
         ),
-        time_centroid_span_fs=float(np.max(field.time_centroids_x_fs) - np.min(field.time_centroids_x_fs)),
+        time_centroid_span_fs=float(
+            np.max(field.time_centroids_x_fs) - np.min(field.time_centroids_x_fs)
+        ),
         mean_mode_overlap_with_center=mean_mode_overlap,
         center_frequency_x_um=float(field.x_centroids_omega_um[center_idx]),
         center_frequency_x_prime=float(field.x_prime_out[center_idx]),
@@ -250,7 +257,9 @@ def _default_x_grid_um(*, x_out_um: NDArrayF, w_out_um: NDArrayF) -> NDArrayF:
     return np.linspace(lower, upper, n_samples, dtype=np.float64)
 
 
-def _output_plane_geometry(run_result: AbcdefRunResult) -> tuple[NDArrayF, NDArrayF, NDArrayF, NDArrayC]:
+def _output_plane_geometry(
+    run_result: AbcdefRunResult,
+) -> tuple[NDArrayF, NDArrayF, NDArrayF, NDArrayC]:
     meta = run_result.final_state.meta.get("abcdef", {})
     x_out = meta.get("x_out_um")
     x_prime = meta.get("x_prime_out")
@@ -268,7 +277,8 @@ def _output_plane_geometry(run_result: AbcdefRunResult) -> tuple[NDArrayF, NDArr
             np.asarray(x_out, dtype=np.float64),
             np.asarray(x_prime, dtype=np.float64),
             np.asarray(w_out, dtype=np.float64),
-            np.asarray(q_out_real, dtype=np.float64) + 1j * np.asarray(q_out_imag, dtype=np.float64),
+            np.asarray(q_out_real, dtype=np.float64)
+            + 1j * np.asarray(q_out_imag, dtype=np.float64),
         )
 
     omega = np.asarray(run_result.pipeline_result.omega, dtype=np.float64).reshape(-1)
@@ -305,7 +315,9 @@ def _selected_phase_rad(run_result: AbcdefRunResult, *, phase_variant: PhaseVari
 
 
 def _spectral_field_input(run_result: AbcdefRunResult) -> NDArrayC:
-    field = np.asarray(run_result.initial_state.pulse.field_w, dtype=np.complex128).reshape(-1).copy()
+    field = (
+        np.asarray(run_result.initial_state.pulse.field_w, dtype=np.complex128).reshape(-1).copy()
+    )
     for contribution in run_result.pipeline_result.contributions:
         if contribution.filter_amp is not None:
             field = field * np.asarray(contribution.filter_amp, dtype=np.float64).reshape(-1)

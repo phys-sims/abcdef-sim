@@ -79,10 +79,13 @@ def test_output_plane_field_phase_curvature_matches_phi4_sign_convention() -> No
     center_freq_idx = int(np.argmin(np.abs(field.delta_omega_rad_per_fs)))
     center_x_idx = int(np.argmin(np.abs(field.x_um - field.x_out_um[center_freq_idx])))
     probe_x_idx = center_x_idx + 40
-    ratio = field.field_x_omega[probe_x_idx, center_freq_idx] / field.field_x_omega[
-        center_x_idx,
-        center_freq_idx,
-    ]
+    ratio = (
+        field.field_x_omega[probe_x_idx, center_freq_idx]
+        / field.field_x_omega[
+            center_x_idx,
+            center_freq_idx,
+        ]
+    )
     dx = field.x_um[probe_x_idx] - field.x_out_um[center_freq_idx]
     expected_phase = np.real(
         martinez_k_center(field.omega_rad_per_fs) * dx**2 / (2.0 * field.q_out_um[center_freq_idx])
@@ -164,7 +167,6 @@ def test_treacy_output_plane_summary_exposes_residual_spatial_terms() -> None:
     full_field = build_output_plane_field_1d(result, phase_variant="full")
     without_phi2_field = build_output_plane_field_1d(result, phase_variant="without_phi2")
     full_summary = summarize_output_plane_field(full_field)
-    without_phi2_summary = summarize_output_plane_field(without_phi2_field)
     center_idx = int(np.argmin(np.abs(full_field.delta_omega_rad_per_fs)))
 
     assert full_summary.x_centroid_span_um > 0.0
