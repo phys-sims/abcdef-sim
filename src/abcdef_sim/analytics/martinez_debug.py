@@ -51,6 +51,7 @@ from abcdef_sim.pipeline._assembler import SystemAssembler
 from abcdef_sim.runner import _initial_ray_state, _laser_spec_from_state, _resolve_runtime_cfg
 
 NDArrayF = np.ndarray
+SectionIVReferenceMode = Literal["legacy_linear", "quadratic_bfg2"]
 
 DEFAULT_SPAN_SCALES: tuple[float, ...] = (1.0, 0.5, 0.25, 0.125, 0.0625)
 
@@ -61,6 +62,7 @@ __all__ = [
     "MartinezSectionIVPhi3VariantPoint",
     "TreacyPartitionPoint",
     "TreacyPhi3PerGratingPoint",
+    "TreacyGratingFramePoint",
     "TreacyPhi3SignStagePoint",
     "TreacyPhi3SignVariantPoint",
     "TreacyPhi3VariantPoint",
@@ -68,6 +70,7 @@ __all__ = [
     "run_martinez_section_iv_phase_study",
     "run_martinez_section_iv_phi3_variant_study",
     "run_treacy_partition_span_study",
+    "run_treacy_grating_frame_audit",
     "run_treacy_phi3_per_grating_budget",
     "run_treacy_phi3_sign_audit",
     "run_treacy_phi3_variant_comparison",
@@ -193,6 +196,24 @@ class TreacyPhi3PerGratingPoint:
 
 
 @dataclass(frozen=True, slots=True)
+class TreacyGratingFramePoint:
+    instance_name: str
+    stage_index: int
+    following_frame_instance_name: str
+    frame_stage_index: int
+    max_x_delta_um: float
+    max_xprime_flip_residual: float
+    x_rms_um: float
+    xprime_rms: float
+
+    def to_dict(self) -> dict[str, float | str | int]:
+        payload = asdict(self)
+        payload["instance_name"] = str(self.instance_name)
+        payload["following_frame_instance_name"] = str(self.following_frame_instance_name)
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
 class TreacyPhi3SignStagePoint:
     instance_name: str
     stage_index: int
@@ -246,6 +267,7 @@ class _SectionIVSystem:
     phi3_sample_k_series1_rad: NDArrayF
     phi3_center_k_series1_rad: NDArrayF
     reference_phase_rad: NDArrayF
+    reference_phase_quadratic_rad: NDArrayF
 
 
 @dataclass(frozen=True, slots=True)
@@ -254,6 +276,8 @@ class _Phi3VariantConfig:
     f_mode: Literal["transport_exact", "linear_f0", "series2"]
     x_mode: Literal["runtime", "phase_ad"]
     k_mode: Literal["center", "sample"]
+    boundary_mode: Literal["none", "terminal_bpre_residual"] = "none"
+    boundary_weight: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -295,6 +319,22 @@ PHI3_VARIANTS: tuple[_Phi3VariantConfig, ...] = (
         f_mode="series2",
         x_mode="phase_ad",
         k_mode="sample",
+    ),
+)
+
+# Probe-only variant for matched Treacy studies. This keeps the current runtime
+# phi3 term intact, then adds a small upstream-B boundary residual on terminal
+# compressor gratings. It is intentionally not part of the Section IV study or
+# the runtime defaults because the coefficient is not yet a fully derived
+# grating-boundary law.
+TREACY_PHI3_VARIANTS: tuple[_Phi3VariantConfig, ...] = PHI3_VARIANTS + (
+    _Phi3VariantConfig(
+        name="martinez_series2_terminal_bpre_probe",
+        f_mode="series2",
+        x_mode="runtime",
+        k_mode="center",
+        boundary_mode="terminal_bpre_residual",
+        boundary_weight=0.019,
     ),
 )
 
@@ -353,6 +393,7 @@ def run_martinez_section_iv_coefficient_audit(
 def run_martinez_section_iv_phase_study(
     *,
     span_scales: tuple[float, ...] = DEFAULT_SPAN_SCALES,
+    reference_mode: SectionIVReferenceMode = "legacy_linear",
     line_density_lpmm: float = 1200.0,
     incidence_angle_deg: float = 35.0,
     center_wavelength_nm: float = 1030.0,
@@ -383,7 +424,7 @@ def run_martinez_section_iv_phase_study(
             a_prime=a_prime,
             b=b,
         )
-        reference_phase = np.asarray(section.reference_phase_rad, dtype=np.float64)
+        reference_phase = _section_iv_reference_phase(section, reference_mode=reference_mode)
         weights = np.ones_like(reference_phase, dtype=np.float64)
         reference_fit = fit_phase_taylor_affine_detrended(
             delta_omega,
@@ -528,6 +569,7 @@ def run_treacy_partition_span_study(
 def run_martinez_section_iv_phi3_variant_study(
     *,
     span_scales: tuple[float, ...] = DEFAULT_SPAN_SCALES,
+    reference_mode: SectionIVReferenceMode = "legacy_linear",
     line_density_lpmm: float = 1200.0,
     incidence_angle_deg: float = 35.0,
     center_wavelength_nm: float = 1030.0,
@@ -558,7 +600,7 @@ def run_martinez_section_iv_phi3_variant_study(
             a_prime=a_prime,
             b=b,
         )
-        reference_phase = np.asarray(section.reference_phase_rad, dtype=np.float64)
+        reference_phase = _section_iv_reference_phase(section, reference_mode=reference_mode)
         weights = np.ones_like(reference_phase, dtype=np.float64)
         reference_fit = fit_phase_taylor_affine_detrended(
             delta_omega,
@@ -676,7 +718,7 @@ def run_treacy_phi3_variant_comparison(
         )
         base_terms = _treacy_non_phi3_phase_terms(result)
         weighted_xprime_rms = _weighted_xprime_rms_from_result(result)
-        for variant in PHI3_VARIANTS:
+        for variant in TREACY_PHI3_VARIANTS:
             variant_payload = _phi3_variant_payload_from_trace(trace, variant=variant)
             total_phase = combine_phi_total_rad(
                 base_terms["phi_geom"],
@@ -720,6 +762,66 @@ def run_treacy_phi3_variant_comparison(
                     weighted_xprime_rms=float(weighted_xprime_rms),
                 )
             )
+    return tuple(points)
+
+
+def run_treacy_grating_frame_audit(
+    *,
+    beam_radius_mm: float = 1000.0,
+    base_pulse_width_fs: float = 100.0,
+    center_wavelength_nm: float = 1030.0,
+    line_density_lpmm: float = 1200.0,
+    incidence_angle_deg: float = 35.0,
+    separation_um: float = 100_000.0,
+    length_to_mirror_um: float = 0.0,
+    diffraction_order: int = -1,
+    n_passes: Literal[2] = 2,
+    n_samples: int = 256,
+    time_window_fs: float = 3000.0,
+) -> tuple[TreacyGratingFramePoint, ...]:
+    laser = StandaloneLaserSpec(
+        pulse=PulseSpec(
+            width_fs=float(base_pulse_width_fs),
+            center_wavelength_nm=center_wavelength_nm,
+            n_samples=n_samples,
+            time_window_fs=time_window_fs,
+        ),
+        beam=BeamSpec(radius_mm=float(beam_radius_mm), m2=1.0),
+    )
+    cfg = treacy_compressor_preset(
+        line_density_lpmm=line_density_lpmm,
+        incidence_angle_deg=incidence_angle_deg,
+        separation_um=separation_um,
+        length_to_mirror_um=length_to_mirror_um,
+        diffraction_order=diffraction_order,
+        n_passes=n_passes,
+    )
+    trace = _trace_cfg_run(cfg, laser)
+    points: list[TreacyGratingFramePoint] = []
+    for idx, item in enumerate(trace[:-1]):
+        following = trace[idx + 1]
+        if not isinstance(item.optic_spec, GratingCfg) or not isinstance(
+            following.optic_spec, FrameTransformCfg
+        ):
+            continue
+        x_after_grating = np.asarray(item.state_out.rays[:, 0, 0], dtype=np.float64)
+        x_after_frame = np.asarray(following.state_out.rays[:, 0, 0], dtype=np.float64)
+        xprime_after_grating = np.asarray(item.state_out.rays[:, 1, 0], dtype=np.float64)
+        xprime_after_frame = np.asarray(following.state_out.rays[:, 1, 0], dtype=np.float64)
+        points.append(
+            TreacyGratingFramePoint(
+                instance_name=item.cfg.instance_name,
+                stage_index=int(item.index),
+                following_frame_instance_name=following.cfg.instance_name,
+                frame_stage_index=int(following.index),
+                max_x_delta_um=float(np.max(np.abs(x_after_frame - x_after_grating))),
+                max_xprime_flip_residual=float(
+                    np.max(np.abs(xprime_after_frame + xprime_after_grating))
+                ),
+                x_rms_um=float(np.sqrt(np.mean(x_after_grating**2))),
+                xprime_rms=float(np.sqrt(np.mean(xprime_after_grating**2))),
+            )
+        )
     return tuple(points)
 
 
@@ -778,7 +880,7 @@ def run_treacy_phi3_per_grating_budget(
         variants
         if variants is not None
         else (
-            PHI3_VARIANTS[0].name,
+            TREACY_PHI3_VARIANTS[0].name,
             _best_phi3_variant_name(
                 run_treacy_phi3_variant_comparison(
                     beam_radii_mm=(10.0, 100.0, 1000.0),
@@ -1072,6 +1174,7 @@ def _section_iv_system(
     reference_phase = (
         -0.5 * k_sample * fg_series2 * float(focal_length_um) * (float(a) + float(a_prime))
     )
+    reference_phase_quadratic = 0.5 * k_sample * expected_b * (magnification * fg_series2) ** 2
 
     return _SectionIVSystem(
         omega0_rad_per_fs=omega0,
@@ -1084,6 +1187,7 @@ def _section_iv_system(
         phi3_sample_k_series1_rad=phi3_sample_k_series1,
         phi3_center_k_series1_rad=phi3_center_k_series1,
         reference_phase_rad=reference_phase,
+        reference_phase_quadratic_rad=reference_phase_quadratic,
     )
 
 
@@ -1116,6 +1220,16 @@ def _section_iv_telescope_matrix(
     ):
         matrices = np.broadcast_to(matrix, matrices.shape) @ matrices
     return matrices
+
+
+def _section_iv_reference_phase(
+    section: _SectionIVSystem,
+    *,
+    reference_mode: SectionIVReferenceMode,
+) -> NDArrayF:
+    if reference_mode == "legacy_linear":
+        return np.asarray(section.reference_phase_rad, dtype=np.float64)
+    return np.asarray(section.reference_phase_quadratic_rad, dtype=np.float64)
 
 
 def _section_iv_first_grating_matrix(magnification: float, fg: NDArrayF) -> NDArrayF:
@@ -1376,13 +1490,51 @@ def _phi3_variant_payload_from_trace(
             f_phase = -f_phase
         x_after = np.asarray(x_after_map[item.cfg.instance_name], dtype=np.float64)
         phi3_i = 0.5 * k_arr * f_phase * x_after
+        boundary_correction = _boundary_probe_correction_term(
+            item,
+            f_phase=f_phase,
+            variant=variant,
+        )
+        phi3_i = phi3_i + boundary_correction
         total = total + phi3_i
         per_stage[item.cfg.instance_name] = {
             "f_phase": np.asarray(f_phase, dtype=np.float64),
             "x_after": x_after,
+            "boundary_correction_rad": boundary_correction,
             "phi3_rad": phi3_i,
         }
     return {"phi3_total": total, "per_stage": per_stage}
+
+
+def _boundary_probe_correction_term(
+    item: _StageTrace,
+    *,
+    f_phase: NDArrayF,
+    variant: _Phi3VariantConfig,
+) -> NDArrayF:
+    if variant.boundary_mode == "none":
+        return np.zeros_like(np.asarray(f_phase, dtype=np.float64), dtype=np.float64)
+    if not _has_nonunit_upstream_magnification(item):
+        return np.zeros_like(np.asarray(f_phase, dtype=np.float64), dtype=np.float64)
+
+    omega = np.asarray(item.cfg.omega, dtype=np.float64).reshape(-1)
+    b_pre = np.asarray(item.state_in.system[:, 0, 1], dtype=np.float64)
+    return (
+        float(variant.boundary_weight)
+        * 0.5
+        * martinez_k(omega)
+        * np.asarray(f_phase, dtype=np.float64)
+        * b_pre
+    )
+
+
+def _has_nonunit_upstream_magnification(item: _StageTrace) -> bool:
+    a_pre = np.asarray(item.state_in.system[:, 0, 0], dtype=np.float64)
+    d_pre = np.asarray(item.state_in.system[:, 1, 1], dtype=np.float64)
+    return not (
+        np.allclose(a_pre, 1.0, rtol=0.0, atol=1e-12)
+        and np.allclose(d_pre, 1.0, rtol=0.0, atol=1e-12)
+    )
 
 
 def _runtime_x_after_map(trace: tuple[_StageTrace, ...]) -> dict[str, NDArrayF]:
@@ -1573,7 +1725,7 @@ def _weighted_rms(values: NDArrayF, weights: NDArrayF) -> float:
 
 
 def _phi3_variant_config_by_name(name: str) -> _Phi3VariantConfig:
-    for variant in PHI3_VARIANTS:
+    for variant in TREACY_PHI3_VARIANTS:
         if variant.name == name:
             return variant
     raise KeyError(f"Unknown phi3 variant {name!r}")
