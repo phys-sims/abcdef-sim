@@ -3,6 +3,7 @@
 from abcdef_sim._compat import ensure_datetime_utc
 from abcdef_sim.data_models.specs import (
     AbcdefCfg,
+    FrameTransformCfg,
     FreeSpaceCfg,
     GratingCfg,
     InputRayCfg,
@@ -18,6 +19,7 @@ ensure_datetime_utc()
 __all__ = [
     "AbcdefCfg",
     "BeamSpec",
+    "FrameTransformCfg",
     "FreeSpaceCfg",
     "GratingCfg",
     "InputRayCfg",

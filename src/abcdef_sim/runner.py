@@ -7,6 +7,7 @@ from abcdef_sim.cfg_generator import OpticStageCfgGenerator
 from abcdef_sim.data_models.results import AbcdefRunResult, PhaseContribution, PipelineResult
 from abcdef_sim.data_models.specs import (
     AbcdefCfg,
+    FrameTransformCfg,
     FreeSpaceCfg,
     GratingCfg,
     LaserSpec,
@@ -164,6 +165,12 @@ def run_abcdef_on_state(
         "coefficients_rad": list(coefficients),
         "weighted_rms_rad": float(fit.weighted_rms_rad),
         "max_abs_residual_rad": float(fit.max_abs_residual_rad),
+        "x_out_um": np.asarray(ray_state_out.rays[:, 0, 0], dtype=np.float64).tolist(),
+        "x_prime_out": np.asarray(ray_state_out.rays[:, 1, 0], dtype=np.float64).tolist(),
+        "w_out_um": np.asarray(w_out, dtype=np.float64).tolist(),
+        "q_out_real_um": np.asarray(np.real(q_out), dtype=np.float64).tolist(),
+        "q_out_imag_um": np.asarray(np.imag(q_out), dtype=np.float64).tolist(),
+        "spectral_power_au": np.asarray(spectral_weights, dtype=np.float64).tolist(),
         "per_optic": [_phase_contribution_payload(contribution) for contribution in contributions],
     }
     if _is_treacy_preset(cfg):
@@ -289,6 +296,8 @@ def _beam_matrix_for_cfg(cfg: AbcdefCfg, *, omega0_rad_per_fs: float) -> np.ndar
         if isinstance(optic, FreeSpaceCfg):
             # Gaussian q propagation through a uniform medium uses B = L / n.
             matrices.append(free_space(float(optic.length) / float(optic.medium_refractive_index)))
+        elif isinstance(optic, FrameTransformCfg):
+            matrices.append(np.eye(2, dtype=np.float64))
         elif isinstance(optic, GratingCfg):
             from abcdef_sim.optics.grating import Grating
 

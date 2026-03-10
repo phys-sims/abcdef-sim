@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from abcdef_sim.data_models.specs import AbcdefCfg, FreeSpaceCfg, GratingCfg
+from abcdef_sim.data_models.specs import AbcdefCfg, FrameTransformCfg, FreeSpaceCfg, GratingCfg
 
 __all__ = ["treacy_compressor_preset"]
 
@@ -28,7 +28,7 @@ def treacy_compressor_preset(
     if n_passes not in (1, 2):
         raise ValueError("n_passes must be 1 or 2.")
 
-    optics: list[FreeSpaceCfg | GratingCfg] = [
+    optics: list[FrameTransformCfg | FreeSpaceCfg | GratingCfg] = [
         GratingCfg(
             instance_name="g1",
             line_density_lpmm=float(line_density_lpmm),
@@ -53,8 +53,17 @@ def treacy_compressor_preset(
         optics.extend(
             [
                 FreeSpaceCfg(
-                    instance_name="mirror_leg_round_trip",
-                    length=float(2.0 * length_to_mirror_um),
+                    instance_name="to_fold",
+                    length=float(length_to_mirror_um),
+                    medium_refractive_index=float(gap_medium_refractive_index),
+                ),
+                FrameTransformCfg(
+                    instance_name="fold_frame",
+                    x_prime_scale=-1,
+                ),
+                FreeSpaceCfg(
+                    instance_name="from_fold",
+                    length=float(length_to_mirror_um),
                     medium_refractive_index=float(gap_medium_refractive_index),
                 ),
                 GratingCfg(

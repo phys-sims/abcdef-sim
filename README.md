@@ -87,6 +87,12 @@ This writes deterministic JSON/PNG artifacts to `artifacts/physics/`:
 - `treacy_radius_convergence.png`
 - `treacy_radius_mirror_heatmap.json`
 - `treacy_radius_mirror_heatmap.png`
+- `treacy_spatial_metrics_vs_radius.json`
+- `treacy_spatial_metrics_vs_radius.png`
+- `treacy_spatial_metrics_vs_radius_mirror.json`
+- `treacy_spatial_metrics_vs_radius_mirror.png`
+- `treacy_output_plane_spatiospectral.json`
+- `treacy_output_plane_spatiospectral.png`
 
 The benchmark uses the local Treacy analytic model as the baseline and writes
 both:
@@ -95,9 +101,16 @@ both:
 - the same comparison with the Martinez ray-centering term `phi2` removed as a
   diagnostic decomposition
 
-This keeps the poster-facing “actual simulator vs analytic equation” result
-visible while still showing the large-beam convergence story for the
-`without_phi2` diagnostic.
+The scalar radius/heatmap figures remain the baseline validation plots. The
+added spatial artifacts report output-plane spatial chirp, angular dispersion,
+and representative `x-omega` / `x-t` reconstructions for the Treacy
+compressor. This keeps the poster-facing "actual simulator vs analytic
+equation" result visible while still showing the large-beam convergence story
+for the `without_phi2` diagnostic.
+
+The current double-pass Treacy preset uses an explicit fold-frame handoff at
+the mirror rather than modeling the return leg as a single synthetic `2L`
+free-space segment.
 
 
 ## Running tests by marker

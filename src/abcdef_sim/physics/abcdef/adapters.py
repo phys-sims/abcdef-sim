@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 from abcdef_sim.data_models.configs import OpticStageCfg
 from abcdef_sim.data_models.results import PhaseContribution
 from abcdef_sim.data_models.states import RayState
@@ -25,10 +27,20 @@ def apply_cfg(
 
     del policy  # Reserved for future numeric/policy variants at this adapter seam.
 
-    state_out = propagate_step(state, cfg.abcdef)
-    k_center = martinez_k_center(cfg.omega)
-    phi0_rad = phi0_rad_i(k_center, cfg.length, cfg.refractive_index)
-    phi3_rad = phi3_rad_i(k_center, cfg.abcdef[:, 1, 2], state_out.rays[:, 0, 0])
+    if cfg.phase_model == "none":
+        state_out = RayState(
+            rays=np.asarray(cfg.abcdef, dtype=np.float64)
+            @ np.asarray(state.rays, dtype=np.float64),
+            system=np.asarray(state.system, dtype=np.float64),
+            meta=dict(state.meta),
+        )
+        phi0_rad = np.zeros_like(np.asarray(cfg.omega, dtype=np.float64).reshape(-1))
+        phi3_rad = np.zeros_like(phi0_rad)
+    else:
+        state_out = propagate_step(state, cfg.abcdef)
+        k_center = martinez_k_center(cfg.omega)
+        phi0_rad = phi0_rad_i(k_center, cfg.length, cfg.refractive_index)
+        phi3_rad = phi3_rad_i(k_center, cfg.abcdef[:, 1, 2], state_out.rays[:, 0, 0])
 
     contribution = PhaseContribution(
         optic_name=cfg.optic_name,

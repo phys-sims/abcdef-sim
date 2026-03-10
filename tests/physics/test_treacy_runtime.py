@@ -21,6 +21,18 @@ from abcdef_sim.physics.abcdef.treacy import compute_treacy_analytic_metrics
 pytestmark = pytest.mark.physics
 
 
+def _weighted_xprime_rms(result: object) -> float:
+    from abcdef_sim.data_models.results import AbcdefRunResult
+
+    if not isinstance(result, AbcdefRunResult):
+        raise TypeError(f"Expected AbcdefRunResult, got {type(result).__name__}")
+
+    rays = np.asarray(result.pipeline_result.final_state.rays, dtype=np.float64)
+    weights = np.asarray(result.fit.weights, dtype=np.float64)
+    weights = weights / np.sum(weights)
+    return float(np.sqrt(np.sum(weights * rays[:, 1, 0] ** 2)))
+
+
 def test_run_abcdef_treacy_produces_nonzero_phi1_for_finite_beam() -> None:
     result = run_abcdef(
         treacy_compressor_preset(length_to_mirror_um=50_000.0),
@@ -81,6 +93,7 @@ def test_treacy_runtime_gdd_error_decreases_with_beam_radius() -> None:
     assert np.all(np.isfinite(gdd_errors))
     assert gdd_errors[-1] < gdd_errors[0]
     assert gdd_errors[-1] * 4.0 < gdd_errors[0]
+    assert points[-1].full_gdd_rel_error < 0.1
 
     for point in points:
         assert np.isfinite(point.full_gdd_fs2)
@@ -91,10 +104,32 @@ def test_treacy_runtime_gdd_error_decreases_with_beam_radius() -> None:
         assert np.isfinite(point.full_tod_rel_error)
         assert np.isfinite(point.without_phi2_tod_fs3)
         assert np.isfinite(point.without_phi2_tod_rel_error)
+        assert np.isfinite(point.x_centroid_span_um)
+        assert np.isfinite(point.x_centroid_slope_um_per_rad_per_fs)
+        assert np.isfinite(point.x_prime_span)
+        assert np.isfinite(point.x_prime_slope_per_rad_per_fs)
     assert points[-1].full_gdd_rel_error > points[-1].without_phi2_gdd_rel_error
     for point in points[-4:]:
         assert np.sign(point.without_phi2_gdd_fs2) == np.sign(point.analytic_gdd_fs2)
         assert np.sign(point.without_phi2_tod_fs3) == np.sign(point.analytic_tod_fs3)
+
+
+def test_treacy_double_pass_fold_reduces_weighted_output_angular_dispersion() -> None:
+    laser = StandaloneLaserSpec(
+        pulse=PulseSpec(
+            width_fs=100.0,
+            center_wavelength_nm=1030.0,
+            n_samples=256,
+            time_window_fs=3000.0,
+        ),
+        beam=BeamSpec(radius_mm=1.0, m2=1.0),
+    )
+
+    single_pass = run_abcdef(treacy_compressor_preset(n_passes=1), laser)
+    double_pass = run_abcdef(treacy_compressor_preset(length_to_mirror_um=0.0), laser)
+
+    assert _weighted_xprime_rms(double_pass) < _weighted_xprime_rms(single_pass)
+    assert _weighted_xprime_rms(double_pass) < 0.01
 
 
 def test_treacy_runtime_mirror_leg_changes_abcdef_result_while_analytic_stays_fixed() -> None:
@@ -108,11 +143,16 @@ def test_treacy_runtime_mirror_leg_changes_abcdef_result_while_analytic_stays_fi
     full_gdd = np.array([point.full_gdd_fs2 for point in points], dtype=np.float64)
     without_phi2_gdd = np.array([point.without_phi2_gdd_fs2 for point in points], dtype=np.float64)
     gdd_errors = np.array([point.without_phi2_gdd_rel_error for point in points], dtype=np.float64)
+    x_spans = np.array([point.x_centroid_span_um for point in points], dtype=np.float64)
+    x_prime_spans = np.array([point.x_prime_span for point in points], dtype=np.float64)
 
     assert len(analytic_gdd) == 1
     assert np.max(np.abs(full_gdd - full_gdd[0])) > 1e2
     assert np.max(np.abs(without_phi2_gdd - without_phi2_gdd[0])) > 1e2
     assert np.max(gdd_errors) > np.min(gdd_errors)
+    np.testing.assert_allclose(x_spans, x_spans[0], rtol=0.0, atol=1e-9)
+    assert np.all(np.isfinite(x_prime_spans))
+    np.testing.assert_allclose(x_prime_spans, x_prime_spans[0], rtol=0.0, atol=1e-12)
 
 
 def test_treacy_runtime_tracks_local_analytic_baseline() -> None:

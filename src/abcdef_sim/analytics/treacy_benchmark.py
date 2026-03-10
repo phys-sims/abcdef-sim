@@ -12,6 +12,7 @@ from abcdef_sim import (
     run_abcdef,
     treacy_compressor_preset,
 )
+from abcdef_sim.analytics.spatiospectral import summarize_output_plane_geometry
 from abcdef_sim.data_models.results import AbcdefRunResult
 from abcdef_sim.physics.abcdef.dispersion import (
     fit_phase_taylor,
@@ -61,6 +62,10 @@ class TreacyBenchmarkPoint:
     full_tod_rel_error: float
     without_phi2_tod_fs3: float
     without_phi2_tod_rel_error: float
+    x_centroid_span_um: float
+    x_centroid_slope_um_per_rad_per_fs: float
+    x_prime_span: float
+    x_prime_slope_per_rad_per_fs: float
 
     def to_dict(self) -> dict[str, float]:
         return {key: float(value) for key, value in asdict(self).items()}
@@ -110,6 +115,7 @@ def run_treacy_benchmark_point(
     without_phi2_gdd_fs2, without_phi2_tod_fs3 = _benchmark_dispersion_without_phi2(result)
     full_gdd_fs2 = float(result.final_state.metrics["abcdef.gdd_fs2"])
     full_tod_fs3 = float(result.final_state.metrics["abcdef.tod_fs3"])
+    spatial_metrics = summarize_output_plane_geometry(result)
     return TreacyBenchmarkPoint(
         beam_radius_mm=float(beam_radius_mm),
         length_to_mirror_um=float(length_to_mirror_um),
@@ -123,6 +129,10 @@ def run_treacy_benchmark_point(
         full_tod_rel_error=_relative_error(full_tod_fs3, analytic.tod_fs3),
         without_phi2_tod_fs3=without_phi2_tod_fs3,
         without_phi2_tod_rel_error=_relative_error(without_phi2_tod_fs3, analytic.tod_fs3),
+        x_centroid_span_um=spatial_metrics.x_centroid_span_um,
+        x_centroid_slope_um_per_rad_per_fs=spatial_metrics.x_centroid_slope_um_per_rad_per_fs,
+        x_prime_span=spatial_metrics.x_prime_span,
+        x_prime_slope_per_rad_per_fs=spatial_metrics.x_prime_slope_per_rad_per_fs,
     )
 
 

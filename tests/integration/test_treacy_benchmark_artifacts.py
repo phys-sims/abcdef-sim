@@ -28,6 +28,12 @@ def test_treacy_benchmark_artifact_script_writes_expected_files(tmp_path: Path) 
         "treacy_radius_convergence.png",
         "treacy_radius_mirror_heatmap.json",
         "treacy_radius_mirror_heatmap.png",
+        "treacy_spatial_metrics_vs_radius.json",
+        "treacy_spatial_metrics_vs_radius.png",
+        "treacy_spatial_metrics_vs_radius_mirror.json",
+        "treacy_spatial_metrics_vs_radius_mirror.png",
+        "treacy_output_plane_spatiospectral.json",
+        "treacy_output_plane_spatiospectral.png",
     ):
         path = tmp_path / filename
         assert path.exists()
