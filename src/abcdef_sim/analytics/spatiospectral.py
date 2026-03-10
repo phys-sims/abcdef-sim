@@ -36,6 +36,12 @@ class OutputPlaneSpatialMetrics:
     x_centroid_slope_um_per_rad_per_fs: float
     x_prime_span: float
     x_prime_slope_per_rad_per_fs: float
+    weighted_x_centroid_rms_um: float
+    weighted_x_prime_rms: float
+    weighted_mean_w_out_um: float
+    weighted_mean_diffraction_angle_rad: float
+    normalized_spatial_chirp_rms: float
+    normalized_angular_dispersion_rms: float
 
     def to_dict(self) -> dict[str, float]:
         return {key: float(value) for key, value in asdict(self).items()}
@@ -72,6 +78,7 @@ class OutputPlaneField1D:
     intensity_x_omega: NDArrayF
     intensity_x_t: NDArrayF
     spectral_power_au: NDArrayF
+    effective_wavelength_um: NDArrayF
     x_out_um: NDArrayF
     x_prime_out: NDArrayF
     w_out_um: NDArrayF
@@ -97,6 +104,7 @@ def build_output_plane_field_1d(
     spectral_power = _spectral_power_au(run_result)
     spectral_field = _spectral_field_input(run_result)
     x_out_um, x_prime_out, w_out_um, q_out_um = _output_plane_geometry(run_result)
+    effective_wavelength_um = _effective_wavelength_um(run_result, omega=omega)
 
     if x_grid_um is None:
         x_um = _default_x_grid_um(x_out_um=x_out_um, w_out_um=w_out_um)
@@ -152,6 +160,7 @@ def build_output_plane_field_1d(
         intensity_x_omega=intensity_x_omega,
         intensity_x_t=intensity_x_t,
         spectral_power_au=spectral_power,
+        effective_wavelength_um=effective_wavelength_um,
         x_out_um=x_out_um,
         x_prime_out=x_prime_out,
         w_out_um=w_out_um,
@@ -164,12 +173,20 @@ def build_output_plane_field_1d(
 
 
 def summarize_output_plane_geometry(run_result: AbcdefRunResult) -> OutputPlaneSpatialMetrics:
-    x_out_um, x_prime_out, _, _ = _output_plane_geometry(run_result)
+    x_out_um, x_prime_out, w_out_um, _ = _output_plane_geometry(run_result)
     delta_omega = np.asarray(
         run_result.pipeline_result.delta_omega_rad_per_fs,
         dtype=np.float64,
     ).reshape(-1)
     spectral_power = _spectral_power_au(run_result)
+    spectral_weights = spectral_power / np.maximum(np.sum(spectral_power), _SPATIAL_WEIGHT_FLOOR)
+    omega = np.asarray(run_result.pipeline_result.omega, dtype=np.float64).reshape(-1)
+    effective_wavelength_um = _effective_wavelength_um(run_result, omega=omega)
+    diffraction_angle_rad = effective_wavelength_um / (np.pi * np.maximum(w_out_um, 1e-12))
+    weighted_x_centroid_rms_um = float(np.sqrt(np.sum(spectral_weights * x_out_um**2)))
+    weighted_x_prime_rms = float(np.sqrt(np.sum(spectral_weights * x_prime_out**2)))
+    weighted_mean_w_out_um = float(np.sum(spectral_weights * w_out_um))
+    weighted_mean_diffraction_angle_rad = float(np.sum(spectral_weights * diffraction_angle_rad))
     return OutputPlaneSpatialMetrics(
         x_centroid_span_um=float(np.max(x_out_um) - np.min(x_out_um)),
         x_centroid_slope_um_per_rad_per_fs=_weighted_linear_slope(
@@ -183,12 +200,30 @@ def summarize_output_plane_geometry(run_result: AbcdefRunResult) -> OutputPlaneS
             y=x_prime_out,
             weights=spectral_power,
         ),
+        weighted_x_centroid_rms_um=weighted_x_centroid_rms_um,
+        weighted_x_prime_rms=weighted_x_prime_rms,
+        weighted_mean_w_out_um=weighted_mean_w_out_um,
+        weighted_mean_diffraction_angle_rad=weighted_mean_diffraction_angle_rad,
+        normalized_spatial_chirp_rms=weighted_x_centroid_rms_um
+        / max(weighted_mean_w_out_um, 1e-12),
+        normalized_angular_dispersion_rms=weighted_x_prime_rms
+        / max(weighted_mean_diffraction_angle_rad, 1e-12),
     )
 
 
 def summarize_output_plane_field(field: OutputPlaneField1D) -> OutputPlaneFieldSummary:
     weights_x = np.sum(field.intensity_x_t, axis=1)
     spatial_weights = np.asarray(field.spectral_power_au, dtype=np.float64).reshape(-1)
+    spatial_weights = spatial_weights / np.maximum(np.sum(spatial_weights), _SPATIAL_WEIGHT_FLOOR)
+    diffraction_angle_rad = field.effective_wavelength_um / (
+        np.pi * np.maximum(field.w_out_um, 1e-12)
+    )
+    weighted_x_centroid_rms_um = float(
+        np.sqrt(np.sum(spatial_weights * field.x_centroids_omega_um**2))
+    )
+    weighted_x_prime_rms = float(np.sqrt(np.sum(spatial_weights * field.x_prime_out**2)))
+    weighted_mean_w_out_um = float(np.sum(spatial_weights * field.w_out_um))
+    weighted_mean_diffraction_angle_rad = float(np.sum(spatial_weights * diffraction_angle_rad))
     spatial_metrics = OutputPlaneSpatialMetrics(
         x_centroid_span_um=float(
             np.max(field.x_centroids_omega_um) - np.min(field.x_centroids_omega_um)
@@ -202,8 +237,16 @@ def summarize_output_plane_field(field: OutputPlaneField1D) -> OutputPlaneFieldS
         x_prime_slope_per_rad_per_fs=_weighted_linear_slope(
             x=field.delta_omega_rad_per_fs,
             y=field.x_prime_out,
-            weights=spatial_weights,
+            weights=field.spectral_power_au,
         ),
+        weighted_x_centroid_rms_um=weighted_x_centroid_rms_um,
+        weighted_x_prime_rms=weighted_x_prime_rms,
+        weighted_mean_w_out_um=weighted_mean_w_out_um,
+        weighted_mean_diffraction_angle_rad=weighted_mean_diffraction_angle_rad,
+        normalized_spatial_chirp_rms=weighted_x_centroid_rms_um
+        / max(weighted_mean_w_out_um, 1e-12),
+        normalized_angular_dispersion_rms=weighted_x_prime_rms
+        / max(weighted_mean_diffraction_angle_rad, 1e-12),
     )
     center_idx = int(np.argmin(np.abs(field.delta_omega_rad_per_fs)))
     normalized_modes = _normalize_modes(field.field_x_omega, x_um=field.x_um)
@@ -332,6 +375,12 @@ def _spectral_power_au(run_result: AbcdefRunResult) -> NDArrayF:
 
     power = np.abs(_spectral_field_input(run_result)) ** 2
     return np.asarray(power, dtype=np.float64)
+
+
+def _effective_wavelength_um(run_result: AbcdefRunResult, *, omega: NDArrayF) -> NDArrayF:
+    m2 = float(run_result.initial_state.beam.m2)
+    wavelength_um = (2.0 * np.pi * _C_UM_PER_FS) / np.maximum(omega, 1e-12)
+    return wavelength_um * m2
 
 
 def _weighted_centroid(samples: NDArrayF, values: NDArrayF, *, axis: int) -> NDArrayF:

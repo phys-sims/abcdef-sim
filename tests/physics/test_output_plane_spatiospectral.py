@@ -114,6 +114,10 @@ def test_output_plane_geometry_summary_free_space_has_no_spatial_chirp() -> None
     assert metrics.x_centroid_slope_um_per_rad_per_fs == pytest.approx(0.0, abs=1e-12)
     assert metrics.x_prime_span == pytest.approx(0.0, abs=1e-12)
     assert metrics.x_prime_slope_per_rad_per_fs == pytest.approx(0.0, abs=1e-12)
+    assert metrics.weighted_x_centroid_rms_um == pytest.approx(0.0, abs=1e-12)
+    assert metrics.weighted_x_prime_rms == pytest.approx(0.0, abs=1e-12)
+    assert metrics.normalized_spatial_chirp_rms == pytest.approx(0.0, abs=1e-12)
+    assert metrics.normalized_angular_dispersion_rms == pytest.approx(0.0, abs=1e-12)
 
 
 def test_single_grating_gap_has_monotonic_spatial_chirp_and_angular_dispersion() -> None:
@@ -147,6 +151,8 @@ def test_single_grating_gap_has_monotonic_spatial_chirp_and_angular_dispersion()
     x_prime_diff = np.diff(field.x_prime_out)
     assert metrics.x_centroid_span_um > 0.0
     assert metrics.x_prime_span > 0.0
+    assert metrics.weighted_x_centroid_rms_um > 0.0
+    assert metrics.weighted_x_prime_rms > 0.0
     assert np.all(x_diff <= 0.0) or np.all(x_diff >= 0.0)
     assert np.all(x_prime_diff <= 0.0) or np.all(x_prime_diff >= 0.0)
 

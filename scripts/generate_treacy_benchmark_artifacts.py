@@ -157,8 +157,11 @@ def _plot_spatial_metrics_vs_radius(points: tuple[object, ...], output_path: Pat
         [point.without_phi2_gdd_rel_error for point in points],
         dtype=np.float64,
     )
-    x_span = np.array([point.x_centroid_span_um for point in points], dtype=np.float64)
-    x_prime_span = np.array([point.x_prime_span for point in points], dtype=np.float64)
+    normalized_spatial = np.array(
+        [point.normalized_spatial_chirp_rms for point in points],
+        dtype=np.float64,
+    )
+    mode_overlap = np.array([point.mode_overlap_with_center for point in points], dtype=np.float64)
 
     fig, axes = plt.subplots(3, 1, figsize=(9, 10), sharex=True, constrained_layout=True)
     axes[0].plot(beam_radii, full_gdd_errors, marker="o", color="tab:red", label="Full ABCDEF")
@@ -175,21 +178,21 @@ def _plot_spatial_metrics_vs_radius(points: tuple[object, ...], output_path: Pat
     axes[0].grid(True, which="both", alpha=0.3)
     axes[0].legend()
 
-    axes[1].plot(beam_radii, x_span, marker="o", color="tab:green")
+    axes[1].plot(beam_radii, normalized_spatial, marker="o", color="tab:green")
     axes[1].set_yscale("log")
-    axes[1].set_ylabel("x span (um)")
-    axes[1].set_title("Spatial Chirp")
+    axes[1].set_ylabel("weighted x_rms / w")
+    axes[1].set_title("Normalized Spatial Chirp")
     axes[1].grid(True, which="both", alpha=0.3)
 
-    axes[2].plot(beam_radii, x_prime_span, marker="o", color="tab:purple")
-    axes[2].set_yscale("log")
+    axes[2].plot(beam_radii, mode_overlap, marker="o", color="tab:purple")
     axes[2].set_xscale("log")
     axes[2].set_xlabel("Input beam radius (mm)")
-    axes[2].set_ylabel("x' span")
-    axes[2].set_title("Angular Dispersion")
+    axes[2].set_ylabel("Mean overlap")
+    axes[2].set_ylim(0.0, 1.05)
+    axes[2].set_title("Output Mode Recombination")
     axes[2].grid(True, which="both", alpha=0.3)
 
-    fig.suptitle("Treacy Scalar and Spatial Metrics vs Beam Radius")
+    fig.suptitle("Treacy Scalar Error and Normalized Spatial Metrics vs Beam Radius")
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
 
@@ -246,18 +249,18 @@ def _plot_spatial_metrics_vs_radius_mirror(points: tuple[object, ...], output_pa
         sorted({point.length_to_mirror_um for point in points}),
         dtype=np.float64,
     )
-    x_span_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
-    x_prime_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
+    normalized_spatial_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
+    mode_overlap_grid = np.zeros((mirror_lengths_um.size, beam_radii.size), dtype=np.float64)
     for point in points:
         row = int(np.where(mirror_lengths_um == point.length_to_mirror_um)[0][0])
         col = int(np.where(beam_radii == point.beam_radius_mm)[0][0])
-        x_span_grid[row, col] = point.x_centroid_span_um
-        x_prime_grid[row, col] = point.x_prime_span
+        normalized_spatial_grid[row, col] = point.normalized_spatial_chirp_rms
+        mode_overlap_grid[row, col] = point.mode_overlap_with_center
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 5), constrained_layout=True)
     for ax, grid, title in [
-        (axes[0], x_span_grid, "Spatial chirp span (um)"),
-        (axes[1], x_prime_grid, "Angular dispersion span"),
+        (axes[0], normalized_spatial_grid, "Normalized spatial chirp"),
+        (axes[1], mode_overlap_grid, "Output mode overlap"),
     ]:
         im = ax.imshow(
             grid,
@@ -275,7 +278,7 @@ def _plot_spatial_metrics_vs_radius_mirror(points: tuple[object, ...], output_pa
         ax.set_title(title)
         fig.colorbar(im, ax=ax, shrink=0.85)
 
-    fig.suptitle("Treacy Spatial Metrics vs Beam Radius and Mirror Leg")
+    fig.suptitle("Treacy Normalized Spatial Metrics vs Beam Radius and Mirror Leg")
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
 

@@ -32,7 +32,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 670.0943390010117,
+      "weighted_mean_diffraction_angle_rad": 0.0004893063832312392,
+      "normalized_spatial_chirp_rms": 0.6785138451285486,
+      "normalized_angular_dispersion_rms": 9.359654121567605,
+      "mode_overlap_with_center": 0.11208275770725942,
+      "pulse_front_tilt_fs_per_um": 0.24820599208522426
     },
     {
       "beam_radius_mm": 0.2,
@@ -50,7 +58,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 361.43354153106486,
+      "weighted_mean_diffraction_angle_rad": 0.0009071365013622816,
+      "normalized_spatial_chirp_rms": 1.2579581978707177,
+      "normalized_angular_dispersion_rms": 5.048566009241208,
+      "mode_overlap_with_center": 0.2204513250099327,
+      "pulse_front_tilt_fs_per_um": 0.2203034003740321
     },
     {
       "beam_radius_mm": 0.5,
@@ -68,7 +84,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 374.2816450093509,
+      "weighted_mean_diffraction_angle_rad": 0.0008770574027939385,
+      "normalized_spatial_chirp_rms": 1.214775804843677,
+      "normalized_angular_dispersion_rms": 5.221708969025826,
+      "mode_overlap_with_center": 0.49563655682193686,
+      "pulse_front_tilt_fs_per_um": 0.11269269869397282
     },
     {
       "beam_radius_mm": 1.0,
@@ -86,7 +110,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 702.5657074851463,
+      "weighted_mean_diffraction_angle_rad": 0.00046743796083015775,
+      "normalized_spatial_chirp_rms": 0.6471541120074698,
+      "normalized_angular_dispersion_rms": 9.797532272274395,
+      "mode_overlap_with_center": 0.749475754056931,
+      "pulse_front_tilt_fs_per_um": 0.06869718563846007
     },
     {
       "beam_radius_mm": 2.0,
@@ -104,7 +136,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 1399.1791987303568,
+      "weighted_mean_diffraction_angle_rad": 0.00023472096361727807,
+      "normalized_spatial_chirp_rms": 0.3249535777597499,
+      "normalized_angular_dispersion_rms": 19.511416602681695,
+      "mode_overlap_with_center": 0.910170850709844,
+      "pulse_front_tilt_fs_per_um": 0.027522184834037393
     },
     {
       "beam_radius_mm": 5.0,
@@ -122,7 +162,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 3496.9791467940795,
+      "weighted_mean_diffraction_angle_rad": 9.391460126222326e-05,
+      "normalized_spatial_chirp_rms": 0.13001744290390613,
+      "normalized_angular_dispersion_rms": 48.7649252082997,
+      "mode_overlap_with_center": 0.98258455649887,
+      "pulse_front_tilt_fs_per_um": 0.005334730026410575
     },
     {
       "beam_radius_mm": 10.0,
@@ -140,7 +188,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 6993.9105601495785,
+      "weighted_mean_diffraction_angle_rad": 4.6957623625824915e-05,
+      "normalized_spatial_chirp_rms": 0.06500916513646775,
+      "normalized_angular_dispersion_rms": 97.52917956437904,
+      "mode_overlap_with_center": 0.9949985647145994,
+      "pulse_front_tilt_fs_per_um": 0.001373841531970556
     },
     {
       "beam_radius_mm": 0.1,
@@ -158,7 +214,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 833.309285776038,
+      "weighted_mean_diffraction_angle_rad": 0.0003934668891171184,
+      "normalized_spatial_chirp_rms": 0.5456176887924986,
+      "normalized_angular_dispersion_rms": 11.63945082341201,
+      "mode_overlap_with_center": 0.11224040644946168,
+      "pulse_front_tilt_fs_per_um": 0.26745387799176057
     },
     {
       "beam_radius_mm": 0.2,
@@ -176,7 +240,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 438.1549542106028,
+      "weighted_mean_diffraction_angle_rad": 0.0007482966187312532,
+      "normalized_spatial_chirp_rms": 1.037688338760423,
+      "normalized_angular_dispersion_rms": 6.120218095178103,
+      "mode_overlap_with_center": 0.22046977544950008,
+      "pulse_front_tilt_fs_per_um": 0.26262960915891437
     },
     {
       "beam_radius_mm": 0.5,
@@ -194,7 +266,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 387.1901096413012,
+      "weighted_mean_diffraction_angle_rad": 0.000847669495360177,
+      "normalized_spatial_chirp_rms": 1.1742766027150362,
+      "normalized_angular_dispersion_rms": 5.402740728063669,
+      "mode_overlap_with_center": 0.49565918582234175,
+      "pulse_front_tilt_fs_per_um": 0.12813046770907766
     },
     {
       "beam_radius_mm": 1.0,
@@ -212,7 +292,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 704.3133782734296,
+      "weighted_mean_diffraction_angle_rad": 0.00046626957662197115,
+      "normalized_spatial_chirp_rms": 0.6455482752138461,
+      "normalized_angular_dispersion_rms": 9.822083052681425,
+      "mode_overlap_with_center": 0.7494758311827374,
+      "pulse_front_tilt_fs_per_um": 0.0713404208023095
     },
     {
       "beam_radius_mm": 2.0,
@@ -230,7 +318,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 1399.3988527232334,
+      "weighted_mean_diffraction_angle_rad": 0.00023468384442676898,
+      "normalized_spatial_chirp_rms": 0.3249025720363169,
+      "normalized_angular_dispersion_rms": 19.51450266082833,
+      "mode_overlap_with_center": 0.9101707331850106,
+      "pulse_front_tilt_fs_per_um": 0.027810480553173984
     },
     {
       "beam_radius_mm": 5.0,
@@ -248,7 +344,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 3496.99320966297,
+      "weighted_mean_diffraction_angle_rad": 9.391422075171607e-05,
+      "normalized_spatial_chirp_rms": 0.13001692004951568,
+      "normalized_angular_dispersion_rms": 48.76512278824313,
+      "mode_overlap_with_center": 0.9825845535985145,
+      "pulse_front_tilt_fs_per_um": 0.005344744992293853
     },
     {
       "beam_radius_mm": 10.0,
@@ -266,7 +370,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 6993.912318023635,
+      "weighted_mean_diffraction_angle_rad": 4.6957611734555696e-05,
+      "normalized_spatial_chirp_rms": 0.06500914879683985,
+      "normalized_angular_dispersion_rms": 97.52920426209445,
+      "mode_overlap_with_center": 0.9949985645499552,
+      "pulse_front_tilt_fs_per_um": 0.0013745034021206953
     },
     {
       "beam_radius_mm": 0.1,
@@ -284,7 +396,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.66828655444965,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 996.7610887692005,
+      "weighted_mean_diffraction_angle_rad": 0.0003289438103943932,
+      "normalized_spatial_chirp_rms": 0.4561457019915109,
+      "normalized_angular_dispersion_rms": 13.922555651765098,
+      "mode_overlap_with_center": 0.11249722438468893,
+      "pulse_front_tilt_fs_per_um": 0.27370260461011914
     },
     {
       "beam_radius_mm": 0.2,
@@ -302,7 +422,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.66828655444965,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 516.4904234806199,
+      "weighted_mean_diffraction_angle_rad": 0.0006348052381149811,
+      "normalized_spatial_chirp_rms": 0.8803034207109747,
+      "normalized_angular_dispersion_rms": 7.214399364628567,
+      "mode_overlap_with_center": 0.2204875412941481,
+      "pulse_front_tilt_fs_per_um": 0.2964999448771659
     },
     {
       "beam_radius_mm": 0.5,
@@ -320,7 +448,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.66828655444965,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 402.36324398793045,
+      "weighted_mean_diffraction_angle_rad": 0.0008155669885675388,
+      "normalized_spatial_chirp_rms": 1.129994584117848,
+      "normalized_angular_dispersion_rms": 5.615404461825331,
+      "mode_overlap_with_center": 0.4956840847612348,
+      "pulse_front_tilt_fs_per_um": 0.14296489470288426
     },
     {
       "beam_radius_mm": 1.0,
@@ -338,7 +474,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.66828655444965,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 706.4379327258841,
+      "weighted_mean_diffraction_angle_rad": 0.0004648572280469875,
+      "normalized_spatial_chirp_rms": 0.643606841439066,
+      "normalized_angular_dispersion_rms": 9.851924914151681,
+      "mode_overlap_with_center": 0.7494759407314533,
+      "pulse_front_tilt_fs_per_um": 0.07394495509750046
     },
     {
       "beam_radius_mm": 2.0,
@@ -356,7 +500,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.66828655444965,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 1399.666568701252,
+      "weighted_mean_diffraction_angle_rad": 0.00023463862136123087,
+      "normalized_spatial_chirp_rms": 0.32484042751434405,
+      "normalized_angular_dispersion_rms": 19.51826378773768,
+      "mode_overlap_with_center": 0.9101705900608117,
+      "pulse_front_tilt_fs_per_um": 0.0280972765274647
     },
     {
       "beam_radius_mm": 5.0,
@@ -374,7 +526,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.66828655444965,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 3497.0103525281247,
+      "weighted_mean_diffraction_angle_rad": 9.391375692825187e-05,
+      "normalized_spatial_chirp_rms": 0.13001628268722518,
+      "normalized_angular_dispersion_rms": 48.76536363057469,
+      "mode_overlap_with_center": 0.9825845500514993,
+      "pulse_front_tilt_fs_per_um": 0.005354750761464954
     },
     {
       "beam_radius_mm": 10.0,
@@ -392,7 +552,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.66828655444965,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 6993.91446090964,
+      "weighted_mean_diffraction_angle_rad": 4.695759723950262e-05,
+      "normalized_spatial_chirp_rms": 0.0650091288784957,
+      "normalized_angular_dispersion_rms": 97.52923436778714,
+      "mode_overlap_with_center": 0.9949985643483275,
+      "pulse_front_tilt_fs_per_um": 0.0013751651188673233
     },
     {
       "beam_radius_mm": 0.1,
@@ -410,7 +578,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 1160.3496442680794,
+      "weighted_mean_diffraction_angle_rad": 0.00028256786742955636,
+      "normalized_spatial_chirp_rms": 0.3918373128310333,
+      "normalized_angular_dispersion_rms": 16.20757005451558,
+      "mode_overlap_with_center": 0.11279919716336516,
+      "pulse_front_tilt_fs_per_um": 0.27166685478515507
     },
     {
       "beam_radius_mm": 0.2,
@@ -428,7 +604,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 595.8038854861848,
+      "weighted_mean_diffraction_angle_rad": 0.0005503012925821324,
+      "normalized_spatial_chirp_rms": 0.7631173572885205,
+      "normalized_angular_dispersion_rms": 8.322238323356437,
+      "mode_overlap_with_center": 0.22050609435102725,
+      "pulse_front_tilt_fs_per_um": 0.3223639316085166
     },
     {
       "beam_radius_mm": 0.5,
@@ -446,7 +630,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 419.55463016605614,
+      "weighted_mean_diffraction_angle_rad": 0.0007820295042717878,
+      "normalized_spatial_chirp_rms": 1.0836926918778034,
+      "normalized_angular_dispersion_rms": 5.856222152109438,
+      "mode_overlap_with_center": 0.4957102483837528,
+      "pulse_front_tilt_fs_per_um": 0.1571221141370082
     },
     {
       "beam_radius_mm": 1.0,
@@ -464,7 +656,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 708.9359567633262,
+      "weighted_mean_diffraction_angle_rad": 0.00046320768778933166,
+      "normalized_spatial_chirp_rms": 0.6413390126666092,
+      "normalized_angular_dispersion_rms": 9.887008845592575,
+      "mode_overlap_with_center": 0.7494760876969422,
+      "pulse_front_tilt_fs_per_um": 0.07650787201458713
     },
     {
       "beam_radius_mm": 2.0,
@@ -482,7 +682,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 1399.9823188703622,
+      "weighted_mean_diffraction_angle_rad": 0.000234585308598068,
+      "normalized_spatial_chirp_rms": 0.32476716343197737,
+      "normalized_angular_dispersion_rms": 19.52269958374249,
+      "mode_overlap_with_center": 0.910170421404478,
+      "pulse_front_tilt_fs_per_um": 0.028382532422973703
     },
     {
       "beam_radius_mm": 5.0,
@@ -500,7 +708,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 3497.0305753438834,
+      "weighted_mean_diffraction_angle_rad": 9.391320979556408e-05,
+      "normalized_spatial_chirp_rms": 0.13001553082210024,
+      "normalized_angular_dispersion_rms": 48.76564773463771,
+      "mode_overlap_with_center": 0.982584545857845,
+      "pulse_front_tilt_fs_per_um": 0.005364747284798862
     },
     {
       "beam_radius_mm": 10.0,
@@ -518,7 +734,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 6993.916988807246,
+      "weighted_mean_diffraction_angle_rad": 4.6957580140673e-05,
+      "normalized_spatial_chirp_rms": 0.06500910538144512,
+      "normalized_angular_dispersion_rms": 97.52926988145195,
+      "mode_overlap_with_center": 0.9949985641097154,
+      "pulse_front_tilt_fs_per_um": 0.0013758266819964724
     },
     {
       "beam_radius_mm": 0.1,
@@ -536,7 +760,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 1324.0242576903888,
+      "weighted_mean_diffraction_angle_rad": 0.0002476366125501618,
+      "normalized_spatial_chirp_rms": 0.3433987586810284,
+      "normalized_angular_dispersion_rms": 18.493785952559513,
+      "mode_overlap_with_center": 0.11310919984705509,
+      "pulse_front_tilt_fs_per_um": 0.26406942526074517
     },
     {
       "beam_radius_mm": 0.2,
@@ -554,7 +786,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 675.7511574014895,
+      "weighted_mean_diffraction_angle_rad": 0.0004851967296286775,
+      "normalized_spatial_chirp_rms": 0.6728338998379455,
+      "normalized_angular_dispersion_rms": 9.43893111156065,
+      "mode_overlap_with_center": 0.2205261633236656,
+      "pulse_front_tilt_fs_per_um": 0.34106543429686403
     },
     {
       "beam_radius_mm": 0.5,
@@ -572,7 +812,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 438.5264320069799,
+      "weighted_mean_diffraction_angle_rad": 0.0007480971781408225,
+      "normalized_spatial_chirp_rms": 1.0368093081039473,
+      "normalized_angular_dispersion_rms": 6.121849728000861,
+      "mode_overlap_with_center": 0.49573685197924766,
+      "pulse_front_tilt_fs_per_um": 0.1705404582393303
     },
     {
       "beam_radius_mm": 1.0,
@@ -590,7 +838,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 711.8034893046416,
+      "weighted_mean_diffraction_angle_rad": 0.0004613287242547675,
+      "normalized_spatial_chirp_rms": 0.6387553494555267,
+      "normalized_angular_dispersion_rms": 9.92727802483519,
+      "mode_overlap_with_center": 0.7494762775458393,
+      "pulse_front_tilt_fs_per_um": 0.07902638587199903
     },
     {
       "beam_radius_mm": 2.0,
@@ -608,7 +864,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 1400.3460704785618,
+      "weighted_mean_diffraction_angle_rad": 0.0002345239228311188,
+      "normalized_spatial_chirp_rms": 0.32468280244401926,
+      "normalized_angular_dispersion_rms": 19.527809577948624,
+      "mode_overlap_with_center": 0.9101702272949932,
+      "pulse_front_tilt_fs_per_um": 0.02866620839984596
     },
     {
       "beam_radius_mm": 5.0,
@@ -626,7 +890,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 3497.053878056384,
+      "weighted_mean_diffraction_angle_rad": 9.391257935805642e-05,
+      "normalized_spatial_chirp_rms": 0.13001466446011642,
+      "normalized_angular_dispersion_rms": 48.76597509965769,
+      "mode_overlap_with_center": 0.9825845410175823,
+      "pulse_front_tilt_fs_per_um": 0.005374734513261389
     },
     {
       "beam_radius_mm": 10.0,
@@ -644,7 +916,15 @@
       "x_centroid_span_um": 96805.7538462572,
       "x_centroid_slope_um_per_rad_per_fs": -37819.495292348336,
       "x_prime_span": 2.5183216787163514,
-      "x_prime_slope_per_rad_per_fs": -0.37789732537706566
+      "x_prime_slope_per_rad_per_fs": -0.37789732537706566,
+      "weighted_x_centroid_rms_um": 454.6682865544496,
+      "weighted_x_prime_rms": 0.004579738506519606,
+      "weighted_mean_w_out_um": 6993.9199017160245,
+      "weighted_mean_diffraction_angle_rad": 4.695756043807543e-05,
+      "normalized_spatial_chirp_rms": 0.06500907830569984,
+      "normalized_angular_dispersion_rms": 97.52931080308285,
+      "mode_overlap_with_center": 0.9949985638341227,
+      "pulse_front_tilt_fs_per_um": 0.0013764880912942225
     }
   ]
 }

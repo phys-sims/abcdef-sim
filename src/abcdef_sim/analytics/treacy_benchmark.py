@@ -12,7 +12,11 @@ from abcdef_sim import (
     run_abcdef,
     treacy_compressor_preset,
 )
-from abcdef_sim.analytics.spatiospectral import summarize_output_plane_geometry
+from abcdef_sim.analytics.spatiospectral import (
+    build_output_plane_field_1d,
+    summarize_output_plane_field,
+    summarize_output_plane_geometry,
+)
 from abcdef_sim.data_models.results import AbcdefRunResult
 from abcdef_sim.physics.abcdef.dispersion import (
     fit_phase_taylor,
@@ -66,6 +70,14 @@ class TreacyBenchmarkPoint:
     x_centroid_slope_um_per_rad_per_fs: float
     x_prime_span: float
     x_prime_slope_per_rad_per_fs: float
+    weighted_x_centroid_rms_um: float
+    weighted_x_prime_rms: float
+    weighted_mean_w_out_um: float
+    weighted_mean_diffraction_angle_rad: float
+    normalized_spatial_chirp_rms: float
+    normalized_angular_dispersion_rms: float
+    mode_overlap_with_center: float
+    pulse_front_tilt_fs_per_um: float
 
     def to_dict(self) -> dict[str, float]:
         return {key: float(value) for key, value in asdict(self).items()}
@@ -116,6 +128,7 @@ def run_treacy_benchmark_point(
     full_gdd_fs2 = float(result.final_state.metrics["abcdef.gdd_fs2"])
     full_tod_fs3 = float(result.final_state.metrics["abcdef.tod_fs3"])
     spatial_metrics = summarize_output_plane_geometry(result)
+    field_summary = summarize_output_plane_field(build_output_plane_field_1d(result))
     return TreacyBenchmarkPoint(
         beam_radius_mm=float(beam_radius_mm),
         length_to_mirror_um=float(length_to_mirror_um),
@@ -133,6 +146,14 @@ def run_treacy_benchmark_point(
         x_centroid_slope_um_per_rad_per_fs=spatial_metrics.x_centroid_slope_um_per_rad_per_fs,
         x_prime_span=spatial_metrics.x_prime_span,
         x_prime_slope_per_rad_per_fs=spatial_metrics.x_prime_slope_per_rad_per_fs,
+        weighted_x_centroid_rms_um=spatial_metrics.weighted_x_centroid_rms_um,
+        weighted_x_prime_rms=spatial_metrics.weighted_x_prime_rms,
+        weighted_mean_w_out_um=spatial_metrics.weighted_mean_w_out_um,
+        weighted_mean_diffraction_angle_rad=spatial_metrics.weighted_mean_diffraction_angle_rad,
+        normalized_spatial_chirp_rms=spatial_metrics.normalized_spatial_chirp_rms,
+        normalized_angular_dispersion_rms=spatial_metrics.normalized_angular_dispersion_rms,
+        mode_overlap_with_center=field_summary.mean_mode_overlap_with_center,
+        pulse_front_tilt_fs_per_um=field_summary.pulse_front_tilt_fs_per_um,
     )
 
 
