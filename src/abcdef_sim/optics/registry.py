@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from abcdef_sim.data_models.specs import OpticKind, OpticSpec
 from abcdef_sim.optics.base import Optic
+from abcdef_sim.optics.frame_transform import FrameTransform
 from abcdef_sim.optics.freespace import FreeSpace
 from abcdef_sim.optics.grating import Grating
 from abcdef_sim.optics.thick_lens import ThickLens
@@ -46,6 +47,15 @@ class OpticFactory:
                 ),
             )
 
+        def build_frame_transform(spec: OpticSpec) -> Optic:
+            return FrameTransform(
+                name="FrameTransform",
+                instance_name=spec.instance_name,
+                x_offset_um=float(spec.params.get("x_offset_um", 0.0)),
+                x_prime_offset=float(spec.params.get("x_prime_offset", 0.0)),
+                x_prime_scale=float(spec.params.get("x_prime_scale", 1.0)),
+            )
+
         def build_thick_lens(spec: OpticSpec) -> Optic:
             refractive_index_model = spec.params["refractive_index_model"]
             refractive_index: float | SellmeierMaterial
@@ -72,6 +82,7 @@ class OpticFactory:
         reg: dict[OpticKind, BuilderFn] = {
             "FreeSpace": build_free_space,
             "Grating": build_grating,
+            "FrameTransform": build_frame_transform,
             "ThickLens": build_thick_lens,
         }
         return OpticFactory(registry=reg)

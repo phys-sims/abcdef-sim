@@ -87,17 +87,51 @@ This writes deterministic JSON/PNG artifacts to `artifacts/physics/`:
 - `treacy_radius_convergence.png`
 - `treacy_radius_mirror_heatmap.json`
 - `treacy_radius_mirror_heatmap.png`
+- `treacy_spatial_metrics_vs_radius.json`
+- `treacy_spatial_metrics_vs_radius.png`
+- `treacy_spatial_metrics_vs_radius_mirror.json`
+- `treacy_spatial_metrics_vs_radius_mirror.png`
+- `treacy_output_plane_spatiospectral.json`
+- `treacy_output_plane_spatiospectral.png`
 
-The benchmark uses the local Treacy analytic model as the baseline and writes
-both:
+The artifacts are split into one primary raw-runtime error-comparison figure
+and several explicitly labeled raw-ABCDEF companion plots.
 
-- the full ABCDEF-vs-analytic error
-- the same comparison with the Martinez ray-centering term `phi2` removed as a
-  diagnostic decomposition
+- Primary matched-comparison error heatmap:
+  - `treacy_radius_mirror_heatmap.png`
+  - shows raw `abcdef-sim` relative error against the standalone analytic
+    plane-wave Treacy equation for GDD and TOD over beam radius and
+    `length_to_mirror`
+  - the JSON includes the analytic reference values and the exact relative-error
+    definition used in the plot
+  - the default mirror-leg sweep uses larger geometric steps from `0` up to
+    `1.6e6 um` so mirror-distance trends remain visible on the same log-scaled
+    error map
+- Raw-ABCDEF scalar error plot:
+  - `treacy_radius_convergence.png`
+  - uses relative error against the analytic Treacy reference at
+    `length_to_mirror = 0`
+- Raw-ABCDEF spatial companion plots:
+  - `treacy_spatial_metrics_vs_radius.png`
+  - `treacy_spatial_metrics_vs_radius_mirror.png`
+- Output-plane reconstruction:
+  - `treacy_output_plane_spatiospectral.png`
+  - shows only the raw ABCDEF reconstruction
 
-This keeps the poster-facing “actual simulator vs analytic equation” result
-visible while still showing the large-beam convergence story for the
-`without_phi2` diagnostic.
+The local Treacy analytic model remains a standalone scalar reference only. It
+is not injected into the runtime fit path. Public benchmark artifacts now
+report only raw `abcdef-sim` runs versus the standalone analytic Treacy model;
+the old `without_phi2` and injected-baseline comparisons are not part of the
+generated benchmark figures or JSON payloads.
+
+The current Treacy preset resolves the second-grating and return-pass center
+incidence angles against the laser center wavelength at runtime. It also uses
+explicit reflected-frame `x' -> -x'` handoffs after each grating interaction
+plus an explicit fold-frame handoff at the mirror instead of modeling the
+return leg as a single synthetic `2L` free-space segment. This correction is
+what restores the expected single-pass angular-dispersion cancellation and
+brings the large-beam full ABCDEF Treacy benchmark back toward the scalar
+analytic limit.
 
 
 ## Running tests by marker

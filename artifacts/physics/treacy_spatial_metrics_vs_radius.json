@@ -1,6 +1,5 @@
 {
-  "plot_description": "Raw ABCDEF runtime relative-error curves versus the standalone analytic Treacy equation at length_to_mirror_um = 0.0.",
-  "headline_metric": "relative_error_raw_abcdef_vs_analytic",
+  "plot_description": "Raw ABCDEF scalar-error and spatial-metric companion curves versus beam radius at length_to_mirror_um = 0.0.",
   "beam_radii_mm": [
     0.1,
     0.2,

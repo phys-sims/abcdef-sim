@@ -6,7 +6,7 @@ import pytest
 from abcdef_sim.data_models.configs import OpticStageCfg
 from abcdef_sim.data_models.states import RayState
 from abcdef_sim.physics.abcdef.adapters import apply_cfg
-from abcdef_sim.physics.abcdef.phase_terms import martinez_k_center
+from abcdef_sim.physics.abcdef.phase_terms import martinez_k, martinez_k_center
 
 pytestmark = pytest.mark.physics
 
@@ -53,7 +53,7 @@ def test_apply_cfg_propagates_state_and_returns_martinez_phase_contribution() ->
     expected_rays = matrices @ rays_in
     expected_system = matrices @ system_in
     k_center = martinez_k_center(omega)
-    expected_phi0 = k_center * cfg.length * refractive_index
+    expected_phi0 = martinez_k(omega) * cfg.length * refractive_index
     expected_phi3 = 0.5 * k_center * matrices[:, 1, 2] * expected_rays[:, 0, 0]
 
     np.testing.assert_allclose(state_out.rays, expected_rays)

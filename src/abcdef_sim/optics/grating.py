@@ -32,12 +32,12 @@ class Grating(Optic):
         m = float(self.diffraction_order)
         n_medium = float(self.immersion_refractive_index)
 
-        lambda_um = (2.0 * np.pi * _C_UM_PER_FS) / omega_arr
-        diff_arg = -m * (lambda_um / d_um) - np.sin(theta_i_rad)
-        if np.any((diff_arg < -1.0) | (diff_arg > 1.0)):
-            raise ValueError("Grating geometry produces an invalid diffraction angle.")
-
-        theta_d_rad = np.arcsin(diff_arg)
+        theta_d_rad = _diffraction_angle_rad(
+            omega_arr,
+            period_um=d_um,
+            incidence_angle_rad=theta_i_rad,
+            diffraction_order=m,
+        )
         cos_i = np.cos(theta_i_rad)
         cos_d = np.cos(theta_d_rad)
         if np.any(np.abs(cos_d) <= 1e-12) or abs(cos_i) <= 1e-12:
@@ -45,8 +45,13 @@ class Grating(Optic):
 
         a = cos_d / cos_i
         d = cos_i / cos_d
-        f = ((2.0 * np.pi * _C_UM_PER_FS * n_medium**2) / (omega_arr**2 * d_um * cos_d)) * (
-            omega_arr - omega_ref
+        f = _grating_f_exact_local(
+            omega_arr,
+            omega_ref=omega_ref,
+            period_um=d_um,
+            incidence_angle_rad=theta_i_rad,
+            diffraction_order=m,
+            immersion_refractive_index=n_medium,
         )
 
         matrices = np.zeros((omega_arr.size, 3, 3), dtype=np.float64)
@@ -71,3 +76,42 @@ class Grating(Optic):
 
     def l2_cache_safe(self) -> bool:
         return False
+
+
+def _diffraction_angle_rad(
+    omega: NDArrayF,
+    *,
+    period_um: float,
+    incidence_angle_rad: float,
+    diffraction_order: float,
+) -> NDArrayF:
+    lambda_um = (2.0 * np.pi * _C_UM_PER_FS) / np.asarray(omega, dtype=np.float64)
+    diff_arg = -diffraction_order * (lambda_um / period_um) - np.sin(incidence_angle_rad)
+    if np.any((diff_arg < -1.0) | (diff_arg > 1.0)):
+        raise ValueError("Grating geometry produces an invalid diffraction angle.")
+    return np.arcsin(diff_arg)
+
+
+def _grating_f_exact_local(
+    omega: NDArrayF,
+    *,
+    omega_ref: float,
+    period_um: float,
+    incidence_angle_rad: float,
+    diffraction_order: float,
+    immersion_refractive_index: float,
+) -> NDArrayF:
+    omega_arr = np.asarray(omega, dtype=np.float64)
+    theta_ref = _diffraction_angle_rad(
+        np.asarray([omega_ref], dtype=np.float64),
+        period_um=period_um,
+        incidence_angle_rad=incidence_angle_rad,
+        diffraction_order=diffraction_order,
+    )[0]
+    theta = _diffraction_angle_rad(
+        omega_arr,
+        period_um=period_um,
+        incidence_angle_rad=incidence_angle_rad,
+        diffraction_order=diffraction_order,
+    )
+    return (immersion_refractive_index**2) * (theta_ref - theta)

@@ -6,7 +6,7 @@ import numpy as np
 import numpy.typing as npt
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-OpticKind = Literal["FreeSpace", "Grating", "ThickLens"]
+OpticKind = Literal["FreeSpace", "Grating", "ThickLens", "FrameTransform"]
 NDArrayF = npt.NDArray[np.float64]
 
 
@@ -223,6 +223,27 @@ class GratingCfg(BaseModel):
         )
 
 
+class FrameTransformCfg(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["frame_transform"] = "frame_transform"
+    instance_name: str
+    x_offset_um: float = 0.0
+    x_prime_offset: float = 0.0
+    x_prime_scale: Literal[-1, 1] = 1
+
+    def to_spec(self) -> OpticSpec:
+        return OpticSpec(
+            kind="FrameTransform",
+            instance_name=self.instance_name,
+            params={
+                "x_offset_um": float(self.x_offset_um),
+                "x_prime_offset": float(self.x_prime_offset),
+                "x_prime_scale": float(self.x_prime_scale),
+            },
+        )
+
+
 class ThickLensCfg(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -274,7 +295,10 @@ class ThickLensCfg(BaseModel):
         )
 
 
-OpticCfg = Annotated[FreeSpaceCfg | GratingCfg | ThickLensCfg, Field(discriminator="kind")]
+OpticCfg = Annotated[
+    FreeSpaceCfg | GratingCfg | FrameTransformCfg | ThickLensCfg,
+    Field(discriminator="kind"),
+]
 
 
 class AbcdefCfg(BaseModel):

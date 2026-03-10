@@ -1,11 +1,5 @@
 {
-  "plot_description": "Primary matched comparison heatmap: relative error of the raw ABCDEF Treacy runtime versus the standalone analytic plane-wave Treacy GDD/TOD over beam radius and mirror length.",
-  "headline_metric": "relative_error_raw_abcdef_vs_analytic",
-  "relative_error_definition": "abs(raw_abcdef - analytic) / abs(analytic)",
-  "analytic_reference": {
-    "gdd_fs2": -1325599.0136025783,
-    "tod_fs3": 5347118.306152711
-  },
+  "plot_description": "Raw ABCDEF spatial-metric companion heatmaps versus beam radius and length_to_mirror.",
   "beam_radii_mm": [
     0.1,
     0.2,

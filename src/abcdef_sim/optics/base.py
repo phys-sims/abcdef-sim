@@ -67,6 +67,11 @@ class Optic(ABC):
 
         return True
 
+    def phase_model(self) -> str:
+        """Return whether this stage should contribute Martinez optical phase."""
+
+        return "physical"
+
     def cache_key(self) -> Hashable:
         """Stable hashable identity for cache buckets."""
         return (

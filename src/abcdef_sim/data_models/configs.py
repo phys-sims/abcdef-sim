@@ -1,3 +1,5 @@
+from typing import Literal
+
 import numpy as np
 import numpy.typing as npt
 from pydantic import ConfigDict, field_validator, model_validator
@@ -20,6 +22,7 @@ class OpticStageCfg(StageConfig):
     optic_name: str
     instance_name: str
     length: float
+    phase_model: Literal["physical", "none"] = "physical"
 
     omega: NDArrayF  # (N,)
     delta_omega_rad_per_fs: NDArrayF | None = None  # (N,)

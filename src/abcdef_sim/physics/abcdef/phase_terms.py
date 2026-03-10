@@ -22,6 +22,7 @@ SPEED_OF_LIGHT_UM_PER_FS = 0.299792458
 
 __all__ = [
     "combine_phi_total_rad",
+    "martinez_k",
     "martinez_k_center",
     "phi0_rad_i",
     "phi1_rad",
@@ -31,21 +32,28 @@ __all__ = [
 ]
 
 
-def martinez_k_center(omega: object) -> float:
-    """Return the Martinez reference wavenumber from an ECO-0001 omega grid."""
+def martinez_k(omega: object) -> NDArrayF:
+    """Return the optical wavenumber ``k(omega) = omega / c`` on an omega grid."""
 
     omega_arr = _as_real_vector("omega", omega)
     if omega_arr.size == 0:
         raise ValueError("omega must contain at least one sample")
-    return float(np.mean(omega_arr) / SPEED_OF_LIGHT_UM_PER_FS)
+    return omega_arr / SPEED_OF_LIGHT_UM_PER_FS
 
 
-def phi0_rad_i(k: object, length: float, n: object) -> NDArrayF:
-    """Return the per-element plane-wave phase using the center-frequency ``k``."""
+def martinez_k_center(omega: object) -> float:
+    """Return the Martinez reference wavenumber from an ECO-0001 omega grid."""
 
-    k_center = _as_real_scalar("k", k)
+    return float(np.mean(martinez_k(omega)))
+
+
+def phi0_rad_i(omega: object, length: float, n: object) -> NDArrayF:
+    """Return the per-element plane-wave phase ``k(omega) * L * n(omega)``."""
+
+    k_arr = martinez_k(omega)
     n_arr = _as_real_vector("n", n)
-    return k_center * float(length) * n_arr
+    _require_matching_size(("omega", k_arr), ("n", n_arr))
+    return k_arr * float(length) * n_arr
 
 
 def phi3_rad_i(k: object, F_i: object, x_after: object) -> NDArrayF:

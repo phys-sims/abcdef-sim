@@ -100,6 +100,7 @@ class OpticStageCfgGenerator:
             optic_name=optic.name,
             instance_name=optic.instance_name,
             length=float(optic.length),
+            phase_model=str(optic.phase_model()),
             omega=w,
             delta_omega_rad_per_fs=delta_w,
             omega0_rad_per_fs=omega0,
