@@ -28,6 +28,8 @@ class PhaseContribution(BaseModel):
     omega0_rad_per_fs: float = 0.0
     phi0_rad: NDArrayF
     phi_geom_rad: NDArrayF | None = None
+    phi3_transport_like_rad: NDArrayF | None = None
+    phi3_phase_rad: NDArrayF | None = None
     phi3_rad: NDArrayF
     path_length_um: NDArrayF | None = None
     group_delay_fs: NDArrayF | None = None
@@ -40,6 +42,8 @@ class PhaseContribution(BaseModel):
         "delta_omega_rad_per_fs",
         "phi0_rad",
         "phi_geom_rad",
+        "phi3_transport_like_rad",
+        "phi3_phase_rad",
         "phi3_rad",
         "path_length_um",
         "group_delay_fs",
@@ -67,6 +71,8 @@ class PhaseContribution(BaseModel):
         for field_name in (
             "phi0_rad",
             "phi_geom_rad",
+            "phi3_transport_like_rad",
+            "phi3_phase_rad",
             "phi3_rad",
             "path_length_um",
             "group_delay_fs",
@@ -93,6 +99,8 @@ class PipelineResult(BaseModel):
     contributions: tuple[PhaseContribution, ...]
     phi0_axial_total_rad: NDArrayF | None = None
     phi_geom_total_rad: NDArrayF | None = None
+    phi3_transport_like_total_rad: NDArrayF | None = None
+    phi3_phase_total_rad: NDArrayF | None = None
     phi3_total_rad: NDArrayF | None = None
     phi1_rad: NDArrayF | None = None
     phi2_rad: NDArrayF | None = None
@@ -104,6 +112,8 @@ class PipelineResult(BaseModel):
         "delta_omega_rad_per_fs",
         "phi0_axial_total_rad",
         "phi_geom_total_rad",
+        "phi3_transport_like_total_rad",
+        "phi3_phase_total_rad",
         "phi3_total_rad",
         "phi1_rad",
         "phi2_rad",
@@ -126,6 +136,8 @@ class PipelineResult(BaseModel):
         for field_name in (
             "phi0_axial_total_rad",
             "phi_geom_total_rad",
+            "phi3_transport_like_total_rad",
+            "phi3_phase_total_rad",
             "phi3_total_rad",
             "phi1_rad",
             "phi2_rad",

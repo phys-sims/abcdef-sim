@@ -5,8 +5,10 @@ import pytest
 
 from abcdef_sim.analytics.martinez_debug import (
     run_martinez_section_iv_coefficient_audit,
-    run_martinez_section_iv_phase_study,
-    run_treacy_partition_span_study,
+    run_martinez_section_iv_phi3_variant_study,
+    run_treacy_phi3_per_grating_budget,
+    run_treacy_phi3_sign_audit,
+    run_treacy_phi3_variant_comparison,
 )
 
 pytestmark = pytest.mark.physics
@@ -27,36 +29,84 @@ def test_section_iv_matrix_audit_matches_equation_34_structure_on_narrow_span() 
     np.testing.assert_allclose(actual_b, expected_b, rtol=0.0, atol=1e-9)
 
 
-def test_section_iv_phase_study_shows_sample_k_improves_series2_tod_error() -> None:
-    points = run_martinez_section_iv_phase_study(span_scales=(1.0,))
-    point_map = {point.variant: point for point in points}
+def test_section_iv_phi3_variants_have_candidate_better_than_runtime_exact() -> None:
+    points = run_martinez_section_iv_phi3_variant_study(span_scales=(1.0, 0.125))
+    grouped: dict[str, list[float]] = {}
+    for point in points:
+        grouped.setdefault(point.variant, []).append(
+            point.gdd_abs_error_fs2 + point.tod_abs_error_fs3
+        )
 
-    assert point_map["sample_k_series2"].tod_abs_error_fs3 < point_map[
-        "center_k_series2"
-    ].tod_abs_error_fs3
-    assert point_map["sample_k_series2"].weighted_rms_rad > 0.0
-
-
-def test_treacy_partition_span_study_geometry_term_improves_current_full_span_error() -> None:
-    points = run_treacy_partition_span_study(span_scales=(1.0,))
-    point_map = {point.variant: point for point in points}
-
-    assert point_map["geom_current"].raw_abcdef_gdd_rel_error < point_map[
-        "axial_current"
-    ].raw_abcdef_gdd_rel_error
-    assert point_map["geom_current"].raw_abcdef_tod_rel_error < point_map[
-        "axial_current"
-    ].raw_abcdef_tod_rel_error
-
-
-def test_treacy_partition_span_study_narrower_bandwidth_reduces_geom_series2_error() -> None:
-    points = run_treacy_partition_span_study(span_scales=(1.0, 0.125))
-    geom_series2 = sorted(
-        (point for point in points if point.variant == "geom_series2"),
-        key=lambda point: point.span_scale,
-        reverse=True,
+    current_error = float(np.mean(grouped["runtime_exact_centerk"]))
+    best_variant, best_error = min(
+        (
+            (variant, float(np.mean(errors)))
+            for variant, errors in grouped.items()
+            if variant != "runtime_exact_centerk"
+        ),
+        key=lambda item: item[1],
     )
-    wide, narrow = geom_series2
 
-    assert abs(narrow.raw_abcdef_gdd_rel_error - wide.raw_abcdef_gdd_rel_error) < 1e-3
-    assert narrow.raw_abcdef_tod_rel_error < wide.raw_abcdef_tod_rel_error
+    assert best_variant != "runtime_exact_centerk"
+    assert best_error < current_error
+
+
+def test_treacy_phi3_variant_comparison_has_candidate_better_than_runtime_exact_large_beam() -> (
+    None
+):
+    points = run_treacy_phi3_variant_comparison(beam_radii_mm=(10.0, 100.0, 1000.0))
+    grouped: dict[str, list[float]] = {}
+    for point in points:
+        grouped.setdefault(point.variant, []).append(
+            point.raw_abcdef_gdd_rel_error + point.raw_abcdef_tod_rel_error
+        )
+
+    current_error = float(np.mean(grouped["runtime_exact_centerk"]))
+    best_variant, best_error = min(
+        (
+            (variant, float(np.mean(errors)))
+            for variant, errors in grouped.items()
+            if variant != "runtime_exact_centerk"
+        ),
+        key=lambda item: item[1],
+    )
+
+    assert best_variant != "runtime_exact_centerk"
+    assert best_error < current_error
+
+
+def test_treacy_phi3_per_grating_budget_concentrates_required_residual_on_later_passes() -> None:
+    comparison = run_treacy_phi3_variant_comparison(beam_radii_mm=(10.0, 100.0, 1000.0))
+    grouped: dict[str, list[float]] = {}
+    for point in comparison:
+        grouped.setdefault(point.variant, []).append(
+            point.raw_abcdef_gdd_rel_error + point.raw_abcdef_tod_rel_error
+        )
+    best_variant = min(
+        ((variant, float(np.mean(errors))) for variant, errors in grouped.items()),
+        key=lambda item: item[1],
+    )[0]
+
+    points = run_treacy_phi3_per_grating_budget(beam_radius_mm=1000.0, variants=(best_variant,))
+    return_pass_budget = sum(
+        abs(point.required_residual_gdd_fs2) for point in points if point.is_return_pass
+    )
+    forward_budget = sum(
+        abs(point.required_residual_gdd_fs2) for point in points if not point.is_return_pass
+    )
+
+    assert return_pass_budget > forward_budget
+
+
+def test_treacy_phi3_sign_audit_shows_return_flip_changes_the_residual() -> None:
+    stage_points, variant_points = run_treacy_phi3_sign_audit(beam_radius_mm=1000.0)
+    assert any(point.return_flip_hypothesis for point in stage_points)
+
+    point_map = {point.sign_case: point for point in variant_points}
+    current = point_map["current"]
+    flipped = point_map["flip_return_pass"]
+
+    assert (
+        abs(flipped.raw_abcdef_gdd_rel_error - current.raw_abcdef_gdd_rel_error) > 1e-4
+        or abs(flipped.raw_abcdef_tod_rel_error - current.raw_abcdef_tod_rel_error) > 1e-4
+    )

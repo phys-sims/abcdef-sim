@@ -11,6 +11,7 @@ from abcdef_sim._phys_pipeline import PolicyBag
 from abcdef_sim.cache.backend import CacheBackend
 from abcdef_sim.data_models.configs import OpticStageCfg
 from abcdef_sim.optics.base import Optic
+from abcdef_sim.optics.grating import Grating
 from abcdef_sim.utils.grids import LinspaceGrid, infer_linspace_grid
 
 NDArrayF = npt.NDArray[np.float64]
@@ -94,6 +95,16 @@ class OpticStageCfgGenerator:
             mats.setflags(write=False)
             ns.setflags(write=False)
 
+        stage_update: dict[str, Any] = {}
+        if isinstance(optic, Grating):
+            stage_update = {
+                "phase_f_variant": "martinez_series2",
+                "phase_grating_period_um": 1000.0 / float(optic.line_density_lpmm),
+                "phase_grating_incidence_angle_rad": np.deg2rad(float(optic.incidence_angle_deg)),
+                "phase_grating_diffraction_order": int(optic.diffraction_order),
+                "phase_grating_immersion_refractive_index": float(optic.immersion_refractive_index),
+            }
+
         return OpticStageCfg(
             name="optic stage cfg",
             tags={} if tags is None else tags,
@@ -106,4 +117,5 @@ class OpticStageCfgGenerator:
             omega0_rad_per_fs=omega0,
             abcdef=mats,
             refractive_index=ns,
+            **stage_update,
         )

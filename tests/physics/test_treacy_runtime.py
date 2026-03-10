@@ -18,6 +18,7 @@ from abcdef_sim.analytics.treacy_benchmark import (
     run_treacy_mirror_heatmap,
     run_treacy_radius_convergence,
 )
+from abcdef_sim.physics.abcdef.dispersion import fit_phase_taylor_affine_detrended
 from abcdef_sim.physics.abcdef.phase_terms import combine_phi_total_rad
 from abcdef_sim.physics.abcdef.treacy import compute_treacy_analytic_metrics
 
@@ -93,6 +94,18 @@ def test_run_abcdef_treacy_preserves_phi2_for_noncentered_input_ray() -> None:
         ],
         axis=0,
     )
+    phi_geom_total = np.sum(
+        [
+            np.asarray(
+                contribution.phi_geom_rad
+                if contribution.phi_geom_rad is not None
+                else contribution.phi0_rad,
+                dtype=np.float64,
+            )
+            for contribution in result.pipeline_result.contributions
+        ],
+        axis=0,
+    )
     phi3_total = np.sum(
         [
             np.asarray(contribution.phi3_rad, dtype=np.float64)
@@ -110,15 +123,25 @@ def test_run_abcdef_treacy_preserves_phi2_for_noncentered_input_ray() -> None:
         axis=0,
     )
     expected_phi_total = combine_phi_total_rad(
-        phi0_total,
+        phi_geom_total,
         filter_phase_total,
         result.pipeline_result.phi1_rad,
         result.pipeline_result.phi2_rad,
         phi3_total,
         result.pipeline_result.phi4_rad,
     )
+    np.testing.assert_allclose(result.pipeline_result.phi0_axial_total_rad, phi0_total)
+    np.testing.assert_allclose(result.pipeline_result.phi_geom_total_rad, phi_geom_total)
     np.testing.assert_allclose(result.pipeline_result.phi_total_rad, expected_phi_total)
     assert "treacy_analytic_phase_rad" not in result.final_state.meta["abcdef"]
+    meta = result.final_state.meta["abcdef"]
+    assert meta["phi3_transport_like_total_rad"] is not None
+    assert meta["phi3_phase_total_rad"] is not None
+    assert len(meta["phi3_transport_like_total_rad"]) == len(meta["phi3_total_rad"])
+    assert len(meta["phi3_phase_total_rad"]) == len(meta["phi3_total_rad"])
+    for contribution in meta["per_optic"]:
+        assert "phi3_transport_like_rad" in contribution
+        assert "phi3_phase_rad" in contribution
 
 
 def test_treacy_runtime_raw_benchmark_reports_finite_errors_across_beam_radius() -> None:
@@ -134,8 +157,10 @@ def test_treacy_runtime_raw_benchmark_reports_finite_errors_across_beam_radius()
     assert np.all(np.isfinite(tod_errors))
     assert np.max(gdd_errors) > np.min(gdd_errors)
     assert np.max(tod_errors) > np.min(tod_errors)
-    assert gdd_errors[1] < gdd_errors[0]
-    assert gdd_errors[1] < gdd_errors[-1]
+    assert gdd_errors[-1] < gdd_errors[0]
+    assert gdd_errors[-1] < 5e-2
+    assert tod_errors[-1] < tod_errors[0]
+    assert tod_errors[-1] < 1e-1
 
     for point in points:
         assert np.isfinite(point.raw_abcdef_gdd_fs2)
@@ -253,3 +278,62 @@ def test_treacy_runtime_uses_matched_standalone_analytic_reference() -> None:
 
     assert point.analytic_gdd_fs2 == pytest.approx(analytic.gdd_fs2, rel=1e-12, abs=1e-12)
     assert point.analytic_tod_fs3 == pytest.approx(analytic.tod_fs3, rel=1e-12, abs=1e-12)
+
+
+def test_treacy_large_beam_raw_runtime_converges_close_to_matched_analytic_reference() -> None:
+    points = run_treacy_radius_convergence(
+        beam_radii_mm=(10.0, 100.0, 1000.0),
+        length_to_mirror_um=0.0,
+        n_samples=256,
+    )
+
+    gdd_errors = np.array([point.raw_abcdef_gdd_rel_error for point in points], dtype=np.float64)
+    tod_errors = np.array([point.raw_abcdef_tod_rel_error for point in points], dtype=np.float64)
+
+    assert np.all(gdd_errors < 5e-2)
+    assert np.all(tod_errors < 6e-2)
+    assert abs(gdd_errors[-1] - gdd_errors[0]) < 5e-3
+    assert abs(tod_errors[-1] - tod_errors[0]) < 5e-3
+
+
+def test_treacy_geometry_phase_is_no_longer_negligible_relative_to_phi3() -> None:
+    result = run_abcdef(
+        treacy_compressor_preset(length_to_mirror_um=0.0),
+        StandaloneLaserSpec(
+            pulse=PulseSpec(
+                width_fs=100.0,
+                center_wavelength_nm=1030.0,
+                n_samples=256,
+                time_window_fs=3000.0,
+            ),
+            beam=BeamSpec(radius_mm=1000.0, m2=1.0),
+        ),
+    )
+
+    delta = np.asarray(result.pipeline_result.delta_omega_rad_per_fs, dtype=np.float64)
+    weights = np.asarray(result.fit.weights, dtype=np.float64)
+    omega0 = float(result.pipeline_result.omega0_rad_per_fs)
+    phi_geom_fit = fit_phase_taylor_affine_detrended(
+        delta,
+        result.pipeline_result.phi_geom_total_rad,
+        omega0_rad_per_fs=omega0,
+        weights=weights,
+        order=4,
+    )
+    phi3_fit = fit_phase_taylor_affine_detrended(
+        delta,
+        result.pipeline_result.phi3_total_rad,
+        omega0_rad_per_fs=omega0,
+        weights=weights,
+        order=4,
+    )
+
+    phi_geom_gdd = float(phi_geom_fit.coefficients_rad[2])
+    phi3_gdd = float(phi3_fit.coefficients_rad[2])
+    phi_geom_tod = float(phi_geom_fit.coefficients_rad[3])
+    phi3_tod = float(phi3_fit.coefficients_rad[3])
+
+    assert abs(phi_geom_gdd) > 1e6
+    assert abs(phi_geom_tod) > 1e6
+    assert abs(phi_geom_gdd / phi3_gdd) > 0.4
+    assert abs(phi_geom_tod / phi3_tod) > 0.3

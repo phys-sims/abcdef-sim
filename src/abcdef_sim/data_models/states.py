@@ -111,6 +111,18 @@ def _hash_phase_contributions_meta(phase_contributions: Any) -> bytes:
             name="phi_geom_rad",
             allow_none=True,
         )
+        _update_array_hash(
+            h,
+            getattr(contribution, "phi3_transport_like_rad", None),
+            name="phi3_transport_like_rad",
+            allow_none=True,
+        )
+        _update_array_hash(
+            h,
+            getattr(contribution, "phi3_phase_rad", None),
+            name="phi3_phase_rad",
+            allow_none=True,
+        )
         _update_array_hash(h, getattr(contribution, "phi3_rad", None), name="phi3_rad")
         _update_array_hash(
             h,
