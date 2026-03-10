@@ -65,4 +65,6 @@ def test_apply_cfg_propagates_state_and_returns_martinez_phase_contribution() ->
     assert contribution.instance_name == cfg.instance_name
     np.testing.assert_allclose(contribution.omega, omega)
     np.testing.assert_allclose(contribution.phi0_rad, expected_phi0)
+    np.testing.assert_allclose(contribution.phi3_transport_like_rad, expected_phi3)
+    np.testing.assert_allclose(contribution.phi3_phase_rad, expected_phi3)
     np.testing.assert_allclose(contribution.phi3_rad, expected_phi3)

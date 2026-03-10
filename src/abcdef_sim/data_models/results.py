@@ -27,7 +27,12 @@ class PhaseContribution(BaseModel):
     delta_omega_rad_per_fs: NDArrayF | None = None
     omega0_rad_per_fs: float = 0.0
     phi0_rad: NDArrayF
+    phi_geom_rad: NDArrayF | None = None
+    phi3_transport_like_rad: NDArrayF | None = None
+    phi3_phase_rad: NDArrayF | None = None
     phi3_rad: NDArrayF
+    path_length_um: NDArrayF | None = None
+    group_delay_fs: NDArrayF | None = None
 
     filter_amp: NDArrayF | None = None
     filter_phase_rad: NDArrayF | None = None
@@ -36,7 +41,12 @@ class PhaseContribution(BaseModel):
         "omega",
         "delta_omega_rad_per_fs",
         "phi0_rad",
+        "phi_geom_rad",
+        "phi3_transport_like_rad",
+        "phi3_phase_rad",
         "phi3_rad",
+        "path_length_um",
+        "group_delay_fs",
         "filter_amp",
         "filter_phase_rad",
         mode="before",
@@ -58,7 +68,17 @@ class PhaseContribution(BaseModel):
                 "delta_omega_rad_per_fs must have shape "
                 f"{expected_shape}; got {self.delta_omega_rad_per_fs.shape}"
             )
-        for field_name in ("phi0_rad", "phi3_rad", "filter_amp", "filter_phase_rad"):
+        for field_name in (
+            "phi0_rad",
+            "phi_geom_rad",
+            "phi3_transport_like_rad",
+            "phi3_phase_rad",
+            "phi3_rad",
+            "path_length_um",
+            "group_delay_fs",
+            "filter_amp",
+            "filter_phase_rad",
+        ):
             field_value = getattr(self, field_name)
             if field_value is not None and field_value.shape != expected_shape:
                 raise ValueError(
@@ -77,6 +97,11 @@ class PipelineResult(BaseModel):
     delta_omega_rad_per_fs: NDArrayF | None = None
     omega0_rad_per_fs: float = 0.0
     contributions: tuple[PhaseContribution, ...]
+    phi0_axial_total_rad: NDArrayF | None = None
+    phi_geom_total_rad: NDArrayF | None = None
+    phi3_transport_like_total_rad: NDArrayF | None = None
+    phi3_phase_total_rad: NDArrayF | None = None
+    phi3_total_rad: NDArrayF | None = None
     phi1_rad: NDArrayF | None = None
     phi2_rad: NDArrayF | None = None
     phi4_rad: NDArrayF | None = None
@@ -85,6 +110,11 @@ class PipelineResult(BaseModel):
     @field_validator(
         "omega",
         "delta_omega_rad_per_fs",
+        "phi0_axial_total_rad",
+        "phi_geom_total_rad",
+        "phi3_transport_like_total_rad",
+        "phi3_phase_total_rad",
+        "phi3_total_rad",
         "phi1_rad",
         "phi2_rad",
         "phi4_rad",
@@ -103,7 +133,17 @@ class PipelineResult(BaseModel):
         expected_shape = (omega.size,)
         delta_omega = self.delta_omega_rad_per_fs
 
-        for field_name in ("phi1_rad", "phi2_rad", "phi4_rad", "phi_total_rad"):
+        for field_name in (
+            "phi0_axial_total_rad",
+            "phi_geom_total_rad",
+            "phi3_transport_like_total_rad",
+            "phi3_phase_total_rad",
+            "phi3_total_rad",
+            "phi1_rad",
+            "phi2_rad",
+            "phi4_rad",
+            "phi_total_rad",
+        ):
             field_value = getattr(self, field_name)
             if field_value is not None and field_value.shape != expected_shape:
                 raise ValueError(

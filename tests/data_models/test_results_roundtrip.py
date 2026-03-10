@@ -25,7 +25,12 @@ def test_pipeline_result_roundtrip_keeps_structure_and_arrays() -> None:
         delta_omega_rad_per_fs=delta_omega,
         omega0_rad_per_fs=1.5,
         phi0_rad=np.array([0.1, 0.2, 0.3], dtype=float),
+        phi_geom_rad=np.array([0.15, 0.25, 0.35], dtype=float),
+        phi3_transport_like_rad=np.array([0.41, 0.51, 0.61], dtype=float),
+        phi3_phase_rad=np.array([0.42, 0.52, 0.62], dtype=float),
         phi3_rad=np.array([0.4, 0.5, 0.6], dtype=float),
+        path_length_um=np.array([1.0, 1.1, 1.2], dtype=float),
+        group_delay_fs=np.array([3.0, 3.1, 3.2], dtype=float),
         filter_amp=np.array([0.9, 0.8, 0.7], dtype=float),
         filter_phase_rad=np.array([0.0, 0.1, 0.2], dtype=float),
     )
@@ -35,6 +40,11 @@ def test_pipeline_result_roundtrip_keeps_structure_and_arrays() -> None:
         delta_omega_rad_per_fs=delta_omega,
         omega0_rad_per_fs=1.5,
         contributions=(contribution,),
+        phi0_axial_total_rad=np.array([0.1, 0.2, 0.3], dtype=float),
+        phi_geom_total_rad=np.array([0.15, 0.25, 0.35], dtype=float),
+        phi3_transport_like_total_rad=np.array([0.41, 0.51, 0.61], dtype=float),
+        phi3_phase_total_rad=np.array([0.42, 0.52, 0.62], dtype=float),
+        phi3_total_rad=np.array([0.4, 0.5, 0.6], dtype=float),
         phi1_rad=np.array([1.0, 1.1, 1.2], dtype=float),
         phi2_rad=np.array([2.0, 2.1, 2.2], dtype=float),
         phi4_rad=np.array([3.0, 3.1, 3.2], dtype=float),
@@ -48,6 +58,11 @@ def test_pipeline_result_roundtrip_keeps_structure_and_arrays() -> None:
         "delta_omega_rad_per_fs",
         "omega0_rad_per_fs",
         "contributions",
+        "phi0_axial_total_rad",
+        "phi_geom_total_rad",
+        "phi3_transport_like_total_rad",
+        "phi3_phase_total_rad",
+        "phi3_total_rad",
         "phi1_rad",
         "phi2_rad",
         "phi4_rad",
@@ -64,6 +79,15 @@ def test_pipeline_result_roundtrip_keeps_structure_and_arrays() -> None:
     np.testing.assert_allclose(restored.omega, omega)
     np.testing.assert_allclose(restored.delta_omega_rad_per_fs, delta_omega)
     np.testing.assert_allclose(restored.contributions[0].phi0_rad, contribution.phi0_rad)
+    np.testing.assert_allclose(restored.contributions[0].phi_geom_rad, contribution.phi_geom_rad)
+    np.testing.assert_allclose(
+        restored.contributions[0].phi3_transport_like_rad,
+        contribution.phi3_transport_like_rad,
+    )
+    np.testing.assert_allclose(
+        restored.contributions[0].phi3_phase_rad,
+        contribution.phi3_phase_rad,
+    )
     np.testing.assert_allclose(restored.phi_total_rad, result.phi_total_rad)
     np.testing.assert_allclose(restored.final_state.rays, result.final_state.rays)
 

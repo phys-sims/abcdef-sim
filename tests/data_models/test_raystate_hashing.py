@@ -12,6 +12,7 @@ def test_raystate_hashable_repr_includes_phase_contributions() -> None:
         instance_name="fs1",
         omega=np.array([2.0, 2.2], dtype=float),
         phi0_rad=np.array([0.1, 0.2], dtype=float),
+        phi_geom_rad=np.array([0.1, 0.2], dtype=float),
         phi3_rad=np.array([0.0, 0.05], dtype=float),
     )
     contribution_b = PhaseContribution(
@@ -19,6 +20,7 @@ def test_raystate_hashable_repr_includes_phase_contributions() -> None:
         instance_name="fs2",
         omega=np.array([2.0, 2.2], dtype=float),
         phi0_rad=np.array([0.1, 0.25], dtype=float),
+        phi_geom_rad=np.array([0.1, 0.25], dtype=float),
         phi3_rad=np.array([0.0, 0.05], dtype=float),
     )
 

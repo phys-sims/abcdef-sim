@@ -160,6 +160,7 @@ class FreeSpaceCfg(BaseModel):
     instance_name: str
     length: float
     medium_refractive_index: float = 1.0
+    geometry_mode: Literal["path_length", "normal_spacing"] = "path_length"
 
     @field_validator("length")
     @classmethod
@@ -182,6 +183,7 @@ class FreeSpaceCfg(BaseModel):
             params={
                 "L": float(self.length),
                 "medium_refractive_index": float(self.medium_refractive_index),
+                "geometry_mode": str(self.geometry_mode),
             },
         )
 
@@ -231,6 +233,7 @@ class FrameTransformCfg(BaseModel):
     x_offset_um: float = 0.0
     x_prime_offset: float = 0.0
     x_prime_scale: Literal[-1, 1] = 1
+    geometry_role: Literal["basis_only", "reflect_chief_ray"] = "basis_only"
 
     def to_spec(self) -> OpticSpec:
         return OpticSpec(
@@ -240,6 +243,7 @@ class FrameTransformCfg(BaseModel):
                 "x_offset_um": float(self.x_offset_um),
                 "x_prime_offset": float(self.x_prime_offset),
                 "x_prime_scale": float(self.x_prime_scale),
+                "geometry_role": str(self.geometry_role),
             },
         )
 

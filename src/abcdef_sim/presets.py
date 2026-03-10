@@ -48,6 +48,7 @@ def _build_treacy_optics(
             instance_name="gap_12",
             length=float(separation_um),
             medium_refractive_index=float(gap_medium_refractive_index),
+            geometry_mode="normal_spacing",
         ),
         GratingCfg(
             instance_name="g2",
@@ -68,15 +69,18 @@ def _build_treacy_optics(
                     instance_name="to_fold",
                     length=float(length_to_mirror_um),
                     medium_refractive_index=float(gap_medium_refractive_index),
+                    geometry_mode="path_length",
                 ),
                 FrameTransformCfg(
                     instance_name="fold_frame",
                     x_prime_scale=-1,
+                    geometry_role="reflect_chief_ray",
                 ),
                 FreeSpaceCfg(
                     instance_name="from_fold",
                     length=float(length_to_mirror_um),
                     medium_refractive_index=float(gap_medium_refractive_index),
+                    geometry_mode="path_length",
                 ),
                 GratingCfg(
                     instance_name="g2_return",
@@ -93,6 +97,7 @@ def _build_treacy_optics(
                     instance_name="gap_21",
                     length=float(separation_um),
                     medium_refractive_index=float(gap_medium_refractive_index),
+                    geometry_mode="normal_spacing",
                 ),
                 GratingCfg(
                     instance_name="g1_return",
