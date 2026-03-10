@@ -136,6 +136,14 @@ def run_abcdef_on_state(
         "phi_total_rad": pipeline_result.phi_total_rad.tolist(),
         "phi_fit_rad": fit.phi_fit_rad.tolist(),
         "fit_residual_rad": fit.residual_rad.tolist(),
+        "phi0_axial_total_rad": np.asarray(
+            pipeline_result.phi0_axial_total_rad,
+            dtype=np.float64,
+        ).tolist(),
+        "phi_geom_total_rad": None
+        if pipeline_result.phi_geom_total_rad is None
+        else np.asarray(pipeline_result.phi_geom_total_rad, dtype=np.float64).tolist(),
+        "phi3_total_rad": np.asarray(pipeline_result.phi3_total_rad, dtype=np.float64).tolist(),
         "phi1_rad": None
         if pipeline_result.phi1_rad is None
         else np.asarray(pipeline_result.phi1_rad, dtype=np.float64).tolist(),
@@ -378,7 +386,10 @@ def _phase_contribution_payload(contribution: object) -> dict[str, object]:
         "delta_omega_rad_per_fs": _maybe_list(contribution.delta_omega_rad_per_fs),
         "omega0_rad_per_fs": float(contribution.omega0_rad_per_fs),
         "phi0_rad": np.asarray(contribution.phi0_rad, dtype=np.float64).reshape(-1).tolist(),
+        "phi_geom_rad": _maybe_list(contribution.phi_geom_rad),
         "phi3_rad": np.asarray(contribution.phi3_rad, dtype=np.float64).reshape(-1).tolist(),
+        "path_length_um": _maybe_list(contribution.path_length_um),
+        "group_delay_fs": _maybe_list(contribution.group_delay_fs),
         "filter_amp": _maybe_list(contribution.filter_amp),
         "filter_phase_rad": _maybe_list(contribution.filter_phase_rad),
     }

@@ -105,7 +105,25 @@ def _hash_phase_contributions_meta(phase_contributions: Any) -> bytes:
             name="omega0_rad_per_fs",
         )
         _update_array_hash(h, getattr(contribution, "phi0_rad", None), name="phi0_rad")
+        _update_array_hash(
+            h,
+            getattr(contribution, "phi_geom_rad", None),
+            name="phi_geom_rad",
+            allow_none=True,
+        )
         _update_array_hash(h, getattr(contribution, "phi3_rad", None), name="phi3_rad")
+        _update_array_hash(
+            h,
+            getattr(contribution, "path_length_um", None),
+            name="path_length_um",
+            allow_none=True,
+        )
+        _update_array_hash(
+            h,
+            getattr(contribution, "group_delay_fs", None),
+            name="group_delay_fs",
+            allow_none=True,
+        )
         _update_array_hash(
             h,
             getattr(contribution, "filter_amp", None),

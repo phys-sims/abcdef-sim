@@ -35,10 +35,15 @@ def compute_pipeline_result(
     k_center = martinez_k_center(omega)
 
     phi0_total = np.zeros_like(omega)
+    phi_geom_total = np.zeros_like(omega)
     phi3_total = np.zeros_like(omega)
     filter_phase_total = np.zeros_like(omega)
     for contribution in contribution_tuple:
         phi0_total = phi0_total + contribution.phi0_rad
+        if contribution.phi_geom_rad is not None:
+            phi_geom_total = phi_geom_total + contribution.phi_geom_rad
+        else:
+            phi_geom_total = phi_geom_total + contribution.phi0_rad
         phi3_total = phi3_total + contribution.phi3_rad
         if contribution.filter_phase_rad is not None:
             filter_phase_total = filter_phase_total + contribution.filter_phase_rad
@@ -46,7 +51,9 @@ def compute_pipeline_result(
     phi1 = _compute_phi1(final_state, q_in=q_in, w_in=w_in, w_out=w_out)
     phi2 = phi2_rad(k_center, initial_state.rays, final_state.rays)
     phi4 = None if phi4_rad is None else np.asarray(phi4_rad, dtype=np.float64).reshape(-1)
-    phi_total = combine_phi_total_rad(phi0_total, filter_phase_total, phi1, phi2, phi3_total, phi4)
+    phi_total = combine_phi_total_rad(
+        phi_geom_total, filter_phase_total, phi1, phi2, phi3_total, phi4
+    )
 
     return PipelineResult(
         final_state=final_state,
@@ -54,6 +61,9 @@ def compute_pipeline_result(
         delta_omega_rad_per_fs=delta_omega,
         omega0_rad_per_fs=omega0,
         contributions=contribution_tuple,
+        phi0_axial_total_rad=phi0_total,
+        phi_geom_total_rad=phi_geom_total,
+        phi3_total_rad=phi3_total,
         phi1_rad=phi1,
         phi2_rad=phi2,
         phi4_rad=phi4,

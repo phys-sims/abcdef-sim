@@ -23,6 +23,8 @@ class OpticStageCfg(StageConfig):
     instance_name: str
     length: float
     phase_model: Literal["physical", "none"] = "physical"
+    phi_geom_model: Literal["none", "free_space_to_planar_surface"] = "none"
+    next_surface_incidence_angle_rad: float | None = None
 
     omega: NDArrayF  # (N,)
     delta_omega_rad_per_fs: NDArrayF | None = None  # (N,)
@@ -58,5 +60,15 @@ class OpticStageCfg(StageConfig):
                 )
             if not np.allclose(w, float(self.omega0_rad_per_fs) + dw_arr, atol=1e-12, rtol=0.0):
                 raise ValueError("omega must equal omega0_rad_per_fs + delta_omega_rad_per_fs")
+
+        if self.phi_geom_model == "none":
+            if self.next_surface_incidence_angle_rad is not None:
+                raise ValueError(
+                    "next_surface_incidence_angle_rad must be None when phi_geom_model='none'"
+                )
+        elif self.next_surface_incidence_angle_rad is None:
+            raise ValueError(
+                "next_surface_incidence_angle_rad is required when phi_geom_model is active"
+            )
 
         return self
