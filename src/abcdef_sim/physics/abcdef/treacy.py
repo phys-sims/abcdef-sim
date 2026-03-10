@@ -12,6 +12,7 @@ NDArrayF = npt.NDArray[np.float64]
 
 __all__ = [
     "TreacyAnalyticMetrics",
+    "compute_grating_diffraction_angle_deg",
     "compute_treacy_analytic_metrics",
     "phase_from_treacy_dispersion",
 ]
@@ -52,6 +53,34 @@ def phase_from_treacy_dispersion(
     return np.asarray(phase, dtype=np.float64)
 
 
+def compute_grating_diffraction_angle_deg(
+    *,
+    line_density_lpmm: float,
+    incidence_angle_deg: float,
+    wavelength_nm: float,
+    diffraction_order: int = -1,
+) -> float:
+    """Return the center-frequency diffraction angle for one reflective grating."""
+
+    line_density = float(line_density_lpmm)
+    incidence_angle = float(incidence_angle_deg)
+    wavelength = float(wavelength_nm)
+    order = int(diffraction_order)
+
+    if line_density <= 0.0:
+        raise ValueError("line_density_lpmm must be > 0.")
+    if wavelength <= 0.0:
+        raise ValueError("wavelength_nm must be > 0.")
+
+    wavelength_um = wavelength * 1e-3
+    period_um = 1000.0 / line_density
+    theta_i_rad = math.radians(incidence_angle)
+    diffraction_geometry = -float(order) * (wavelength_um / period_um)
+    diff_arg = diffraction_geometry - math.sin(theta_i_rad)
+    theta_d_rad = _safe_asin(diff_arg, context="diffraction angle")
+    return float(math.degrees(theta_d_rad))
+
+
 def compute_treacy_analytic_metrics(
     *,
     line_density_lpmm: float = 1200.0,
@@ -88,8 +117,14 @@ def compute_treacy_analytic_metrics(
     theta_l_rad = _safe_asin(littrow_arg, context="littrow angle")
 
     diffraction_geometry = -float(order) * (wavelength_um / period_um)
-    diff_arg = diffraction_geometry - math.sin(theta_i_rad)
-    theta_d_rad = _safe_asin(diff_arg, context="diffraction angle")
+    theta_d_deg = compute_grating_diffraction_angle_deg(
+        line_density_lpmm=line_density,
+        incidence_angle_deg=incidence_angle,
+        wavelength_nm=wavelength,
+        diffraction_order=order,
+    )
+    theta_d_rad = math.radians(theta_d_deg)
+    diff_arg = math.sin(theta_d_rad)
 
     gdd_bracket = 1.0 - diff_arg**2
     if gdd_bracket <= 0.0:

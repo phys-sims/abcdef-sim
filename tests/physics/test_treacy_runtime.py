@@ -4,7 +4,10 @@ import numpy as np
 import pytest
 
 from abcdef_sim import (
+    AbcdefCfg,
     BeamSpec,
+    FreeSpaceCfg,
+    GratingCfg,
     InputRayCfg,
     PulseSpec,
     StandaloneLaserSpec,
@@ -31,6 +34,18 @@ def _weighted_xprime_rms(result: object) -> float:
     weights = np.asarray(result.fit.weights, dtype=np.float64)
     weights = weights / np.sum(weights)
     return float(np.sqrt(np.sum(weights * rays[:, 1, 0] ** 2)))
+
+
+def _default_laser() -> StandaloneLaserSpec:
+    return StandaloneLaserSpec(
+        pulse=PulseSpec(
+            width_fs=100.0,
+            center_wavelength_nm=1030.0,
+            n_samples=256,
+            time_window_fs=3000.0,
+        ),
+        beam=BeamSpec(radius_mm=1.0, m2=1.0),
+    )
 
 
 def test_run_abcdef_treacy_produces_nonzero_phi1_for_finite_beam() -> None:
@@ -93,7 +108,7 @@ def test_treacy_runtime_gdd_error_decreases_with_beam_radius() -> None:
     assert np.all(np.isfinite(gdd_errors))
     assert gdd_errors[-1] < gdd_errors[0]
     assert gdd_errors[-1] * 4.0 < gdd_errors[0]
-    assert points[-1].full_gdd_rel_error < 0.1
+    assert points[-1].full_gdd_rel_error < 1e-3
 
     for point in points:
         assert np.isfinite(point.full_gdd_fs2)
@@ -126,21 +141,50 @@ def test_treacy_runtime_gdd_error_decreases_with_beam_radius() -> None:
 
 
 def test_treacy_double_pass_fold_reduces_weighted_output_angular_dispersion() -> None:
-    laser = StandaloneLaserSpec(
-        pulse=PulseSpec(
-            width_fs=100.0,
-            center_wavelength_nm=1030.0,
-            n_samples=256,
-            time_window_fs=3000.0,
-        ),
-        beam=BeamSpec(radius_mm=1.0, m2=1.0),
-    )
+    laser = _default_laser()
 
     single_pass = run_abcdef(treacy_compressor_preset(n_passes=1), laser)
     double_pass = run_abcdef(treacy_compressor_preset(length_to_mirror_um=0.0), laser)
 
     assert _weighted_xprime_rms(double_pass) < _weighted_xprime_rms(single_pass)
-    assert _weighted_xprime_rms(double_pass) < 0.01
+    assert _weighted_xprime_rms(double_pass) < 1e-4
+
+
+def test_treacy_single_pass_pair_cancels_weighted_output_angular_dispersion() -> None:
+    laser = _default_laser()
+    single_grating = run_abcdef(
+        AbcdefCfg(
+            name="single_grating_pair_probe",
+            optics=(
+                GratingCfg(
+                    instance_name="g1",
+                    line_density_lpmm=1200.0,
+                    incidence_angle_deg=35.0,
+                    diffraction_order=-1,
+                ),
+                FreeSpaceCfg(instance_name="gap_12", length=100_000.0),
+            ),
+        ),
+        laser,
+    )
+    single_pass_pair = run_abcdef(treacy_compressor_preset(n_passes=1), laser)
+
+    assert _weighted_xprime_rms(single_pass_pair) < (_weighted_xprime_rms(single_grating) / 50.0)
+    assert _weighted_xprime_rms(single_pass_pair) < 5e-4
+
+
+def test_treacy_runtime_records_resolved_diffraction_geometry() -> None:
+    result = run_abcdef(treacy_compressor_preset(n_passes=1), _default_laser())
+
+    meta = result.final_state.meta["abcdef"]
+    assert meta["treacy_resolved_diffraction_angle_deg"] == pytest.approx(
+        41.484970499511796,
+        rel=0.0,
+        abs=1e-12,
+    )
+    resolved_optics = meta["treacy_resolved_optics"]
+    g2 = next(optic for optic in resolved_optics if optic["instance_name"] == "g2")
+    assert g2["incidence_angle_deg"] == pytest.approx(meta["treacy_resolved_diffraction_angle_deg"])
 
 
 def test_treacy_runtime_mirror_leg_changes_abcdef_result_while_analytic_stays_fixed() -> None:

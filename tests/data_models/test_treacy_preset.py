@@ -8,20 +8,26 @@ def test_treacy_preset_defaults_to_double_pass_with_explicit_fold_geometry() -> 
 
     assert [optic.instance_name for optic in cfg.optics] == [
         "g1",
+        "post_g1_frame",
         "gap_12",
         "g2",
+        "post_g2_frame",
         "to_fold",
         "fold_frame",
         "from_fold",
         "g2_return",
+        "post_g2_return_frame",
         "gap_21",
         "g1_return",
+        "post_g1_return_frame",
     ]
     assert isinstance(cfg.optics[0], GratingCfg)
-    assert isinstance(cfg.optics[3], FreeSpaceCfg)
-    assert cfg.optics[3].length == 0.0
-    assert isinstance(cfg.optics[4], FrameTransformCfg)
-    assert cfg.optics[4].x_prime_scale == -1.0
+    assert isinstance(cfg.optics[1], FrameTransformCfg)
+    assert cfg.optics[1].x_prime_scale == -1.0
+    assert isinstance(cfg.optics[5], FreeSpaceCfg)
+    assert cfg.optics[5].length == 0.0
+    assert isinstance(cfg.optics[6], FrameTransformCfg)
+    assert cfg.optics[6].x_prime_scale == -1.0
     assert cfg.tags["preset_kind"] == "treacy_compressor"
     assert cfg.tags["n_passes"] == 2
 
@@ -40,7 +46,13 @@ def test_treacy_preset_uses_one_way_fold_distances_on_each_leg() -> None:
 def test_treacy_preset_single_pass_ignores_mirror_leg_parameter() -> None:
     cfg = treacy_compressor_preset(n_passes=1, length_to_mirror_um=50_000.0)
 
-    assert [optic.instance_name for optic in cfg.optics] == ["g1", "gap_12", "g2"]
+    assert [optic.instance_name for optic in cfg.optics] == [
+        "g1",
+        "post_g1_frame",
+        "gap_12",
+        "g2",
+        "post_g2_frame",
+    ]
     assert all(optic.instance_name != "to_fold" for optic in cfg.optics)
     assert all(optic.instance_name != "fold_frame" for optic in cfg.optics)
     assert all(optic.instance_name != "from_fold" for optic in cfg.optics)

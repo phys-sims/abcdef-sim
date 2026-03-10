@@ -108,9 +108,14 @@ compressor. This keeps the poster-facing "actual simulator vs analytic
 equation" result visible while still showing the large-beam convergence story
 for the `without_phi2` diagnostic.
 
-The current double-pass Treacy preset uses an explicit fold-frame handoff at
-the mirror rather than modeling the return leg as a single synthetic `2L`
-free-space segment.
+The current Treacy preset resolves the second-grating and return-pass center
+incidence angles against the laser center wavelength at runtime. It also uses
+explicit reflected-frame `x' -> -x'` handoffs after each grating interaction
+plus an explicit fold-frame handoff at the mirror instead of modeling the
+return leg as a single synthetic `2L` free-space segment. This correction is
+what restores the expected single-pass angular-dispersion cancellation and
+brings the large-beam full ABCDEF Treacy benchmark back toward the scalar
+analytic limit.
 
 
 ## Running tests by marker

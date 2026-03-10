@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal, cast
+
 import numpy as np
 
 from abcdef_sim.cache.backend import NullCacheBackend
@@ -39,11 +41,13 @@ from abcdef_sim.physics.abcdef.pulse import (
     update_beam_state_from_abcd,
 )
 from abcdef_sim.physics.abcdef.treacy import (
+    compute_grating_diffraction_angle_deg,
     compute_treacy_analytic_metrics,
     phase_from_treacy_dispersion,
 )
 from abcdef_sim.pipeline._assembler import SystemAssembler
 from abcdef_sim.pipeline.stages import AbcdefOpticStage
+from abcdef_sim.presets import _build_treacy_optics
 
 
 def run_abcdef(
@@ -65,6 +69,7 @@ def run_abcdef_on_state(
     initial_state = state.deepcopy()
     spectral_weights = np.abs(np.asarray(initial_state.pulse.field_w, dtype=np.complex128)) ** 2
     internal_laser_spec = _laser_spec_from_state(initial_state)
+    resolved_cfg = _resolve_runtime_cfg(cfg, internal_laser_spec)
 
     assembler = SystemAssembler(
         factory=OpticFactory.default(),
@@ -73,13 +78,13 @@ def run_abcdef_on_state(
     stages = [
         AbcdefOpticStage(cfg=stage_cfg)
         for stage_cfg in assembler.build_optic_cfgs(
-            cfg.to_preset(),
+            resolved_cfg.to_preset(),
             internal_laser_spec,
             policy=policy,
         )
     ]
 
-    ray_state_in = _initial_ray_state(cfg=cfg, laser=internal_laser_spec)
+    ray_state_in = _initial_ray_state(cfg=resolved_cfg, laser=internal_laser_spec)
     ray_state_out = ray_state_in
     for stage in stages:
         ray_state_out = stage.process(ray_state_out, policy=policy).state
@@ -93,8 +98,8 @@ def run_abcdef_on_state(
     )
     fit_contributions: tuple[PhaseContribution, ...] = contributions
     phi4 = None
-    if _is_treacy_preset(cfg):
-        fit_contributions = (_treacy_analytic_contribution(cfg, internal_laser_spec),)
+    if _is_treacy_preset(resolved_cfg):
+        fit_contributions = (_treacy_analytic_contribution(resolved_cfg, internal_laser_spec),)
         phi4 = phi4_rad(
             martinez_k_center(np.asarray(internal_laser_spec.omega(), dtype=np.float64)),
             0.0,
@@ -110,7 +115,7 @@ def run_abcdef_on_state(
         w_out=w_out,
         phi4_rad=phi4,
     )
-    if _is_treacy_preset(cfg):
+    if _is_treacy_preset(resolved_cfg):
         analytic_phase = np.asarray(
             fit_contributions[0].filter_phase_rad,
             dtype=np.float64,
@@ -144,7 +149,10 @@ def run_abcdef_on_state(
     )
 
     pulse_state_out = apply_phase_to_state(initial_state, fit.phi_fit_rad)
-    beam_matrix = _beam_matrix_for_cfg(cfg, omega0_rad_per_fs=internal_laser_spec.omega0_rad_per_fs)
+    beam_matrix = _beam_matrix_for_cfg(
+        resolved_cfg,
+        omega0_rad_per_fs=internal_laser_spec.omega0_rad_per_fs,
+    )
     final_state = update_beam_state_from_abcd(pulse_state_out, beam_matrix)
 
     final_state.meta["abcdef"] = {
@@ -173,11 +181,35 @@ def run_abcdef_on_state(
         "spectral_power_au": np.asarray(spectral_weights, dtype=np.float64).tolist(),
         "per_optic": [_phase_contribution_payload(contribution) for contribution in contributions],
     }
-    if _is_treacy_preset(cfg):
+    if _is_treacy_preset(resolved_cfg):
         final_state.meta["abcdef"]["treacy_analytic_phase_rad"] = np.asarray(
             fit_contributions[0].filter_phase_rad,
             dtype=np.float64,
         ).tolist()
+        resolved_diffraction_angle_deg = _resolved_treacy_diffraction_angle_deg(
+            resolved_cfg,
+            center_wavelength_nm=float(internal_laser_spec.pulse["center_wavelength_nm"]),
+        )
+        final_state.meta["abcdef"]["treacy_resolved_diffraction_angle_deg"] = (
+            resolved_diffraction_angle_deg
+        )
+        final_state.meta["abcdef"]["treacy_resolved_optics"] = [
+            {
+                "instance_name": optic.instance_name,
+                "kind": optic.kind,
+                **(
+                    {"incidence_angle_deg": float(optic.incidence_angle_deg)}
+                    if isinstance(optic, GratingCfg)
+                    else {}
+                ),
+                **(
+                    {"x_prime_scale": float(optic.x_prime_scale)}
+                    if isinstance(optic, FrameTransformCfg)
+                    else {}
+                ),
+            }
+            for optic in resolved_cfg.optics
+        ]
     final_state.metrics.update(
         {
             "abcdef.fit_weighted_rms_rad": float(fit.weighted_rms_rad),
@@ -234,6 +266,51 @@ def _beam_phase_inputs(
 
 def _is_treacy_preset(cfg: AbcdefCfg) -> bool:
     return str(cfg.tags.get("preset_kind", "")) == "treacy_compressor"
+
+
+def _resolve_runtime_cfg(cfg: AbcdefCfg, laser: LaserSpec) -> AbcdefCfg:
+    if not _is_treacy_preset(cfg):
+        return cfg
+
+    n_passes = int(cfg.tags["n_passes"])
+    if n_passes not in (1, 2):
+        raise ValueError(f"Unsupported Treacy n_passes={n_passes}; expected 1 or 2.")
+
+    resolved_optics = _build_treacy_optics(
+        line_density_lpmm=float(cfg.tags["line_density_lpmm"]),
+        incidence_angle_deg=float(cfg.tags["incidence_angle_deg"]),
+        separation_um=float(cfg.tags["separation_um"]),
+        length_to_mirror_um=float(cfg.tags["length_to_mirror_um"]),
+        diffraction_order=int(cfg.tags["diffraction_order"]),
+        n_passes=cast(Literal[1, 2], n_passes),
+        immersion_refractive_index=_treacy_immersion_refractive_index(cfg),
+        gap_medium_refractive_index=_treacy_gap_medium_refractive_index(cfg),
+        center_wavelength_nm=float(laser.pulse["center_wavelength_nm"]),
+    )
+    return cfg.model_copy(update={"optics": resolved_optics})
+
+
+def _treacy_immersion_refractive_index(cfg: AbcdefCfg) -> float:
+    for optic in cfg.optics:
+        if isinstance(optic, GratingCfg):
+            return float(optic.immersion_refractive_index)
+    return 1.0
+
+
+def _treacy_gap_medium_refractive_index(cfg: AbcdefCfg) -> float:
+    for optic in cfg.optics:
+        if isinstance(optic, FreeSpaceCfg) and optic.instance_name == "gap_12":
+            return float(optic.medium_refractive_index)
+    return 1.0
+
+
+def _resolved_treacy_diffraction_angle_deg(cfg: AbcdefCfg, *, center_wavelength_nm: float) -> float:
+    return compute_grating_diffraction_angle_deg(
+        line_density_lpmm=float(cfg.tags["line_density_lpmm"]),
+        incidence_angle_deg=float(cfg.tags["incidence_angle_deg"]),
+        wavelength_nm=float(center_wavelength_nm),
+        diffraction_order=int(cfg.tags["diffraction_order"]),
+    )
 
 
 def _treacy_analytic_contribution(cfg: AbcdefCfg, laser: LaserSpec) -> PhaseContribution:
